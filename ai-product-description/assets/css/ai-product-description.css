@@ -1,0 +1,100 @@
+.ai-product-desc__form {
+	margin-bottom: 1rem;
+}
+
+.ai-product-desc__form label {
+	margin-left: 0.5rem;
+}
+
+.ai-product-desc__search {
+	display: block;
+	margin: 0.75rem 0 1rem;
+	width: 100%;
+	max-width: 420px;
+	box-sizing: border-box;
+}
+
+.ai-product-desc__table-wrap {
+	overflow-x: auto;
+}
+
+.ai-product-desc__table {
+	min-width: 720px;
+}
+
+.ai-product-desc__table th,
+.ai-product-desc__table td {
+	vertical-align: top;
+	white-space: nowrap;
+}
+
+.ai-product-desc__table td.ai-product-desc__product-name,
+.ai-product-desc__table td.ai-product-desc__attributes {
+	white-space: normal;
+	min-width: 180px;
+}
+
+.ai-product-desc__table td.ai-product-desc__attributes {
+	min-width: 240px;
+}
+
+.ai-product-desc__actions {
+	min-width: 120px;
+}
+
+.ai-product-desc__generate-btn {
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.ai-product-desc__generate-btn.is-loading {
+	opacity: 0.85;
+	pointer-events: none;
+}
+
+.ai-product-desc__generate-btn.is-loading::after {
+	content: "";
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	margin-right: 8px;
+	border: 2px solid currentColor;
+	border-top-color: transparent;
+	border-radius: 50%;
+	vertical-align: -2px;
+	animation: ai-product-desc-spin 0.7s linear infinite;
+}
+
+.ai-product-desc__generate-btn.is-error {
+	outline: 1px solid #b32d2e;
+}
+
+.ai-product-desc__result {
+	margin: 1rem 0 1.25rem;
+}
+
+.ai-product-desc__result-title {
+	margin: 0.75rem 0 0.5rem;
+	font-size: 1.1em;
+}
+
+.ai-product-desc__result-body {
+	white-space: normal;
+	line-height: 1.8;
+}
+
+.ai-product-desc__result-body a {
+	color: inherit;
+	font-weight: 600;
+	text-decoration: underline;
+}
+
+.ai-product-desc__result-body.is-error {
+	color: #b32d2e;
+}
+
+@keyframes ai-product-desc-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}

@@ -1,0 +1,13 @@
+.ai-product-desc-settings .form-table th {
+	width: 180px;
+}
+
+.ai-product-desc-settings .ai-product-desc-provider-field input.regular-text {
+	max-width: 420px;
+}
+
+.ai-product-desc-settings h2[hidden],
+.ai-product-desc-settings .form-table[hidden],
+.ai-product-desc-settings .ai-product-desc-provider-panel[hidden] {
+	display: none;
+}
