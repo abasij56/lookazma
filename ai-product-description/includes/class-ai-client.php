@@ -21,6 +21,76 @@ final class AI_Product_Desc_Client {
 	 * @return string|WP_Error Generated description or error.
 	 */
 	public static function generate_description( array $product_data ) {
+		$content = self::chat( self::build_messages( $product_data ) );
+
+		if ( is_wp_error( $content ) ) {
+			return $content;
+		}
+
+		return self::extract_description_text( $content );
+	}
+
+	/**
+	 * Generate Yoast SEO title + meta description for a product category.
+	 *
+	 * @param array{name: string, slug: string, description: string, parent_name: string, seo_title: string, seo_metadesc: string} $data Category data.
+	 * @return array{seo_title: string, seo_metadesc: string}|WP_Error
+	 */
+	public static function generate_category_seo( array $data ) {
+		$content = self::chat( self::build_category_seo_messages( $data ) );
+
+		if ( is_wp_error( $content ) ) {
+			return $content;
+		}
+
+		$parsed = self::extract_json_object( $content );
+
+		if ( ! is_array( $parsed ) ) {
+			return new WP_Error(
+				'invalid_seo_json',
+				__( 'پاسخ سئو دسته معتبر نبود.', 'ai-product-description' )
+			);
+		}
+
+		$title = isset( $parsed['seo_title'] ) ? trim( (string) $parsed['seo_title'] ) : '';
+		$desc  = isset( $parsed['seo_metadesc'] ) ? trim( (string) $parsed['seo_metadesc'] ) : '';
+
+		if ( '' === $title && '' === $desc ) {
+			return new WP_Error(
+				'empty_seo_fields',
+				__( 'عنوان و توضیح متا خالی برگشت.', 'ai-product-description' )
+			);
+		}
+
+		return array(
+			'seo_title'    => $title,
+			'seo_metadesc' => $desc,
+		);
+	}
+
+	/**
+	 * Generate / rewrite category description text.
+	 *
+	 * @param array{name: string, slug: string, description: string, parent_name: string} $data Category data.
+	 * @return string|WP_Error
+	 */
+	public static function generate_category_description( array $data ) {
+		$content = self::chat( self::build_category_description_messages( $data ) );
+
+		if ( is_wp_error( $content ) ) {
+			return $content;
+		}
+
+		return self::extract_description_text( $content );
+	}
+
+	/**
+	 * Low-level chat completion call.
+	 *
+	 * @param array<int, array{role: string, content: string}> $messages Chat messages.
+	 * @return string|WP_Error
+	 */
+	public static function chat( array $messages ) {
 		$config = AI_Product_Desc_Settings::get_active_provider_config();
 
 		if ( '' === $config['api_key'] ) {
@@ -45,7 +115,6 @@ final class AI_Product_Desc_Client {
 		}
 
 		$endpoint = self::build_chat_completions_url( $config['base_url'] );
-		$messages = self::build_messages( $product_data );
 
 		$response = wp_remote_post(
 			$endpoint,
@@ -100,7 +169,7 @@ final class AI_Product_Desc_Client {
 			);
 		}
 
-		return self::extract_description_text( $content );
+		return $content;
 	}
 
 	/**
@@ -110,6 +179,22 @@ final class AI_Product_Desc_Client {
 	 * @return string
 	 */
 	private static function extract_description_text( string $content ): string {
+		$parsed = self::extract_json_object( $content );
+
+		if ( is_array( $parsed ) && ! empty( $parsed['description'] ) ) {
+			return trim( (string) $parsed['description'] );
+		}
+
+		return trim( $content );
+	}
+
+	/**
+	 * Extract first JSON object from model text.
+	 *
+	 * @param string $content Raw content.
+	 * @return array<string, mixed>|null
+	 */
+	private static function extract_json_object( string $content ): ?array {
 		$trimmed = trim( $content );
 
 		if ( preg_match( '/```(?:json)?\s*([\s\S]*?)\s*```/i', $trimmed, $fence_match ) ) {
@@ -117,18 +202,18 @@ final class AI_Product_Desc_Client {
 		}
 
 		$decoded = json_decode( $trimmed, true );
-		if ( is_array( $decoded ) && ! empty( $decoded['description'] ) ) {
-			return trim( (string) $decoded['description'] );
+		if ( is_array( $decoded ) ) {
+			return $decoded;
 		}
 
 		if ( preg_match( '/\{[\s\S]*\}/', $trimmed, $json_match ) ) {
 			$decoded = json_decode( $json_match[0], true );
-			if ( is_array( $decoded ) && ! empty( $decoded['description'] ) ) {
-				return trim( (string) $decoded['description'] );
+			if ( is_array( $decoded ) ) {
+				return $decoded;
 			}
 		}
 
-		return $content;
+		return null;
 	}
 
 	/**
@@ -178,6 +263,97 @@ PROMPT;
 			$product_data['brand'] ?: '—',
 			$product_data['attributes'] ?: '—'
 		);
+
+		return array(
+			array(
+				'role'    => 'system',
+				'content' => $system,
+			),
+			array(
+				'role'    => 'user',
+				'content' => $user,
+			),
+		);
+	}
+
+	/**
+	 * Messages for category SEO title + meta.
+	 *
+	 * @param array{name: string, slug: string, description: string, parent_name: string, seo_title: string, seo_metadesc: string} $data Category data.
+	 * @return array<int, array{role: string, content: string}>
+	 */
+	private static function build_category_seo_messages( array $data ): array {
+		$system = <<<'PROMPT'
+تو متخصص سئوی فروشگاه اینترنتی مواد شیمیایی لوک آزما (https://lookazma.com/) هستی.
+برای صفحه دسته محصولات ووکامرس، عنوان SEO و توضیح متا به زبان فارسی پیشنهاد بده.
+
+قوانین:
+1) خروجی فقط JSON معتبر باشد، بدون مارک‌داون و بدون متن اضافه:
+{"seo_title":"...","seo_metadesc":"..."}
+2) seo_title حداکثر حدود ۶۰ کاراکتر؛ شامل نام دسته و قصد خرید (مثل خرید / فروش) در صورت طبیعی بودن.
+3) seo_metadesc حدود ۱۴۰ تا ۱۶۰ کاراکتر؛ جذاب، دقیق و بدون کلیشه خالی.
+4) لحن حرفه‌ای و مناسب خریدار صنعتی/آزمایشگاهی.
+5) اگر مقدار فعلی وجود دارد، آن را بهبود بده؛ اگر ندارد از صفر بساز.
+6) اشاره طبیعی به لوک آزما فقط اگر در متا جا شود؛ اجباری نیست.
+PROMPT;
+
+		$user = sprintf(
+			"اطلاعات دسته:\n- نام: %s\n- اسلاگ: %s\n- دسته والد: %s\n- توضیح فعلی دسته: %s\n- عنوان SEO فعلی: %s\n- متا فعلی: %s\n\nعنوان SEO و توضیح متا را در JSON برگردان.",
+			$data['name'] ?: '—',
+			$data['slug'] ?: '—',
+			$data['parent_name'] ?: '—',
+			$data['description'] ?: '(خالی)',
+			$data['seo_title'] ?: '(خالی)',
+			$data['seo_metadesc'] ?: '(خالی)'
+		);
+
+		return array(
+			array(
+				'role'    => 'system',
+				'content' => $system,
+			),
+			array(
+				'role'    => 'user',
+				'content' => $user,
+			),
+		);
+	}
+
+	/**
+	 * Messages for category description body.
+	 *
+	 * @param array{name: string, slug: string, description: string, parent_name: string} $data Category data.
+	 * @return array<int, array{role: string, content: string}>
+	 */
+	private static function build_category_description_messages( array $data ): array {
+		$has_current = '' !== trim( (string) ( $data['description'] ?? '' ) );
+
+		$system = <<<'PROMPT'
+تو متخصص تولید محتوای سئو برای دسته‌های فروشگاه مواد شیمیایی لوک آزما (https://lookazma.com/) هستی.
+وظیفه تو نوشتن یا بازنویسی «توضیح دسته محصول» به زبان فارسی است.
+
+قوانین:
+1) متن حدود ۱۲۰ تا ۱۸۰ کلمه، حرفه‌ای و مناسب خریدار صنعتی/آزمایشگاهی.
+2) روی معرفی دسته، کاربردهای رایج، و دعوت طبیعی به مشاهده/خرید از لوک آزما تمرکز کن.
+3) اگر توضیح فعلی وجود دارد: آن را تمیز، روان و سئو‌محور بازنویسی کن و اطلاعات درست را حفظ کن.
+4) اگر توضیح فعلی خالی است: از صفر توضیح مفید بنویس.
+5) فقط متن توضیحات را برگردان؛ بدون عنوان، بدون JSON، بدون مارک‌داون.
+PROMPT;
+
+		$user = $has_current
+			? sprintf(
+				"نام دسته: %s\nاسلاگ: %s\nدسته والد: %s\n\nتوضیح فعلی:\n%s\n\nاین توضیح را تمیز و سئو‌محور بازنویسی کن.",
+				$data['name'] ?: '—',
+				$data['slug'] ?: '—',
+				$data['parent_name'] ?: '—',
+				$data['description']
+			)
+			: sprintf(
+				"نام دسته: %s\nاسلاگ: %s\nدسته والد: %s\n\nتوضیح فعلی وجود ندارد. یک توضیح دسته حرفه‌ای از صفر بنویس.",
+				$data['name'] ?: '—',
+				$data['slug'] ?: '—',
+				$data['parent_name'] ?: '—'
+			);
 
 		return array(
 			array(

@@ -14,10 +14,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class AI_Product_Desc_Ajax {
 
-	public const ACTION        = 'ai_product_desc_generate';
-	public const SAVE_ACTION   = 'ai_product_desc_save';
-	public const NONCE_ACTION  = 'ai_product_desc_generate';
-	public const CAPABILITY    = 'manage_options';
+	public const ACTION             = 'ai_product_desc_generate';
+	public const SAVE_ACTION        = 'ai_product_desc_save';
+	public const CAT_SEO_GENERATE   = 'ai_product_desc_cat_seo_generate';
+	public const CAT_SEO_SAVE       = 'ai_product_desc_cat_seo_save';
+	public const CAT_DESC_GENERATE  = 'ai_product_desc_cat_desc_generate';
+	public const CAT_DESC_SAVE      = 'ai_product_desc_cat_desc_save';
+	public const NONCE_ACTION       = 'ai_product_desc_generate';
+	public const CAPABILITY         = 'manage_options';
 
 	/**
 	 * Register AJAX hooks.
@@ -25,6 +29,10 @@ final class AI_Product_Desc_Ajax {
 	public static function init(): void {
 		add_action( 'wp_ajax_' . self::ACTION, array( __CLASS__, 'generate' ) );
 		add_action( 'wp_ajax_' . self::SAVE_ACTION, array( __CLASS__, 'save' ) );
+		add_action( 'wp_ajax_' . self::CAT_SEO_GENERATE, array( __CLASS__, 'category_seo_generate' ) );
+		add_action( 'wp_ajax_' . self::CAT_SEO_SAVE, array( __CLASS__, 'category_seo_save' ) );
+		add_action( 'wp_ajax_' . self::CAT_DESC_GENERATE, array( __CLASS__, 'category_desc_generate' ) );
+		add_action( 'wp_ajax_' . self::CAT_DESC_SAVE, array( __CLASS__, 'category_desc_save' ) );
 	}
 
 	/**
@@ -118,6 +126,170 @@ final class AI_Product_Desc_Ajax {
 				'current_description' => self::get_current_description_payload( $product ),
 			)
 		);
+	}
+
+	/**
+	 * Generate SEO title + metadesc for product category.
+	 */
+	public static function category_seo_generate(): void {
+		self::guard_request();
+		$term = self::get_product_cat_from_request();
+		$ctx  = AI_Product_Desc_Category_Tools::get_category_context( $term );
+		$result = AI_Product_Desc_Client::generate_category_seo( $ctx );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
+		}
+
+		wp_send_json_success(
+			array(
+				'term_id'      => (int) $term->term_id,
+				'seo_title'    => $result['seo_title'],
+				'seo_metadesc' => $result['seo_metadesc'],
+				'current'      => array(
+					'seo_title'    => $ctx['seo_title'],
+					'seo_metadesc' => $ctx['seo_metadesc'],
+				),
+			)
+		);
+	}
+
+	/**
+	 * Save SEO fields into Yoast term meta.
+	 */
+	public static function category_seo_save(): void {
+		self::guard_request();
+		$term = self::get_product_cat_from_request();
+
+		$title = isset( $_POST['seo_title'] ) ? sanitize_text_field( wp_unslash( $_POST['seo_title'] ) ) : '';
+		$meta  = isset( $_POST['seo_metadesc'] ) ? sanitize_textarea_field( wp_unslash( $_POST['seo_metadesc'] ) ) : '';
+
+		if ( '' === $title && '' === $meta ) {
+			wp_send_json_error(
+				array( 'message' => __( 'عنوان و متا برای ذخیره خالی است.', 'ai-product-description' ) ),
+				400
+			);
+		}
+
+		$ok = AI_Product_Desc_Category_Tools::set_yoast_seo( (int) $term->term_id, $title, $meta );
+		if ( ! $ok ) {
+			wp_send_json_error(
+				array( 'message' => __( 'ذخیره سئو در یوست انجام نشد.', 'ai-product-description' ) ),
+				500
+			);
+		}
+
+		$saved = AI_Product_Desc_Category_Tools::get_yoast_seo( (int) $term->term_id );
+
+		wp_send_json_success(
+			array(
+				'message'      => __( 'سئو دسته در یوست ذخیره شد.', 'ai-product-description' ),
+				'seo_title'    => $saved['title'],
+				'seo_metadesc' => $saved['metadesc'],
+			)
+		);
+	}
+
+	/**
+	 * Generate category description preview.
+	 */
+	public static function category_desc_generate(): void {
+		self::guard_request();
+		$term   = self::get_product_cat_from_request();
+		$ctx    = AI_Product_Desc_Category_Tools::get_category_context( $term );
+		$result = AI_Product_Desc_Client::generate_category_description( $ctx );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
+		}
+
+		wp_send_json_success(
+			array(
+				'term_id'     => (int) $term->term_id,
+				'description' => $result,
+				'current'     => array(
+					'html'     => '' === trim( wp_strip_all_tags( $term->description ) ) ? '' : wp_kses_post( wpautop( $term->description ) ),
+					'is_empty' => '' === trim( wp_strip_all_tags( $term->description ) ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Replace category term description with AI text.
+	 */
+	public static function category_desc_save(): void {
+		self::guard_request();
+		$term     = self::get_product_cat_from_request();
+		$raw_text = isset( $_POST['description'] ) ? wp_unslash( $_POST['description'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$raw_text = is_string( $raw_text ) ? trim( $raw_text ) : '';
+
+		if ( '' === $raw_text || '' === trim( wp_strip_all_tags( $raw_text ) ) ) {
+			wp_send_json_error(
+				array( 'message' => __( 'متن توضیحات خالی است.', 'ai-product-description' ) ),
+				400
+			);
+		}
+
+		// Preserve HTML from visual editor; fall back to plain-text formatting.
+		if ( false !== strpos( $raw_text, '<' ) ) {
+			$html = wp_kses_post( $raw_text );
+		} else {
+			$html = self::format_description_for_product( $raw_text );
+		}
+
+		$updated = wp_update_term(
+			(int) $term->term_id,
+			AI_Product_Desc_Category_Tools::TAXONOMY,
+			array(
+				'description' => $html,
+			)
+		);
+
+		if ( is_wp_error( $updated ) ) {
+			wp_send_json_error(
+				array( 'message' => $updated->get_error_message() ),
+				500
+			);
+		}
+
+		$fresh = get_term( (int) $term->term_id, AI_Product_Desc_Category_Tools::TAXONOMY );
+		$desc  = $fresh instanceof WP_Term ? (string) $fresh->description : $html;
+
+		wp_send_json_success(
+			array(
+				'message'     => __( 'توضیحات دسته ذخیره شد.', 'ai-product-description' ),
+				'description' => $desc,
+				'html'        => wp_kses_post( $desc ),
+			)
+		);
+	}
+
+	/**
+	 * Resolve product_cat term from request.
+	 *
+	 * @return WP_Term
+	 */
+	private static function get_product_cat_from_request(): WP_Term {
+		$term_id = isset( $_POST['term_id'] ) ? absint( $_POST['term_id'] ) : 0;
+
+		if ( $term_id <= 0 ) {
+			wp_send_json_error(
+				array( 'message' => __( 'شناسه دسته نامعتبر است.', 'ai-product-description' ) ),
+				400
+			);
+		}
+
+		$term = get_term( $term_id, AI_Product_Desc_Category_Tools::TAXONOMY );
+
+		if ( ! $term instanceof WP_Term || is_wp_error( $term ) ) {
+			wp_send_json_error(
+				array( 'message' => __( 'دسته محصول پیدا نشد.', 'ai-product-description' ) ),
+				404
+			);
+		}
+
+		return $term;
 	}
 
 	/**
