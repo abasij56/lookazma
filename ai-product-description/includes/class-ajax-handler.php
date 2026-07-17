@@ -16,7 +16,7 @@ final class AI_Product_Desc_Ajax {
 
 	public const ACTION       = 'ai_product_desc_generate';
 	public const NONCE_ACTION = 'ai_product_desc_generate';
-	public const CAPABILITY   = 'edit_products';
+	public const CAPABILITY   = 'manage_options';
 
 	/**
 	 * Register AJAX hooks.

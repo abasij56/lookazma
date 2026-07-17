@@ -12,11 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'AI_PRODUCT_DESC_VERSION', '1.0.4' );
+define( 'AI_PRODUCT_DESC_VERSION', '1.1.0' );
 define( 'AI_PRODUCT_DESC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AI_PRODUCT_DESC_URL', plugin_dir_url( __FILE__ ) );
 
 require_once AI_PRODUCT_DESC_PATH . 'includes/class-settings.php';
+require_once AI_PRODUCT_DESC_PATH . 'includes/class-admin-menu.php';
 require_once AI_PRODUCT_DESC_PATH . 'includes/class-ai-client.php';
 require_once AI_PRODUCT_DESC_PATH . 'includes/class-ajax-handler.php';
 
@@ -31,6 +32,7 @@ function ai_product_desc_init() {
 
 	if ( is_admin() ) {
 		AI_Product_Desc_Settings::init();
+		AI_Product_Desc_Admin_Menu::init();
 	}
 }
 add_action( 'plugins_loaded', 'ai_product_desc_init' );
@@ -73,7 +75,7 @@ function ai_product_desc_get_frontend_config(): array {
 		'isConfigured' => $is_configured ? 1 : 0,
 		'i18n'         => array(
 			'error'         => __( 'خطا در ساخت توضیحات. دوباره تلاش کنید.', 'ai-product-description' ),
-			'notConfigured' => __( 'تنظیمات ارائه‌دهنده هوش مصنوعی کامل نیست. لطفاً API Key، Base URL و Model را در تنظیمات AIP وارد کنید.', 'ai-product-description' ),
+			'notConfigured' => __( 'تنظیمات ارائه‌دهنده هوش مصنوعی کامل نیست. لطفاً از منوی «توضیحات محصول AI ← تنظیمات» مقادیر API Key، Base URL و Model را وارد کنید.', 'ai-product-description' ),
 			'loading'       => __( 'در حال ساخت...', 'ai-product-description' ),
 		),
 	);

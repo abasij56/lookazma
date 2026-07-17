@@ -10,22 +10,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Registers Settings → AIP Setting and stores multi-provider credentials.
+ * Registers multi-provider AI credentials settings.
  */
 final class AI_Product_Desc_Settings {
 
-	public const OPTION_KEY   = 'ai_product_desc_settings';
-	public const PAGE_SLUG    = 'ai-product-desc-settings';
-	public const MENU_SLUG    = 'aip-setting';
-	public const CAPABILITY   = 'manage_options';
+	public const OPTION_KEY = 'ai_product_desc_settings';
+	public const PAGE_SLUG  = 'ai-product-desc-settings';
+	public const CAPABILITY = 'manage_options';
 
 	/**
 	 * Hook into WordPress admin.
 	 */
 	public static function init(): void {
-		add_action( 'admin_menu', array( __CLASS__, 'register_menu' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
-		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 	}
 
 	/**
@@ -131,19 +128,6 @@ final class AI_Product_Desc_Settings {
 			'api_key'  => (string) ( $config['api_key'] ?? '' ),
 			'base_url' => (string) ( $config['base_url'] ?? '' ),
 			'model'    => (string) ( $config['model'] ?? '' ),
-		);
-	}
-
-	/**
-	 * Add page under Settings (تنظیمات).
-	 */
-	public static function register_menu(): void {
-		add_options_page(
-			__( 'AIP Setting', 'ai-product-description' ),
-			__( 'AIP Setting', 'ai-product-description' ),
-			self::CAPABILITY,
-			self::MENU_SLUG,
-			array( __CLASS__, 'render_page' )
 		);
 	}
 
@@ -262,41 +246,15 @@ final class AI_Product_Desc_Settings {
 	}
 
 	/**
-	 * Admin assets for settings page only.
-	 *
-	 * @param string $hook Current admin page hook.
-	 */
-	public static function enqueue_assets( string $hook ): void {
-		if ( 'settings_page_' . self::MENU_SLUG !== $hook ) {
-			return;
-		}
-
-		wp_enqueue_style(
-			'ai-product-desc-admin',
-			AI_PRODUCT_DESC_URL . 'assets/css/admin-settings.css',
-			array(),
-			AI_PRODUCT_DESC_VERSION
-		);
-
-		wp_enqueue_script(
-			'ai-product-desc-admin',
-			AI_PRODUCT_DESC_URL . 'assets/js/admin-settings.js',
-			array(),
-			AI_PRODUCT_DESC_VERSION,
-			true
-		);
-	}
-
-	/**
 	 * Settings page markup.
 	 */
 	public static function render_page(): void {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			return;
+			wp_die( esc_html__( 'دسترسی ندارید.', 'ai-product-description' ) );
 		}
 		?>
 		<div class="wrap ai-product-desc-settings">
-			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+			<h1><?php esc_html_e( 'تنظیمات', 'ai-product-description' ); ?></h1>
 			<p><?php esc_html_e( 'Configure AI providers for product description generation. Choose an active provider and fill its connection fields.', 'ai-product-description' ); ?></p>
 			<form method="post" action="options.php">
 				<?php
