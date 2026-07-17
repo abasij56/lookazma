@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'AI_PRODUCT_DESC_VERSION', '1.1.0' );
+define( 'AI_PRODUCT_DESC_VERSION', '1.1.2' );
 define( 'AI_PRODUCT_DESC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AI_PRODUCT_DESC_URL', plugin_dir_url( __FILE__ ) );
 
@@ -71,12 +71,16 @@ function ai_product_desc_get_frontend_config(): array {
 	return array(
 		'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
 		'action'       => AI_Product_Desc_Ajax::ACTION,
+		'saveAction'   => AI_Product_Desc_Ajax::SAVE_ACTION,
 		'nonce'        => wp_create_nonce( AI_Product_Desc_Ajax::NONCE_ACTION ),
 		'isConfigured' => $is_configured ? 1 : 0,
 		'i18n'         => array(
 			'error'         => __( 'خطا در ساخت توضیحات. دوباره تلاش کنید.', 'ai-product-description' ),
 			'notConfigured' => __( 'تنظیمات ارائه‌دهنده هوش مصنوعی کامل نیست. لطفاً از منوی «توضیحات محصول AI ← تنظیمات» مقادیر API Key، Base URL و Model را وارد کنید.', 'ai-product-description' ),
 			'loading'       => __( 'در حال ساخت...', 'ai-product-description' ),
+			'saving'        => __( 'در حال ذخیره...', 'ai-product-description' ),
+			'saveError'     => __( 'خطا در ذخیره توضیحات محصول.', 'ai-product-description' ),
+			'emptyDesc'     => __( 'این محصول هنوز توضیحات ندارد.', 'ai-product-description' ),
 		),
 	);
 }
@@ -195,6 +199,17 @@ function ai_product_desc_render_tag_form( array $tags, int $selected_tag ) {
 			<hr>
 			<h3 id="ai-product-desc-result-title" class="ai-product-desc__result-title" hidden></h3>
 			<div id="ai-product-desc-result-body" class="ai-product-desc__result-body"></div>
+			<div id="ai-product-desc-save-wrap" class="ai-product-desc__save-wrap" hidden>
+				<hr>
+				<button type="button" id="ai-product-desc-save-btn" class="button button-primary ai-product-desc__save-btn">
+					<?php esc_html_e( 'ثبت در بخش توضیحات محصول', 'ai-product-description' ); ?>
+				</button>
+				<span id="ai-product-desc-save-status" class="ai-product-desc__save-status" hidden></span>
+				<div id="ai-product-desc-current" class="ai-product-desc__current">
+					<h4 class="ai-product-desc__current-title"><?php esc_html_e( 'توضیحات فعلی محصول', 'ai-product-description' ); ?></h4>
+					<div id="ai-product-desc-current-body" class="ai-product-desc__current-body"></div>
+				</div>
+			</div>
 		</div>
 
 		<form method="post" class="ai-product-desc__form">
