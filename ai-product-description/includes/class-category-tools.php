@@ -101,9 +101,19 @@ final class AI_Product_Desc_Category_Tools {
 		}
 
 		$seo   = self::get_yoast_seo( (int) $term->term_id );
-		$desc  = (string) $term->description;
+		$desc  = self::prepare_editor_content( (string) $term->description );
 		$title = trim( (string) $seo['title'] );
 		$meta  = trim( (string) $seo['metadesc'] );
+
+		// Pass prepared HTML to JS so TinyMCE can load it correctly in Visual mode.
+		wp_add_inline_script(
+			'ai-product-desc-category',
+			'window.aiProductDescCategory = window.aiProductDescCategory || {};'
+			. 'window.aiProductDescCategory.currentDescHtml = '
+			. wp_json_encode( $desc )
+			. ';',
+			'before'
+		);
 		?>
 		<div class="ai-cat-tools" id="ai-cat-tools" data-term-id="<?php echo esc_attr( (string) $term->term_id ); ?>">
 			<hr>
@@ -196,6 +206,35 @@ final class AI_Product_Desc_Category_Tools {
 	}
 
 	/**
+	 * Normalize term description for TinyMCE Visual mode.
+	 *
+	 * @param string $content Raw term description.
+	 * @return string
+	 */
+	private static function prepare_editor_content( string $content ): string {
+		$content = trim( $content );
+		if ( '' === $content ) {
+			return '';
+		}
+
+		// If HTML was stored as entities (&lt;div&gt;...), decode for the visual editor.
+		if ( false !== strpos( $content, '&lt;' ) || false !== strpos( $content, '&amp;lt;' ) ) {
+			$content = html_entity_decode( $content, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+			// Decode twice if double-escaped.
+			if ( false !== strpos( $content, '&lt;' ) ) {
+				$content = html_entity_decode( $content, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+			}
+		}
+
+		// Plain text without HTML tags → paragraphs.
+		if ( false === strpos( $content, '<' ) ) {
+			$content = wpautop( $content );
+		}
+
+		return $content;
+	}
+
+	/**
 	 * Render a full WordPress visual HTML editor.
 	 *
 	 * @param string $editor_id Unique editor id.
@@ -203,31 +242,22 @@ final class AI_Product_Desc_Category_Tools {
 	 * @param string $title     Accessibility title.
 	 */
 	private static function render_html_editor( string $editor_id, string $content, string $title ): void {
-		$content = trim( $content );
-		if ( '' !== $content && false === strpos( $content, '<' ) ) {
-			$content = wpautop( $content );
-		}
+		$content = self::prepare_editor_content( $content );
 
 		wp_editor(
 			$content,
 			$editor_id,
 			array(
-				'textarea_name' => $editor_id,
-				'textarea_rows' => 14,
-				'media_buttons' => true,
+				'textarea_name'    => $editor_id,
+				'textarea_rows'    => 14,
+				'media_buttons'    => true,
 				'drag_drop_upload' => true,
-				'teeny'         => false,
-				'tinymce'       => array(
-					'wpautop'       => true,
-					'toolbar1'      => 'formatselect,bold,italic,underline,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,unlink,wp_more,spellchecker,fullscreen,wp_adv',
-					'toolbar2'      => 'strikethrough,hr,forecolor,pastetext,removeformat,charmap,outdent,indent,undo,redo,wp_help',
-					'content_css'   => false,
-				),
-				'quicktags'     => array(
-					'buttons' => 'strong,em,link,block,del,ins,img,ul,ol,li,code,close',
-				),
-				'editor_class'  => 'ai-cat-html-editor',
-				'editor_height' => 280,
+				'teeny'            => false,
+				'default_editor'   => 'tinymce',
+				'tinymce'          => true,
+				'quicktags'        => true,
+				'editor_class'     => 'ai-cat-html-editor',
+				'editor_height'    => 280,
 			)
 		);
 		echo '<p class="screen-reader-text">' . esc_html( $title ) . '</p>';

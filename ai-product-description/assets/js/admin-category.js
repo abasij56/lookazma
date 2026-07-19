@@ -12,6 +12,50 @@
 	var EDITOR_CURRENT = 'ai_cat_current_desc';
 	var EDITOR_PREVIEW = 'ai_cat_preview_desc';
 
+	function looksLikeVisibleHtmlSource(html) {
+		var tmp = document.createElement('div');
+		tmp.innerHTML = html || '';
+		var text = String(tmp.textContent || tmp.innerText || '').trim();
+		return /^<\/?[a-z]/i.test(text);
+	}
+
+	function forceVisualMode(editorId) {
+		if (typeof window.switchEditors !== 'undefined' && window.switchEditors.go) {
+			try {
+				window.switchEditors.go(editorId, 'tmce');
+			} catch (e) {
+				// Ignore switch errors.
+			}
+		}
+	}
+
+	function hydrateCurrentEditor(editor) {
+		if (!editor || editor.id !== EDITOR_CURRENT) {
+			return;
+		}
+
+		forceVisualMode(EDITOR_CURRENT);
+
+		var html = (cfg.currentDescHtml || '').trim();
+		if (!html) {
+			return;
+		}
+
+		// Always set prepared HTML into Visual mode so tags render, not show as text.
+		window.setTimeout(function () {
+			forceVisualMode(EDITOR_CURRENT);
+			var ed = window.tinymce ? window.tinymce.get(EDITOR_CURRENT) : null;
+			if (!ed) {
+				return;
+			}
+			var current = String(ed.getContent() || '');
+			if (!current || looksLikeVisibleHtmlSource(current) || current !== html) {
+				ed.setContent(html);
+				ed.setDirty(false);
+			}
+		}, 200);
+	}
+
 	function isConfigured() {
 		return cfg.isConfigured === 1 || cfg.isConfigured === '1' || cfg.isConfigured === true;
 	}
@@ -375,7 +419,15 @@
 
 	// Enable save when user edits preview manually.
 	function bindPreviewEditorEvents(editor) {
-		if (!editor || editor.id !== EDITOR_PREVIEW) {
+		if (!editor) {
+			return;
+		}
+
+		if (editor.id === EDITOR_CURRENT) {
+			hydrateCurrentEditor(editor);
+		}
+
+		if (editor.id !== EDITOR_PREVIEW) {
 			return;
 		}
 		editor.on('change keyup SetContent', function () {
@@ -388,14 +440,49 @@
 		});
 	}
 
-	if (window.tinymce) {
-		window.tinymce.on('AddEditor', function (event) {
-			bindPreviewEditorEvents(event.editor);
-		});
-		window.tinymce.editors.forEach(function (editor) {
-			bindPreviewEditorEvents(editor);
-		});
+	function bootEditors() {
+		forceVisualMode(EDITOR_CURRENT);
+		forceVisualMode(EDITOR_PREVIEW);
+
+		if (window.tinymce) {
+			window.tinymce.on('AddEditor', function (event) {
+				bindPreviewEditorEvents(event.editor);
+			});
+
+			if (window.tinymce.editors && window.tinymce.editors.length) {
+				for (var i = 0; i < window.tinymce.editors.length; i++) {
+					bindPreviewEditorEvents(window.tinymce.editors[i]);
+				}
+			}
+
+			var currentEd = window.tinymce.get(EDITOR_CURRENT);
+			if (currentEd) {
+				hydrateCurrentEditor(currentEd);
+			} else {
+				// TinyMCE may init slightly later on first open.
+				window.setTimeout(function () {
+					var ed = window.tinymce.get(EDITOR_CURRENT);
+					if (ed) {
+						hydrateCurrentEditor(ed);
+					}
+				}, 600);
+			}
+		}
 	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', bootEditors);
+	} else {
+		bootEditors();
+	}
+
+	window.addEventListener('load', function () {
+		forceVisualMode(EDITOR_CURRENT);
+		forceVisualMode(EDITOR_PREVIEW);
+		if (window.tinymce && window.tinymce.get(EDITOR_CURRENT)) {
+			hydrateCurrentEditor(window.tinymce.get(EDITOR_CURRENT));
+		}
+	});
 
 	var previewTextarea = document.getElementById(EDITOR_PREVIEW);
 	if (previewTextarea) {
