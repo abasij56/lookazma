@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'AI_PRODUCT_DESC_VERSION', '1.2.7' );
+define( 'AI_PRODUCT_DESC_VERSION', '1.3.3' );
 define( 'AI_PRODUCT_DESC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AI_PRODUCT_DESC_URL', plugin_dir_url( __FILE__ ) );
 
@@ -353,6 +353,175 @@ function ai_product_desc_get_acf_value( int $post_id, string $field ): string {
 	}
 
 	return is_scalar( $value ) ? (string) $value : '';
+}
+
+/**
+ * Collect product_cat terms for a product with archive URLs.
+ *
+ * @param int $product_id Product ID.
+ * @return array<int, array{id: int, name: string, slug: string, url: string, parent_name: string, depth: int}>
+ */
+function ai_product_desc_get_product_categories( int $product_id ): array {
+	$terms = get_the_terms( $product_id, 'product_cat' );
+	if ( ! is_array( $terms ) || array() === $terms ) {
+		return array();
+	}
+
+	$out = array();
+	foreach ( $terms as $term ) {
+		if ( ! $term instanceof WP_Term ) {
+			continue;
+		}
+
+		$link = get_term_link( $term );
+		if ( is_wp_error( $link ) ) {
+			continue;
+		}
+
+		$parent_name = '';
+		if ( $term->parent ) {
+			$parent = get_term( (int) $term->parent, 'product_cat' );
+			if ( $parent instanceof WP_Term && ! is_wp_error( $parent ) ) {
+				$parent_name = $parent->name;
+			}
+		}
+
+		$ancestors = get_ancestors( (int) $term->term_id, 'product_cat' );
+		$depth     = is_array( $ancestors ) ? count( $ancestors ) : 0;
+
+		$out[] = array(
+			'id'          => (int) $term->term_id,
+			'name'        => $term->name,
+			'slug'        => $term->slug,
+			'url'         => trailingslashit( (string) $link ),
+			'parent_name' => $parent_name,
+			'depth'       => $depth,
+		);
+	}
+
+	return $out;
+}
+
+/**
+ * Pick the most specific category URL (deepest leaf; name similarity as tie-breaker).
+ *
+ * @param array<int, array{id: int, name: string, slug: string, url: string, parent_name: string, depth: int}> $categories Categories.
+ * @param string                                                                                              $product_name Product name.
+ * @return string Category URL or homepage fallback.
+ */
+function ai_product_desc_pick_best_category_url( array $categories, string $product_name ): string {
+	$fallback = trailingslashit( home_url( '/' ) );
+	if ( false === strpos( $fallback, 'lookazma' ) ) {
+		$fallback = 'https://lookazma.com/';
+	}
+
+	if ( array() === $categories ) {
+		return $fallback;
+	}
+
+	$max_depth = 0;
+	foreach ( $categories as $cat ) {
+		$max_depth = max( $max_depth, (int) ( $cat['depth'] ?? 0 ) );
+	}
+
+	$candidates = array_values(
+		array_filter(
+			$categories,
+			static function ( $cat ) use ( $max_depth ) {
+				return (int) ( $cat['depth'] ?? 0 ) === $max_depth;
+			}
+		)
+	);
+
+	if ( array() === $candidates ) {
+		$candidates = $categories;
+	}
+
+	$best      = $candidates[0];
+	$best_score = -1;
+	$needle     = mb_strtolower( trim( $product_name ) );
+
+	foreach ( $candidates as $cat ) {
+		$name  = mb_strtolower( trim( (string) ( $cat['name'] ?? '' ) ) );
+		$score = 0;
+		if ( '' !== $name && '' !== $needle ) {
+			if ( $name === $needle ) {
+				$score = 100;
+			} elseif ( false !== mb_strpos( $needle, $name ) || false !== mb_strpos( $name, $needle ) ) {
+				$score = 80;
+			} else {
+				similar_text( $needle, $name, $percent );
+				$score = (int) round( $percent );
+			}
+		}
+		if ( $score > $best_score ) {
+			$best_score = $score;
+			$best       = $cat;
+		}
+	}
+
+	$url = isset( $best['url'] ) ? (string) $best['url'] : '';
+	return '' !== $url ? trailingslashit( $url ) : $fallback;
+}
+
+/**
+ * Ensure product description HTML uses a valid category archive link.
+ *
+ * @param string                                                                                              $html        Description HTML.
+ * @param array<int, array{id: int, name: string, slug: string, url: string, parent_name: string, depth: int}> $categories  Categories.
+ * @param string                                                                                              $chosen_url  Preferred category URL.
+ * @return string
+ */
+function ai_product_desc_ensure_category_link( string $html, array $categories, string $chosen_url ): string {
+	$chosen_url = trailingslashit( $chosen_url );
+	$allowed    = array();
+	foreach ( $categories as $cat ) {
+		if ( ! empty( $cat['url'] ) ) {
+			$allowed[] = trailingslashit( (string) $cat['url'] );
+		}
+	}
+
+	$has_allowed = false;
+	foreach ( $allowed as $url ) {
+		if ( false !== strpos( $html, $url ) || false !== strpos( $html, untrailingslashit( $url ) ) ) {
+			$has_allowed = true;
+			break;
+		}
+	}
+
+	if ( $has_allowed ) {
+		return $html;
+	}
+
+	$link = sprintf(
+		'<a href="%1$s" target="_blank" rel="noopener noreferrer">%1$s</a>',
+		esc_url( $chosen_url )
+	);
+
+	// Replace bare homepage lookazma links / text URLs with category URL.
+	$replaced = preg_replace(
+		'#https?://(?:www\.)?lookazma\.com/?(?![\w./-])#iu',
+		$link,
+		$html,
+		1
+	);
+
+	if ( is_string( $replaced ) && $replaced !== $html ) {
+		return $replaced;
+	}
+
+	$replaced = preg_replace(
+		'#(<a\s[^>]*href=["\'])https?://(?:www\.)?lookazma\.com/?["\']#iu',
+		'$1' . esc_url( $chosen_url ) . '"',
+		$html,
+		1
+	);
+
+	if ( is_string( $replaced ) && $replaced !== $html ) {
+		return $replaced;
+	}
+
+	return rtrim( $html ) . "\n<p>" . $link . '</p>';
 }
 
 /**

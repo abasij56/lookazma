@@ -1,0 +1,73 @@
+{% extends "base.twig" %}
+
+{% block content %}
+{% if category_data %}
+<div class="lk-cat lk-container">
+	{% if category_data.breadcrumb_html %}
+		<nav class="lk-breadcrumb" aria-label="breadcrumb">
+			{{ category_data.breadcrumb_html|raw }}
+		</nav>
+	{% endif %}
+
+	<section class="lk-cat-info" aria-label="اطلاعات دسته">
+		<div class="lk-cat-info__inner">
+			{# RTL: media on the right (20%), info on the left (80%) #}
+			<div class="lk-cat-info__media">
+				{% if category_data.images %}
+					{% for image in category_data.images %}
+						<figure class="lk-cat-info__photo">
+							<img src="{{ image.url }}" alt="{{ image.alt|default(category_data.name) }}" width="400" height="400" loading="lazy">
+						</figure>
+					{% endfor %}
+				{% else %}
+					<div class="lk-cat-info__placeholder">بدون تصویر</div>
+				{% endif %}
+			</div>
+
+			<div class="lk-cat-info__body">
+				<h1 class="lk-cat-info__title">{{ category_data.name }}</h1>
+				{% if category_data.english_name %}
+					<p class="lk-cat-info__english">{{ category_data.english_name }}</p>
+				{% endif %}
+
+				{% if category_data.description %}
+					<div class="lk-cat-info__desc">{{ category_data.description|raw }}</div>
+				{% endif %}
+
+				{% if category_data.specs %}
+					<ul class="lk-cat-info__specs" aria-label="مشخصات فنی">
+						{% for item in category_data.specs %}
+							<li>
+								<span>{{ item.label }}</span>
+								<strong>{{ item.value }}</strong>
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</div>
+		</div>
+	</section>
+
+	<section class="lk-cat-shop" aria-label="محصولات دسته">
+		<aside class="lk-cat-shop__filters" aria-label="فیلترها">
+			{{ category_data.filters_html|raw }}
+		</aside>
+
+		<div class="lk-cat-shop__products">
+			<div
+				class="lk-archive-products__grid elementor-loop-container elementor-grid"
+				id="lk-archive-products"
+				role="list"
+				data-lk-native-grid="1"
+			>
+				{{ category_data.products_html|raw }}
+			</div>
+
+			<nav class="lk-archive-products__pagination" id="lk-archive-products-pagination" aria-label="صفحه‌بندی">
+				{{ category_data.pagination_html|raw }}
+			</nav>
+		</div>
+	</section>
+</div>
+{% endif %}
+{% endblock %}

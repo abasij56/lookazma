@@ -1,0 +1,1134 @@
+<?php
+/**
+ * Custom WooCommerce archive product filters.
+ *
+ * Sitewide on product category archives. Deactivate JetSmartFilters in WP admin
+ * (assets are also dequeued here as a safety net).
+ *
+ * Shortcodes:
+ * - [lk_archive_filters]
+ * - [lk_filtered_products]
+ *
+ * @package HelloElementorChild
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Archive product filter feature.
+ */
+final class Hello_Elementor_Child_Archive_Product_Filter {
+
+	/**
+	 * 'pilot' = only configured category slugs; 'sitewide' = all product category archives.
+	 */
+	public const MODE = 'sitewide';
+
+	/**
+	 * Query arg prefix.
+	 */
+	public const QUERY_PREFIX = 'lk_f_';
+
+	/**
+	 * Pilot category slugs (URL-decoded).
+	 *
+	 * @var array<int, string>
+	 */
+	private const PILOT_SLUGS = array(
+		'منتول-menthol',
+		'menthol',
+	);
+
+	/**
+	 * Boot hooks.
+	 */
+	public static function init(): void {
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return;
+		}
+
+		add_shortcode( 'lk_archive_filters', array( __CLASS__, 'shortcode_filters' ) );
+		add_shortcode( 'lk_filtered_products', array( __CLASS__, 'shortcode_products' ) );
+
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'dequeue_jetsmart_on_active' ), 100 );
+
+		add_action( 'woocommerce_product_query', array( __CLASS__, 'filter_wc_query' ), 20 );
+		add_action( 'pre_get_posts', array( __CLASS__, 'filter_main_query' ), 20 );
+		add_filter( 'jet-engine/listing/grid/posts-query-args', array( __CLASS__, 'filter_jet_engine_query' ), 20, 2 );
+
+		add_action( 'woocommerce_before_shop_loop', array( __CLASS__, 'maybe_auto_render_filters' ), 5 );
+		add_action( 'wp_footer', array( __CLASS__, 'maybe_inject_filters_script' ), 5 );
+
+		add_action( 'wp_ajax_lk_archive_filter_products', array( __CLASS__, 'ajax_filter_products' ) );
+		add_action( 'wp_ajax_nopriv_lk_archive_filter_products', array( __CLASS__, 'ajax_filter_products' ) );
+	}
+
+	/**
+	 * Whether custom filters should run on the current request.
+	 */
+	public static function is_active_context(): bool {
+		$mode = apply_filters( 'lk_archive_filter_mode', self::MODE );
+
+		if ( 'sitewide' === $mode ) {
+			return is_product_category() || self::has_filter_request();
+		}
+
+		if ( ! is_product_category() ) {
+			return self::has_filter_request() && self::request_targets_pilot();
+		}
+
+		$term = get_queried_object();
+		if ( ! $term instanceof WP_Term ) {
+			return false;
+		}
+
+		$slugs = apply_filters( 'lk_archive_filter_pilot_slugs', self::PILOT_SLUGS );
+		$slugs = array_map( 'urldecode', (array) $slugs );
+
+		return in_array( urldecode( $term->slug ), $slugs, true )
+			|| in_array( $term->slug, $slugs, true );
+	}
+
+	/**
+	 * Whether current GET contains our filter params.
+	 */
+	private static function has_filter_request(): bool {
+		foreach ( array_keys( $_GET ) as $key ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( 0 === strpos( (string) $key, self::QUERY_PREFIX ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Pilot mode: only apply GET filters when category is pilot (from referer/path) or term query present.
+	 */
+	private static function request_targets_pilot(): bool {
+		if ( is_product_category() ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Discover filter sources (taxonomies) by label / known slugs.
+	 *
+	 * @return array<string, array{taxonomy: string, label: string, type: string}>
+	 */
+	public static function get_filter_definitions(): array {
+		$attribute_taxonomies = function_exists( 'wc_get_attribute_taxonomies' )
+			? wc_get_attribute_taxonomies()
+			: array();
+
+		$by_label = array();
+		foreach ( $attribute_taxonomies as $tax ) {
+			$name  = isset( $tax->attribute_name ) ? (string) $tax->attribute_name : '';
+			$label = isset( $tax->attribute_label ) ? (string) $tax->attribute_label : $name;
+			if ( '' === $name ) {
+				continue;
+			}
+			$by_label[ mb_strtolower( $label ) ] = 'pa_' . $name;
+			$by_label[ mb_strtolower( $name ) ]  = 'pa_' . $name;
+		}
+
+		$find = static function ( array $needles ) use ( $by_label ): string {
+			foreach ( $needles as $needle ) {
+				$needle_l = mb_strtolower( $needle );
+				if ( isset( $by_label[ $needle_l ] ) && taxonomy_exists( $by_label[ $needle_l ] ) ) {
+					return $by_label[ $needle_l ];
+				}
+				foreach ( $by_label as $label => $tax ) {
+					if ( false !== mb_strpos( $label, $needle_l ) && taxonomy_exists( $tax ) ) {
+						return $tax;
+					}
+				}
+				// Direct taxonomy guess.
+				$guesses = array( $needle, 'pa_' . $needle, 'pa_' . sanitize_title( $needle ) );
+				foreach ( $guesses as $guess ) {
+					if ( taxonomy_exists( $guess ) ) {
+						return $guess;
+					}
+				}
+			}
+			return '';
+		};
+
+		// Brand on LookAzma is stored as product_tag (see single-product-light.php).
+		$brand_tax = taxonomy_exists( 'product_tag' ) ? 'product_tag' : $find( array( 'برند', 'brand' ) );
+
+		$defs = array(
+			'brand' => array(
+				'taxonomy' => $brand_tax,
+				'label'    => __( 'برند', 'hello-elementor-child' ),
+				'type'     => 'tax',
+			),
+			'grade' => array(
+				'taxonomy' => $find( array( 'گرید', 'grade', 'گرید محصول' ) ),
+				'label'    => __( 'گرید', 'hello-elementor-child' ),
+				'type'     => 'tax',
+			),
+			'purity' => array(
+				'taxonomy' => $find( array( 'خلوص', 'درصد خلوص', 'purity' ) ),
+				'label'    => __( 'درصد خلوص', 'hello-elementor-child' ),
+				'type'     => 'tax',
+			),
+			'packaging' => array(
+				'taxonomy' => $find( array( 'بسته', 'بسته‌ بندی', 'بسته بندی', 'packaging' ) ),
+				'label'    => __( 'بسته‌بندی', 'hello-elementor-child' ),
+				'type'     => 'tax',
+			),
+			'country' => array(
+				'taxonomy' => $find( array( 'کشور', 'کشور تولید', 'country' ) ),
+				'label'    => __( 'کشور تولیدکننده', 'hello-elementor-child' ),
+				'type'     => 'tax',
+			),
+			'price' => array(
+				'taxonomy' => '',
+				'label'    => __( 'محدوده قیمت', 'hello-elementor-child' ),
+				'type'     => 'price',
+			),
+		);
+
+		// Known packaging slug from this theme.
+		if ( '' === $defs['packaging']['taxonomy'] && taxonomy_exists( 'pa_بسته‌ بندی' ) ) {
+			$defs['packaging']['taxonomy'] = 'pa_بسته‌ بندی';
+		}
+
+		return apply_filters( 'lk_archive_filter_definitions', $defs );
+	}
+
+	/**
+	 * Current category term for scoping counts/options.
+	 */
+	private static function get_scope_term(): ?WP_Term {
+		if ( is_product_category() ) {
+			$term = get_queried_object();
+			return $term instanceof WP_Term ? $term : null;
+		}
+		return null;
+	}
+
+	/**
+	 * Product IDs in current category (for counting filter options).
+	 *
+	 * @param int|null                 $term_id  Optional category term ID (AJAX).
+	 * @param array<string, mixed>|null $selected Optional filters to apply.
+	 * @return array<int, int>
+	 */
+	private static function get_scoped_product_ids( ?int $term_id = null, ?array $selected = null ): array {
+		$term = null;
+		if ( null !== $term_id && $term_id > 0 ) {
+			$maybe = get_term( $term_id, 'product_cat' );
+			$term  = $maybe instanceof WP_Term ? $maybe : null;
+		} else {
+			$term = self::get_scope_term();
+		}
+
+		$args = array(
+			'post_type'              => 'product',
+			'post_status'            => 'publish',
+			'posts_per_page'         => -1,
+			'fields'                 => 'ids',
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+		);
+
+		if ( $term ) {
+			$args['tax_query'] = array(
+				array(
+					'taxonomy'         => 'product_cat',
+					'field'            => 'term_id',
+					'terms'            => array( (int) $term->term_id ),
+					'include_children' => true,
+				),
+			);
+		}
+
+		if ( null !== $selected ) {
+			$args = self::apply_fragments_to_args( $args, $selected, true );
+		}
+
+		$ids = get_posts( $args );
+		return array_map( 'intval', is_array( $ids ) ? $ids : array() );
+	}
+
+	/**
+	 * Facet options/counts for each filter, excluding that filter's own selection.
+	 *
+	 * @param int                   $term_id  Category term ID.
+	 * @param array<string, mixed> $selected Current selections.
+	 * @return array<string, array<int, array{slug: string, name: string, count: int}>>
+	 */
+	private static function build_facets( int $term_id, array $selected ): array {
+		$defs   = self::get_filter_definitions();
+		$facets = array();
+
+		foreach ( $defs as $key => $def ) {
+			if ( 'price' === $def['type'] || '' === ( $def['taxonomy'] ?? '' ) ) {
+				continue;
+			}
+
+			$without          = $selected;
+			$without[ $key ] = array();
+			$product_ids      = self::get_scoped_product_ids( $term_id > 0 ? $term_id : null, $without );
+			$facets[ $key ]  = self::get_terms_for_products( $def['taxonomy'], $product_ids );
+		}
+
+		return $facets;
+	}
+
+	/**
+	 * Terms available for a taxonomy within scoped products (with counts).
+	 *
+	 * @param string $taxonomy Taxonomy.
+	 * @param array<int, int> $product_ids Product IDs.
+	 * @return array<int, array{slug: string, name: string, count: int}>
+	 */
+	private static function get_terms_for_products( string $taxonomy, array $product_ids ): array {
+		if ( '' === $taxonomy || ! taxonomy_exists( $taxonomy ) || array() === $product_ids ) {
+			return array();
+		}
+
+		$counts = array();
+		foreach ( $product_ids as $product_id ) {
+			$terms = get_the_terms( $product_id, $taxonomy );
+			if ( ! is_array( $terms ) ) {
+				continue;
+			}
+			foreach ( $terms as $term ) {
+				if ( ! $term instanceof WP_Term ) {
+					continue;
+				}
+				$key = $term->slug;
+				if ( ! isset( $counts[ $key ] ) ) {
+					$counts[ $key ] = array(
+						'slug'  => $term->slug,
+						'name'  => $term->name,
+						'count' => 0,
+					);
+				}
+				++$counts[ $key ]['count'];
+			}
+		}
+
+		$out = array_values( $counts );
+		usort(
+			$out,
+			static function ( $a, $b ) {
+				return strcasecmp( $a['name'], $b['name'] );
+			}
+		);
+
+		return $out;
+	}
+
+	/**
+	 * Price min/max among scoped products.
+	 *
+	 * @param array<int, int> $product_ids IDs.
+	 * @return array{min: float, max: float}
+	 */
+	private static function get_price_range( array $product_ids ): array {
+		$min = 0.0;
+		$max = 0.0;
+		if ( array() === $product_ids ) {
+			return array( 'min' => $min, 'max' => $max );
+		}
+
+		global $wpdb;
+		$placeholders = implode( ',', array_fill( 0, count( $product_ids ), '%d' ) );
+		$query_sql    = "SELECT MIN(CAST(meta_value AS DECIMAL(20,4))) AS min_price,
+			MAX(CAST(meta_value AS DECIMAL(20,4))) AS max_price
+			FROM {$wpdb->postmeta}
+			WHERE meta_key = '_price'
+			AND meta_value != ''
+			AND post_id IN ($placeholders)";
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- placeholders built above.
+		$sql = $wpdb->prepare( $query_sql, ...$product_ids );
+		$row = $wpdb->get_row( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		if ( $row ) {
+			$min = (float) $row->min_price;
+			$max = (float) $row->max_price;
+		}
+
+		return array( 'min' => $min, 'max' => $max );
+	}
+
+	/**
+	 * Read selected filters from request or provided payload.
+	 *
+	 * @param array<string, mixed>|null $payload Optional AJAX payload.
+	 * @return array<string, mixed>
+	 */
+	public static function get_selected_filters( ?array $payload = null ): array {
+		$selected = array();
+		$defs     = self::get_filter_definitions();
+		$source   = null !== $payload ? $payload : $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		foreach ( $defs as $key => $def ) {
+			$param = self::QUERY_PREFIX . $key;
+			if ( 'price' === $def['type'] ) {
+				$min = isset( $source[ $param . '_min' ] ) ? $source[ $param . '_min' ] : ( $source['price']['min'] ?? '' );
+				$max = isset( $source[ $param . '_max' ] ) ? $source[ $param . '_max' ] : ( $source['price']['max'] ?? '' );
+				if ( is_array( $min ) ) {
+					$min = '';
+				}
+				if ( is_array( $max ) ) {
+					$max = '';
+				}
+				$min = is_string( $min ) || is_numeric( $min ) ? $min : '';
+				$max = is_string( $max ) || is_numeric( $max ) ? $max : '';
+				$selected[ $key ] = array(
+					'min' => is_numeric( $min ) ? (float) $min : null,
+					'max' => is_numeric( $max ) ? (float) $max : null,
+				);
+				continue;
+			}
+
+			$raw = '';
+			if ( isset( $source[ $param ] ) ) {
+				$raw = $source[ $param ];
+			} elseif ( isset( $source[ $key ] ) ) {
+				$raw = $source[ $key ];
+			}
+
+			if ( is_array( $raw ) ) {
+				$selected[ $key ] = array_values( array_filter( array_map( 'sanitize_title', $raw ) ) );
+			} else {
+				$val = sanitize_title( (string) $raw );
+				$selected[ $key ] = '' !== $val ? array( $val ) : array();
+			}
+		}
+
+		return $selected;
+	}
+
+	/**
+	 * Build tax_query + meta_query fragments from selected filters.
+	 *
+	 * @param array<string, mixed>|null $selected Optional selected filters.
+	 * @return array{tax_query: array<int, array<string, mixed>>, meta_query: array<int, array<string, mixed>>}
+	 */
+	public static function build_query_fragments( ?array $selected = null ): array {
+		$tax_query  = array();
+		$meta_query = array();
+		$selected   = null !== $selected ? $selected : self::get_selected_filters();
+		$defs       = self::get_filter_definitions();
+
+		foreach ( $defs as $key => $def ) {
+			if ( 'price' === $def['type'] ) {
+				$min = $selected[ $key ]['min'] ?? null;
+				$max = $selected[ $key ]['max'] ?? null;
+				if ( null !== $min || null !== $max ) {
+					$clause = array(
+						'key'     => '_price',
+						'type'    => 'NUMERIC',
+						'compare' => 'BETWEEN',
+					);
+					if ( null !== $min && null !== $max ) {
+						$clause['value'] = array( $min, $max );
+					} elseif ( null !== $min ) {
+						$clause['compare'] = '>=';
+						$clause['value']   = $min;
+					} else {
+						$clause['compare'] = '<=';
+						$clause['value']   = $max;
+					}
+					$meta_query[] = $clause;
+				}
+				continue;
+			}
+
+			$taxonomy = $def['taxonomy'];
+			$terms    = $selected[ $key ] ?? array();
+			if ( '' === $taxonomy || array() === $terms ) {
+				continue;
+			}
+
+			$tax_query[] = array(
+				'taxonomy' => $taxonomy,
+				'field'    => 'slug',
+				'terms'    => $terms,
+				'operator' => 'IN',
+			);
+		}
+
+		return array(
+			'tax_query'  => $tax_query,
+			'meta_query' => $meta_query,
+		);
+	}
+
+	/**
+	 * Merge fragments into a WP_Query-style args array.
+	 *
+	 * @param array<string, mixed>      $args     Query args.
+	 * @param array<string, mixed>|null $selected Optional filters (AJAX).
+	 * @param bool                      $force    Skip active-context check.
+	 * @return array<string, mixed>
+	 */
+	public static function apply_fragments_to_args( array $args, ?array $selected = null, bool $force = false ): array {
+		if ( ! $force && ! self::is_active_context() ) {
+			return $args;
+		}
+
+		$fragments = self::build_query_fragments( $selected );
+		if ( array() === $fragments['tax_query'] && array() === $fragments['meta_query'] ) {
+			return $args;
+		}
+
+		if ( array() !== $fragments['tax_query'] ) {
+			$existing = isset( $args['tax_query'] ) && is_array( $args['tax_query'] ) ? $args['tax_query'] : array();
+			$merged   = array( 'relation' => 'AND' );
+			foreach ( $existing as $k => $clause ) {
+				if ( 'relation' === $k ) {
+					continue;
+				}
+				$merged[] = $clause;
+			}
+			foreach ( $fragments['tax_query'] as $clause ) {
+				$merged[] = $clause;
+			}
+			$args['tax_query'] = $merged;
+		}
+
+		if ( array() !== $fragments['meta_query'] ) {
+			$existing = isset( $args['meta_query'] ) && is_array( $args['meta_query'] ) ? $args['meta_query'] : array();
+			$merged   = array( 'relation' => 'AND' );
+			foreach ( $existing as $k => $clause ) {
+				if ( 'relation' === $k ) {
+					continue;
+				}
+				$merged[] = $clause;
+			}
+			foreach ( $fragments['meta_query'] as $clause ) {
+				$merged[] = $clause;
+			}
+			$args['meta_query'] = $merged;
+		}
+
+		return $args;
+	}
+
+	/**
+	 * WooCommerce product query.
+	 *
+	 * @param WP_Query $query Query.
+	 */
+	public static function filter_wc_query( $query ): void {
+		if ( ! $query instanceof WP_Query || ! self::is_active_context() ) {
+			return;
+		}
+		$args = self::apply_fragments_to_args( $query->query_vars );
+		foreach ( array( 'tax_query', 'meta_query' ) as $key ) {
+			if ( isset( $args[ $key ] ) ) {
+				$query->set( $key, $args[ $key ] );
+			}
+		}
+	}
+
+	/**
+	 * Main query fallback for product archives.
+	 *
+	 * @param WP_Query $query Query.
+	 */
+	public static function filter_main_query( $query ): void {
+		if ( is_admin() || ! $query instanceof WP_Query || ! $query->is_main_query() ) {
+			return;
+		}
+		if ( ! self::is_active_context() ) {
+			return;
+		}
+		if ( ! $query->is_post_type_archive( 'product' ) && ! $query->is_tax( get_object_taxonomies( 'product' ) ) ) {
+			return;
+		}
+		self::filter_wc_query( $query );
+	}
+
+	/**
+	 * JetEngine Listing Grid query.
+	 *
+	 * @param array<string, mixed> $args   Query args.
+	 * @param mixed                $widget Widget.
+	 * @return array<string, mixed>
+	 */
+	public static function filter_jet_engine_query( $args, $widget = null ) {
+		if ( ! is_array( $args ) || ! self::is_active_context() ) {
+			return $args;
+		}
+		return self::apply_fragments_to_args( $args );
+	}
+
+	/**
+	 * Enqueue assets on active contexts.
+	 */
+	public static function enqueue_assets(): void {
+		if ( ! self::is_active_context() ) {
+			return;
+		}
+
+		$term = self::get_scope_term();
+
+		wp_enqueue_style(
+			'lk-archive-filters',
+			HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-product-filters.css',
+			array(),
+			HELLO_ELEMENTOR_CHILD_VERSION
+		);
+
+		wp_enqueue_script(
+			'lk-archive-filters',
+			HELLO_ELEMENTOR_CHILD_URI . 'assets/js/archive-product-filters.js',
+			array(),
+			HELLO_ELEMENTOR_CHILD_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'lk-archive-filters',
+			'lkArchiveFilters',
+			array(
+				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+				'action'         => 'lk_archive_filter_products',
+				'nonce'          => wp_create_nonce( 'lk_archive_filter' ),
+				'termId'         => $term ? (int) $term->term_id : 0,
+				'nativeTemplate' => class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+					&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled(),
+				'perPage'        => class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+					? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
+					: 12,
+				'i18n'           => array(
+					'empty'   => __( 'محصولی با این فیلترها پیدا نشد.', 'hello-elementor-child' ),
+					'error'   => __( 'خطا در فیلتر محصولات.', 'hello-elementor-child' ),
+					'search'  => __( 'جستجو…', 'hello-elementor-child' ),
+					'loading' => __( 'در حال فیلتر…', 'hello-elementor-child' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Hide / dequeue JetSmartFilters on pages where custom filter is active.
+	 */
+	public static function dequeue_jetsmart_on_active(): void {
+		if ( ! self::is_active_context() ) {
+			return;
+		}
+
+		foreach ( wp_scripts()->registered as $handle => $obj ) {
+			if ( false !== strpos( $handle, 'jet-smart-filters' ) ) {
+				wp_dequeue_script( $handle );
+				wp_deregister_script( $handle );
+			}
+		}
+		foreach ( wp_styles()->registered as $handle => $obj ) {
+			if ( false !== strpos( $handle, 'jet-smart-filters' ) ) {
+				wp_dequeue_style( $handle );
+				wp_deregister_style( $handle );
+			}
+		}
+
+		// Hide JetSmart widgets + parent Elementor accordion that contains them.
+		wp_add_inline_style(
+			'lk-archive-filters',
+			'.jet-smart-filters,' .
+			'.jet-smart-filters-pagination,' .
+			'.jet-smart-filters-range,' .
+			'.jet-smart-filters-checkboxes,' .
+			'.jet-smart-filters-select,' .
+			'.elementor-widget-jet-smart-filters-checkboxes,' .
+			'.elementor-widget-jet-smart-filters-select,' .
+			'.elementor-widget-jet-smart-filters-range,' .
+			'.elementor-widget-jet-smart-filters-sorting,' .
+			'.elementor-widget-jet-smart-filters-remove-filters,' .
+			'.elementor-widget-jet-smart-filters-active,' .
+			'.elementor-widget-jet-smart-filters-pagination,' .
+			'.lk-hide-old-filters{display:none!important;}'
+		);
+	}
+
+	/**
+	 * Auto-render before WC shop loop when active.
+	 * Disabled: Elementor category templates need JS placement under old filter column.
+	 */
+	public static function maybe_auto_render_filters(): void {
+		// Intentionally empty — filters are injected via footer JS.
+	}
+
+	/**
+	 * Inject filter HTML after old JetSmartFilters column (via JS).
+	 */
+	public static function maybe_inject_filters_script(): void {
+		if ( ! self::is_active_context() ) {
+			return;
+		}
+
+		// Light Timber category already prints filters in the template.
+		if ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+			&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled()
+		) {
+			return;
+		}
+
+		// Always provide HTML for JS placement (even if shortcode already printed elsewhere).
+		$html = self::render_filters_html();
+		wp_add_inline_script(
+			'lk-archive-filters',
+			'window.lkArchiveFiltersInjectHtml = ' . wp_json_encode( $html ) . ';',
+			'before'
+		);
+	}
+
+	/**
+	 * Shortcode: filters form.
+	 *
+	 * @return string
+	 */
+	public static function shortcode_filters(): string {
+		if ( ! self::is_active_context() && ! is_product_category() && ! is_shop() ) {
+			return '';
+		}
+		// Allow shortcode on pilot category even if MODE checks pass via is_product_category inside is_active_context.
+		if ( ! self::is_active_context() ) {
+			return '';
+		}
+		return self::render_filters_html();
+	}
+
+	/**
+	 * Shortcode: filtered product cards (fallback listing).
+	 *
+	 * @param array<string, string>|string $atts Atts.
+	 * @return string
+	 */
+	public static function shortcode_products( $atts = array() ): string {
+		if ( ! self::is_active_context() ) {
+			return '';
+		}
+
+		$atts = shortcode_atts(
+			array(
+				'columns'  => '3',
+				'per_page' => '24',
+			),
+			$atts,
+			'lk_filtered_products'
+		);
+
+		$args = array(
+			'post_type'      => 'product',
+			'post_status'    => 'publish',
+			'posts_per_page' => max( 1, (int) $atts['per_page'] ),
+		);
+
+		$term = self::get_scope_term();
+		if ( $term ) {
+			$args['tax_query'] = array(
+				array(
+					'taxonomy'         => 'product_cat',
+					'field'            => 'term_id',
+					'terms'            => array( (int) $term->term_id ),
+					'include_children' => true,
+				),
+			);
+		}
+
+		$args  = self::apply_fragments_to_args( $args );
+		$query = new WP_Query( $args );
+
+		ob_start();
+		echo '<div class="lk-filtered-products columns-' . esc_attr( (string) $atts['columns'] ) . '">';
+		if ( $query->have_posts() ) {
+			woocommerce_product_loop_start();
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				wc_get_template_part( 'content', 'product' );
+			}
+			woocommerce_product_loop_end();
+		} else {
+			echo '<p class="lk-filtered-products__empty">' . esc_html__( 'محصولی با این فیلترها پیدا نشد.', 'hello-elementor-child' ) . '</p>';
+		}
+		echo '</div>';
+		wp_reset_postdata();
+
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Render filter form HTML (checkbox panels + search).
+	 */
+	public static function render_filters_html(): string {
+		$GLOBALS['lk_archive_filters_rendered'] = true;
+
+		$product_ids = self::get_scoped_product_ids();
+		$defs        = self::get_filter_definitions();
+		$selected    = self::get_selected_filters();
+		$price_range = self::get_price_range( $product_ids );
+		$term        = self::get_scope_term();
+
+		ob_start();
+		?>
+		<div
+			class="lk-archive-filters"
+			id="lk-archive-filters"
+			data-lk-custom-filters="1"
+			data-term-id="<?php echo esc_attr( $term ? (string) $term->term_id : '0' ); ?>"
+		>
+			<div class="lk-archive-filters__head">
+				<strong class="lk-archive-filters__title"><?php esc_html_e( 'فیلترها', 'hello-elementor-child' ); ?></strong>
+				<button type="button" class="lk-archive-filters__clear" id="lk-archive-filters-clear">
+					<?php esc_html_e( 'حذف فیلتر', 'hello-elementor-child' ); ?>
+				</button>
+			</div>
+
+			<div class="lk-archive-filters__panels">
+				<?php foreach ( $defs as $key => $def ) : ?>
+					<?php if ( 'price' === $def['type'] ) : ?>
+						<?php
+						$sel_min     = $selected[ $key ]['min'] ?? null;
+						$sel_max     = $selected[ $key ]['max'] ?? null;
+						$price_open  = null !== $sel_min || null !== $sel_max;
+						?>
+						<details class="lk-archive-filters__panel" data-lk-filter-price="1" <?php echo $price_open ? 'open' : ''; ?>>
+							<summary class="lk-archive-filters__summary">
+								<span class="lk-archive-filters__summary-text"><?php echo esc_html( $def['label'] ); ?></span>
+								<span class="lk-archive-filters__trigger" aria-hidden="true"></span>
+							</summary>
+							<div class="lk-archive-filters__panel-body lk-archive-filters__group--price">
+								<div class="lk-archive-filters__price-inputs">
+									<input type="number" data-lk-price="min" value="<?php echo null !== $sel_min ? esc_attr( (string) $sel_min ) : ''; ?>" min="0" step="1" placeholder="<?php echo esc_attr( (string) (int) $price_range['min'] ); ?>">
+									<span>—</span>
+									<input type="number" data-lk-price="max" value="<?php echo null !== $sel_max ? esc_attr( (string) $sel_max ) : ''; ?>" min="0" step="1" placeholder="<?php echo esc_attr( (string) (int) $price_range['max'] ); ?>">
+								</div>
+								<button type="button" class="lk-archive-filters__price-apply button"><?php esc_html_e( 'اعمال قیمت', 'hello-elementor-child' ); ?></button>
+							</div>
+						</details>
+					<?php else : ?>
+						<?php
+						if ( '' === $def['taxonomy'] ) {
+							continue;
+						}
+						$options = self::get_terms_for_products( $def['taxonomy'], $product_ids );
+						if ( array() === $options ) {
+							continue;
+						}
+						$sel      = $selected[ $key ] ?? array();
+						$has_sel  = array() !== $sel;
+						?>
+						<details class="lk-archive-filters__panel" data-lk-filter-key="<?php echo esc_attr( $key ); ?>" <?php echo $has_sel ? 'open' : ''; ?>>
+							<summary class="lk-archive-filters__summary">
+								<span class="lk-archive-filters__summary-text"><?php echo esc_html( $def['label'] ); ?></span>
+								<span class="lk-archive-filters__trigger" aria-hidden="true"></span>
+							</summary>
+							<div class="lk-archive-filters__panel-body">
+								<input
+									type="search"
+									class="lk-archive-filters__search"
+									placeholder="<?php esc_attr_e( 'جستجو…', 'hello-elementor-child' ); ?>"
+									autocomplete="off"
+								>
+								<ul class="lk-archive-filters__list" role="list">
+									<?php foreach ( $options as $opt ) : ?>
+										<li class="lk-archive-filters__item" data-lk-slug="<?php echo esc_attr( $opt['slug'] ); ?>" data-lk-label="<?php echo esc_attr( mb_strtolower( $opt['name'] ) ); ?>" data-lk-available="1">
+											<label class="lk-archive-filters__check">
+												<input
+													type="checkbox"
+													name="<?php echo esc_attr( self::QUERY_PREFIX . $key ); ?>[]"
+													value="<?php echo esc_attr( $opt['slug'] ); ?>"
+													<?php checked( in_array( $opt['slug'], $sel, true ) ); ?>
+												>
+												<span class="lk-archive-filters__check-title"><?php echo esc_html( $opt['name'] ); ?></span>
+												<span class="lk-archive-filters__check-count">(<?php echo esc_html( (string) $opt['count'] ); ?>)</span>
+											</label>
+										</li>
+									<?php endforeach; ?>
+								</ul>
+							</div>
+						</details>
+					<?php endif; ?>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<?php
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * AJAX: filter products and return Elementor-loop-compatible HTML.
+	 */
+	public static function ajax_filter_products(): void {
+		check_ajax_referer( 'lk_archive_filter', 'nonce' );
+
+		$term_id = isset( $_POST['term_id'] ) ? absint( $_POST['term_id'] ) : 0;
+		$page    = isset( $_POST['page'] ) ? max( 1, absint( $_POST['page'] ) ) : 1;
+		$raw     = isset( $_POST['filters'] ) ? wp_unslash( $_POST['filters'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$payload = is_string( $raw ) ? json_decode( $raw, true ) : ( is_array( $raw ) ? $raw : array() );
+		if ( ! is_array( $payload ) ) {
+			$payload = array();
+		}
+
+		$selected = self::get_selected_filters( $payload );
+
+		$per_page = 48;
+		if ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+			&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled( $term_id > 0 ? $term_id : null )
+		) {
+			$per_page = Hello_Elementor_Child_Custom_Category_Archive::get_per_page();
+		} elseif ( isset( $_POST['per_page'] ) ) {
+			$per_page = max( 1, absint( $_POST['per_page'] ) );
+		}
+
+		$args = array(
+			'post_type'      => 'product',
+			'post_status'    => 'publish',
+			'posts_per_page' => $per_page,
+			'paged'          => $page,
+		);
+
+		if ( $term_id > 0 ) {
+			$args['tax_query'] = array(
+				array(
+					'taxonomy'         => 'product_cat',
+					'field'            => 'term_id',
+					'terms'            => array( $term_id ),
+					'include_children' => true,
+				),
+			);
+		}
+
+		$args  = self::apply_fragments_to_args( $args, $selected, true );
+		$query = new WP_Query( $args );
+		$html  = self::render_products_grid_html( $query );
+
+		wp_send_json_success(
+			array(
+				'html'       => $html,
+				'pagination' => self::render_pagination_html( $query, $term_id, $page ),
+				'count'      => (int) $query->found_posts,
+				'facets'     => self::build_facets( $term_id, $selected ),
+				'page'       => $page,
+			)
+		);
+	}
+
+	/**
+	 * Render product cards for loop/grid replacement.
+	 *
+	 * @param WP_Query $query Query.
+	 * @return string
+	 */
+	public static function render_products_grid_html( WP_Query $query ): string {
+		if ( ! $query->have_posts() ) {
+			return '<div class="lk-filtered-products__empty" role="listitem">' . esc_html__( 'محصولی با این فیلترها پیدا نشد.', 'hello-elementor-child' ) . '</div>';
+		}
+
+		ob_start();
+		while ( $query->have_posts() ) {
+			$query->the_post();
+			$product = wc_get_product( get_the_ID() );
+			if ( ! $product ) {
+				continue;
+			}
+			echo self::render_product_card_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+		wp_reset_postdata();
+
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Single product card HTML (mirrors Elementor loop-item layout).
+	 *
+	 * @param WC_Product $product Product.
+	 * @return string
+	 */
+	public static function render_product_card_html( WC_Product $product ): string {
+		$post_id   = $product->get_id();
+		$permalink = get_permalink( $post_id );
+		$title     = $product->get_name();
+		$price     = $product->get_price_html();
+		$image     = $product->get_image(
+			'woocommerce_thumbnail',
+			array(
+				'loading' => 'lazy',
+				'alt'     => $title,
+			)
+		);
+
+		$english = '';
+		if ( function_exists( 'get_field' ) ) {
+			$raw = get_field( 'english_name', $post_id );
+			if ( ! is_scalar( $raw ) || '' === trim( (string) $raw ) ) {
+				$raw = get_field( 'نام_انگلیسی', $post_id );
+			}
+			if ( is_scalar( $raw ) ) {
+				$english = trim( (string) $raw );
+			}
+		}
+		if ( '' === $english ) {
+			$meta_en = get_post_meta( $post_id, 'english_name', true );
+			$english = is_scalar( $meta_en ) ? trim( (string) $meta_en ) : '';
+		}
+
+		$brand_name  = '';
+		$brand_link  = '';
+		$brand_image = '';
+		$tags        = get_the_terms( $post_id, 'product_tag' );
+		if ( $tags && ! is_wp_error( $tags ) ) {
+			$tag         = $tags[0];
+			$brand_name  = $tag->name;
+			$brand_link  = get_term_link( $tag );
+			if ( is_wp_error( $brand_link ) ) {
+				$brand_link = '';
+			}
+			$thumb_id = (int) get_term_meta( $tag->term_id, 'thumbnail_id', true );
+			if ( $thumb_id > 0 ) {
+				$url = wp_get_attachment_image_url( $thumb_id, 'medium' );
+				if ( $url ) {
+					$brand_image = $url;
+				}
+			}
+		}
+
+		if ( function_exists( 'get_field' ) ) {
+			foreach ( array( 'brand_logo', 'لوگو_برند', 'brand_image', 'آدرس_برند' ) as $logo_key ) {
+				$logo = get_field( $logo_key, $post_id );
+				$url  = '';
+				if ( is_array( $logo ) && isset( $logo['url'] ) ) {
+					$url = (string) $logo['url'];
+				} elseif ( is_string( $logo ) && (bool) preg_match( '#^(https?:)?//#i', $logo ) ) {
+					$url = $logo;
+				}
+				if ( '' !== $url ) {
+					$brand_image = $url;
+					break;
+				}
+			}
+		}
+
+		ob_start();
+		?>
+		<article
+			class="elementor-loop-item elementor-grid-item lk-loop-item post-<?php echo esc_attr( (string) $post_id ); ?> product type-product"
+			role="listitem"
+			data-elementor-type="loop-item"
+			data-product-id="<?php echo esc_attr( (string) $post_id ); ?>"
+		>
+			<div class="lk-loop-item__inner">
+				<div class="lk-loop-item__media">
+					<a
+						class="lk-loop-item__cart"
+						href="<?php echo esc_url( (string) $permalink ); ?>"
+						aria-label="<?php echo esc_attr( $title ); ?>"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+							<path d="M18,6A6,6,0,0,0,6,6H0V21a3,3,0,0,0,3,3H14V22H3a1,1,0,0,1-1-1V8H6v2H8V8h8v2h2V8h4v6h2V6ZM8,6a4,4,0,0,1,8,0Z"></path>
+							<polygon points="21 16 19 16 19 19 16 19 16 21 19 21 19 24 21 24 21 21 24 21 24 19 21 19 21 16"></polygon>
+						</svg>
+					</a>
+
+					<?php if ( $brand_image ) : ?>
+						<a
+							class="lk-loop-item__brand-logo"
+							href="<?php echo esc_url( $brand_link ? (string) $brand_link : (string) $permalink ); ?>"
+							<?php echo $brand_link ? 'target="_blank" rel="nofollow"' : ''; ?>
+							aria-label="<?php echo esc_attr( $brand_name ? $brand_name : __( 'برند', 'hello-elementor-child' ) ); ?>"
+						>
+							<img src="<?php echo esc_url( $brand_image ); ?>" alt="<?php echo esc_attr( $brand_name ); ?>" loading="lazy" width="80" height="36">
+						</a>
+					<?php endif; ?>
+
+					<a class="lk-loop-item__image" href="<?php echo esc_url( (string) $permalink ); ?>" rel="nofollow">
+						<?php echo $image; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</a>
+				</div>
+
+				<h3 class="lk-loop-item__title">
+					<a href="<?php echo esc_url( (string) $permalink ); ?>" rel="nofollow"><?php echo esc_html( $title ); ?></a>
+				</h3>
+
+				<?php if ( '' !== $english ) : ?>
+					<p class="lk-loop-item__english">
+						<a href="<?php echo esc_url( (string) $permalink ); ?>" rel="nofollow"><?php echo esc_html( $english ); ?></a>
+					</p>
+				<?php endif; ?>
+
+				<?php if ( '' !== $brand_name ) : ?>
+					<p class="lk-loop-item__brand">
+						<?php if ( $brand_link ) : ?>
+							<a href="<?php echo esc_url( (string) $brand_link ); ?>" aria-label="<?php echo esc_attr( $brand_name ); ?>">
+								<svg aria-hidden="true" class="lk-loop-item__brand-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" width="14" height="14"><path d="M437.2 403.5L320 215V64h8c13.3 0 24-10.7 24-24V24c0-13.3-10.7-24-24-24H120c-13.3 0-24 10.7-24 24v16c0 13.3 10.7 24 24 24h8v151L10.8 403.5C-18.5 450.6 15.3 512 70.9 512h306.2c55.7 0 89.4-61.5 60.1-108.5zM137.9 320l48.2-77.6c3.7-5.2 5.8-11.6 5.8-18.4V64h64v160c0 6.9 2.2 13.2 5.8 18.4l48.2 77.6h-172z"></path></svg>
+								<span><?php echo esc_html( sprintf( /* translators: %s brand */ __( 'محصول %s', 'hello-elementor-child' ), $brand_name ) ); ?></span>
+							</a>
+						<?php else : ?>
+							<svg aria-hidden="true" class="lk-loop-item__brand-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" width="14" height="14"><path d="M437.2 403.5L320 215V64h8c13.3 0 24-10.7 24-24V24c0-13.3-10.7-24-24-24H120c-13.3 0-24 10.7-24 24v16c0 13.3 10.7 24 24 24h8v151L10.8 403.5C-18.5 450.6 15.3 512 70.9 512h306.2c55.7 0 89.4-61.5 60.1-108.5zM137.9 320l48.2-77.6c3.7-5.2 5.8-11.6 5.8-18.4V64h64v160c0 6.9 2.2 13.2 5.8 18.4l48.2 77.6h-172z"></path></svg>
+							<span><?php echo esc_html( sprintf( __( 'محصول %s', 'hello-elementor-child' ), $brand_name ) ); ?></span>
+						<?php endif; ?>
+					</p>
+				<?php endif; ?>
+
+				<?php if ( $price ) : ?>
+					<div class="lk-loop-item__price-bar">
+						<div class="lk-loop-item__price price"><?php echo wp_kses_post( $price ); ?></div>
+					</div>
+				<?php endif; ?>
+			</div>
+		</article>
+		<?php
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Pagination markup for light archive / AJAX updates.
+	 *
+	 * @param WP_Query $query   Query.
+	 * @param int      $term_id Category term ID.
+	 * @param int      $current Current page (AJAX).
+	 * @return string
+	 */
+	public static function render_pagination_html( WP_Query $query, int $term_id = 0, int $current = 0 ): string {
+		$total = (int) $query->max_num_pages;
+		if ( $total <= 1 ) {
+			return '';
+		}
+
+		if ( $current < 1 ) {
+			$current = max( 1, (int) $query->get( 'paged' ), (int) get_query_var( 'paged' ), (int) get_query_var( 'page' ) );
+		}
+
+		$base_url = $term_id > 0 ? get_term_link( $term_id, 'product_cat' ) : get_pagenum_link( 1 );
+		if ( is_wp_error( $base_url ) ) {
+			$base_url = get_pagenum_link( 1 );
+		}
+
+		$links = paginate_links(
+			array(
+				'base'      => esc_url_raw( trailingslashit( (string) $base_url ) . 'page/%#%/' ),
+				'format'    => '',
+				'current'   => $current,
+				'total'     => $total,
+				'type'      => 'list',
+				'prev_text' => '&raquo;',
+				'next_text' => '&laquo;',
+			)
+		);
+
+		return is_string( $links ) ? $links : '';
+	}
+
+	/**
+	 * @deprecated Use render_products_grid_html().
+	 *
+	 * @param WP_Query $query Query.
+	 * @return string
+	 */
+	private static function render_loop_items_html( WP_Query $query ): string {
+		return self::render_products_grid_html( $query );
+	}
+}

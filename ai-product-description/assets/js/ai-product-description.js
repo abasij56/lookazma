@@ -9,6 +9,7 @@
 	var lastResult = {
 		productId: '',
 		description: '',
+		categoryUrl: 'https://lookazma.com/',
 	};
 
 	function getConfig() {
@@ -40,53 +41,54 @@
 			.replace(/'/g, '&#39;');
 	}
 
-	function lookazmaLink(label) {
+	function lookazmaLink(href, label) {
+		var url = href || 'https://lookazma.com/';
 		return (
-			'<a href="https://lookazma.com/" target="_blank" rel="noopener noreferrer">' +
-			label +
+			'<a href="' +
+			escapeHtml(url) +
+			'" target="_blank" rel="noopener noreferrer">' +
+			(label || escapeHtml(url)) +
 			'</a>'
 		);
 	}
 
 	/**
 	 * Escape text, keep line breaks, and turn Lookazma mentions into links.
+	 * Preserves product-category archive URLs; only rewrites bare homepage.
 	 */
-	function formatDescriptionHtml(text) {
+	function formatDescriptionHtml(text, categoryUrl) {
 		var value = String(text || '').trim();
+		var storeUrl = categoryUrl || lastResult.categoryUrl || 'https://lookazma.com/';
 		if (!value) {
 			return '';
 		}
 
-		// Structured HTML from the product prompt template.
+		// Structured HTML from the product prompt template — keep as-is if it already has links.
 		if (/<[a-z][\s\S]*>/i.test(value)) {
-			return value.replace(
-				/https?:\/\/(?:www\.)?lookazma\.com\/?/gi,
-				lookazmaLink('https://lookazma.com/')
-			);
+			return value;
 		}
 
 		var escaped = escapeHtml(value).replace(/\r\n|\r|\n/g, '<br>');
-		var storeUrlPattern =
-			/https?:\/\/(?:www\.)?lookazma\.com\/?/gi;
-		var plainDomainPattern = /(?:^|[\s(])((?:www\.)?lookazma\.com\/?)/gi;
 
-		escaped = escaped.replace(storeUrlPattern, function () {
-			return lookazmaLink('https://lookazma.com/');
-		});
+		// Only bare homepage (not /product-category/...).
+		escaped = escaped.replace(
+			/https?:\/\/(?:www\.)?lookazma\.com\/?(?=[\s<]|$)/gi,
+			function () {
+				return lookazmaLink(storeUrl, storeUrl);
+			}
+		);
 
-		escaped = escaped.replace(plainDomainPattern, function (match, domain) {
-			var prefix = match.slice(0, match.length - domain.length);
-			return prefix + lookazmaLink('https://lookazma.com/');
-		});
-
-		if (escaped.indexOf('href="https://lookazma.com/"') === -1) {
+		if (escaped.indexOf('href="') === -1) {
 			if (/خرید\s+از\s+لوک\s*آزما/.test(escaped)) {
 				escaped = escaped.replace(
 					/خرید\s+از\s+لوک\s*آزما/,
-					lookazmaLink('خرید از لوک آزما')
+					lookazmaLink(storeUrl, 'خرید از لوک آزما')
 				);
 			} else if (/لوک\s*آزما/.test(escaped)) {
-				escaped = escaped.replace(/لوک\s*آزما/, lookazmaLink('لوک آزما'));
+				escaped = escaped.replace(
+					/لوک\s*آزما/,
+					lookazmaLink(storeUrl, 'لوک آزما')
+				);
 			}
 		}
 
@@ -139,7 +141,7 @@
 		body.innerHTML = payload.html;
 	}
 
-	function showResult(productName, text, isError, productId, currentDescription) {
+	function showResult(productName, text, isError, productId, currentDescription, categoryUrl) {
 		var resultWrap = document.getElementById('ai-product-desc-result');
 		var resultTitle = document.getElementById('ai-product-desc-result-title');
 		var resultBody = document.getElementById('ai-product-desc-result-body');
@@ -167,11 +169,13 @@
 			resultBody.textContent = text;
 			lastResult.productId = '';
 			lastResult.description = '';
+			lastResult.categoryUrl = 'https://lookazma.com/';
 			if (saveWrap) {
 				saveWrap.hidden = true;
 			}
 		} else {
-			resultBody.innerHTML = formatDescriptionHtml(text);
+			lastResult.categoryUrl = categoryUrl || 'https://lookazma.com/';
+			resultBody.innerHTML = formatDescriptionHtml(text, lastResult.categoryUrl);
 			lastResult.productId = productId ? String(productId) : '';
 			lastResult.description = text || '';
 			if (saveWrap) {
@@ -294,7 +298,8 @@
 					data.description || '',
 					false,
 					data.product_id || productId,
-					data.current_description || null
+					data.current_description || null,
+					data.category_url || ''
 				);
 			})
 			.catch(function () {

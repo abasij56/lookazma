@@ -14,29 +14,22 @@
 	--lk-ok: #1f7a3f;
 	--lk-shadow: 0 10px 30px rgba(11, 31, 58, 0.06);
 	--lk-radius: 16px;
-	--lk-container: 1180px;
+	--lk-container: 100%;
+	--lk-page-gutter: 5%;
 	--lk-font: "Vazirmatn", Tahoma, sans-serif;
 }
 
-*,
-*::before,
-*::after {
+/* Scope resets to product body so Elementor header/footer stay intact */
+.lk-main,
+.lk-main *,
+.lk-main *::before,
+.lk-main *::after {
 	box-sizing: border-box;
 }
 
-html {
-	width: 100%;
-	overflow-x: hidden;
-}
-
-body {
+body.lk-single-product-light {
 	margin: 0;
-	width: 100%;
-	min-width: 0;
-	background:
-		radial-gradient(1100px 420px at 100% -8%, rgba(13, 110, 110, 0.07), transparent 55%),
-		radial-gradient(800px 360px at 0% 0%, rgba(0, 31, 63, 0.07), transparent 50%),
-		var(--lk-bg);
+	background: var(--lk-bg);
 	color: var(--lk-ink);
 	font-family: var(--lk-font);
 	font-size: 16px;
@@ -44,19 +37,28 @@ body {
 	direction: rtl;
 }
 
-img {
+.lk-main {
+	min-width: 0;
+	background:
+		radial-gradient(1100px 420px at 100% -8%, rgba(13, 110, 110, 0.07), transparent 55%),
+		radial-gradient(800px 360px at 0% 0%, rgba(0, 31, 63, 0.07), transparent 50%),
+		var(--lk-bg);
+	padding-block: 1.25rem 2.5rem;
+}
+
+.lk-main img {
 	max-width: 100%;
 	height: auto;
 	display: block;
 }
 
-a {
+.lk-main a {
 	color: inherit;
 	text-decoration: none;
 }
 
-ul,
-ol {
+.lk-main ul,
+.lk-main ol {
 	margin: 0;
 	padding: 0;
 }
@@ -73,8 +75,11 @@ ol {
 }
 
 .lk-container {
-	width: min(100% - 2rem, var(--lk-container));
-	margin-inline: auto;
+	width: 100%;
+	max-width: none;
+	margin-inline: 0;
+	padding-inline: var(--lk-page-gutter);
+	box-sizing: border-box;
 }
 
 /* Header */
@@ -393,6 +398,10 @@ ol {
 .lk-product {
 	display: block;
 	width: 100%;
+	max-width: none;
+	margin-inline: 0;
+	padding-inline: var(--lk-page-gutter);
+	box-sizing: border-box;
 }
 
 .lk-product__row {
@@ -818,4 +827,31 @@ ol {
 	font-size: 0.88rem;
 	font-weight: 700;
 	color: var(--lk-accent-2);
+}
+
+/* Elementor Menu Cart: keep closed until opened (fallback if Pro CSS loads late) */
+body.lk-single-product-light .elementor-menu-cart__container,
+body.lk-archive-product-light .elementor-menu-cart__container {
+	visibility: hidden;
+	opacity: 0;
+	pointer-events: none;
+}
+
+body.lk-single-product-light .elementor-menu-cart--shown .elementor-menu-cart__container,
+body.lk-single-product-light .elementor-widget-woocommerce-menu-cart.elementor-menu-cart--shown .elementor-menu-cart__container,
+body.lk-archive-product-light .elementor-menu-cart--shown .elementor-menu-cart__container,
+body.lk-archive-product-light .elementor-widget-woocommerce-menu-cart.elementor-menu-cart--shown .elementor-menu-cart__container {
+	visibility: visible;
+	opacity: 1;
+	pointer-events: auto;
+}
+
+body.lk-single-product-light .elementor-menu-cart__close-button,
+body.lk-single-product-light .elementor-menu-cart__close-button-wrapper,
+body.lk-archive-product-light .elementor-menu-cart__close-button,
+body.lk-archive-product-light .elementor-menu-cart__close-button-wrapper {
+	cursor: pointer;
+	pointer-events: auto;
+	position: relative;
+	z-index: 10050;
 }

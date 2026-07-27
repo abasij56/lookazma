@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
+	initTabs();
+});
+
+function initTabs() {
 	var tabsRoot = document.querySelector('[data-lk-tabs]');
 	if (!tabsRoot) {
 		return;
@@ -28,4 +32,4 @@ document.addEventListener('DOMContentLoaded', function () {
 			});
 		});
 	});
-});
+}

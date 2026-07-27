@@ -176,15 +176,24 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 		);
 
 		wp_enqueue_script(
+			'lk-elementor-menu-cart',
+			HELLO_ELEMENTOR_CHILD_URI . 'assets/js/lk-elementor-menu-cart.js',
+			array(),
+			(string) filemtime( HELLO_ELEMENTOR_CHILD_PATH . 'assets/js/lk-elementor-menu-cart.js' ),
+			true
+		);
+
+		wp_enqueue_script(
 			'lk-spl-js',
 			HELLO_ELEMENTOR_CHILD_URI . 'assets/js/single-product-light.js',
-			array(),
+			array( 'lk-elementor-menu-cart' ),
 			(string) filemtime( HELLO_ELEMENTOR_CHILD_PATH . 'assets/js/single-product-light.js' ),
 			true
 		);
 
 		wp_enqueue_script( 'jquery' );
 		wp_enqueue_script( 'wc-add-to-cart' );
+		wp_enqueue_script( 'wc-cart-fragments' );
 		wp_enqueue_script( 'woocommerce' );
 		wp_enqueue_script( 'wc-single-product' );
 		wp_enqueue_style( 'woocommerce-general' );
@@ -330,7 +339,8 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 	}
 
 	/**
-	 * Stop Elementor Theme Builder from owning single / product locations.
+	 * Stop Elementor Theme Builder from owning the product "single" location only.
+	 * Header / footer locations stay active for the hybrid chrome.
 	 *
 	 * @param bool   $need_override Whether Elementor wants override.
 	 * @param string $location      Location name.
@@ -340,8 +350,7 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 			return $need_override;
 		}
 
-		$blocked = array( 'single', 'single-product', 'product', 'woocommerce' );
-		if ( in_array( $location, $blocked, true ) ) {
+		if ( in_array( $location, array( 'single', 'single-product' ), true ) ) {
 			return false;
 		}
 
@@ -378,7 +387,40 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 	}
 
 	/**
-	 * Remove Elementor / Hello / Woo layout CSS that fight the light template.
+	 * Render Elementor (or JetThemeCore) theme location into a string.
+	 *
+	 * @param string $location Location name (header|footer).
+	 */
+	public static function capture_theme_location( string $location ): string {
+		ob_start();
+		self::print_theme_location( $location );
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Echo a theme location (must run after wp_head so widget assets enqueue properly).
+	 *
+	 * @param string $location Location name (header|footer).
+	 */
+	public static function print_theme_location( string $location = 'header' ): void {
+		$done = false;
+
+		if ( function_exists( 'elementor_theme_do_location' ) ) {
+			$done = (bool) elementor_theme_do_location( $location );
+		}
+
+		if ( ! $done && function_exists( 'jet_theme_core' ) ) {
+			$core = jet_theme_core();
+			if ( is_object( $core ) && isset( $core->locations ) && is_object( $core->locations )
+				&& method_exists( $core->locations, 'do_location' )
+			) {
+				$core->locations->do_location( $location );
+			}
+		}
+	}
+
+	/**
+	 * Strip Jet Woo Builder assets only — keep Elementor for real header/footer.
 	 */
 	public static function dequeue_conflicting_assets(): void {
 		if ( ! self::is_enabled() ) {
@@ -386,42 +428,14 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 		}
 
 		$style_handles = array(
-			'elementor-frontend',
-			'elementor-frontend-legacy',
-			'elementor-icons',
-			'elementor-animations',
-			'elementor-common',
-			'elementor-pro',
-			'elementor-pro-frontend',
-			'e-motion-fx',
-			'e-sticky',
-			'e-swiper',
-			'swiper',
-			'font-awesome-5-all',
-			'font-awesome-4-shim',
 			'jet-woo-builder',
 			'jet-woo-builder-frontend-font',
-			'hello-elementor',
-			'hello-elementor-theme-style',
-			'hello-elementor-header-footer',
-			'hello-elementor-child-style',
 			'woocommerce-layout',
 			'woocommerce-smallscreen',
 		);
 
 		$script_handles = array(
-			'elementor-frontend',
-			'elementor-frontend-modules',
-			'elementor-webpack-runtime',
-			'elementor-common',
-			'elementor-web-cli',
-			'elementor-pro-frontend',
-			'elementor-pro-webpack-runtime',
-			'elementor-pro-elements-handlers',
-			'elementor-v2-editor-app-loader',
-			'pro-elements-handlers',
 			'jet-woo-builder',
-			'jet-plugins',
 		);
 
 		foreach ( $style_handles as $handle ) {
@@ -443,11 +457,6 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 					wp_deregister_style( $handle );
 				}
 			}
-
-			// Keep our CSS last in the printed order.
-			if ( isset( $wp_styles->registered['lk-spl-css'] ) ) {
-				$wp_styles->registered['lk-spl-css']->deps = array( 'lk-spl-vazirmatn' );
-			}
 		}
 
 		if ( $wp_scripts instanceof WP_Scripts ) {
@@ -466,7 +475,6 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 	private static function is_conflicting_style_handle( string $handle ): bool {
 		$handle = strtolower( $handle );
 
-		// Never touch our light-template assets.
 		if ( str_starts_with( $handle, 'lk-spl-' ) ) {
 			return false;
 		}
@@ -475,12 +483,8 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 			return false;
 		}
 
-		return str_starts_with( $handle, 'elementor' )
-			|| str_starts_with( $handle, 'e-' )
-			|| str_starts_with( $handle, 'jet-woo' )
-			|| str_starts_with( $handle, 'widget-' )
-			|| str_starts_with( $handle, 'hello-elementor' )
-			|| false !== strpos( $handle, 'elementor' )
+		// Only Jet Woo product-builder CSS — Elementor must stay for header/footer.
+		return str_starts_with( $handle, 'jet-woo' )
 			|| false !== strpos( $handle, 'jet-woo' );
 	}
 
@@ -494,11 +498,18 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 			return false;
 		}
 
-		return str_starts_with( $handle, 'elementor' )
-			|| str_starts_with( $handle, 'e-' )
-			|| str_starts_with( $handle, 'jet-woo' )
-			|| str_starts_with( $handle, 'widget-' )
-			|| false !== strpos( $handle, 'elementor' )
+		return str_starts_with( $handle, 'jet-woo' )
 			|| false !== strpos( $handle, 'jet-woo' );
+	}
+}
+
+if ( ! function_exists( 'lk_light_print_theme_location' ) ) {
+	/**
+	 * Twig-callable wrapper: print Elementor header/footer location.
+	 *
+	 * @param string $location Location name.
+	 */
+	function lk_light_print_theme_location( string $location = 'header' ): void {
+		Hello_Elementor_Child_Custom_Single_Product::print_theme_location( $location );
 	}
 }

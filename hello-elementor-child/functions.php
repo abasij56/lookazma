@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HELLO_ELEMENTOR_CHILD_VERSION', '1.2.3' );
+define( 'HELLO_ELEMENTOR_CHILD_VERSION', '1.5.4' );
 define( 'HELLO_ELEMENTOR_CHILD_PATH', get_stylesheet_directory() . '/' );
 define( 'HELLO_ELEMENTOR_CHILD_URI', get_stylesheet_directory_uri() . '/' );
 

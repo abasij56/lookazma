@@ -30,6 +30,8 @@ final class Hello_Elementor_Child_Theme {
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/attribute-price-editor/class-renderer.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/attribute-price-editor/class-ajax-handler.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-custom-single-product.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-custom-category-archive.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-archive-product-filter.php';
 	}
 
 	/**
@@ -38,5 +40,7 @@ final class Hello_Elementor_Child_Theme {
 	private static function init_features(): void {
 		Hello_Elementor_Child_Attribute_Price_Editor::init();
 		Hello_Elementor_Child_Custom_Single_Product::init();
+		Hello_Elementor_Child_Custom_Category_Archive::init();
+		Hello_Elementor_Child_Archive_Product_Filter::init();
 	}
 }

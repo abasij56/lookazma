@@ -8,7 +8,8 @@
 	}
 
 	var termId = root.getAttribute('data-term-id') || '';
-	var previewSeo = { title: '', metadesc: '' };
+	var previewSeo = { title: '', metadesc: '', focuskw: '' };
+	var previewSpecs = null;
 	var EDITOR_CURRENT = 'ai_cat_current_desc';
 	var EDITOR_PREVIEW = 'ai_cat_preview_desc';
 
@@ -234,7 +235,13 @@
 					var data = result.payload.data || {};
 					previewSeo.title = data.seo_title || '';
 					previewSeo.metadesc = data.seo_metadesc || '';
+					previewSeo.focuskw = data.seo_focuskw || '';
 
+					fillText(
+						document.getElementById('ai-cat-preview-seo-focuskw'),
+						previewSeo.focuskw,
+						cfg.i18n.emptyFocuskw
+					);
 					fillText(
 						document.getElementById('ai-cat-preview-seo-title'),
 						previewSeo.title,
@@ -248,7 +255,9 @@
 
 					if (saveBtn) {
 						saveBtn.disabled = !(
-							previewSeo.title || previewSeo.metadesc
+							previewSeo.title ||
+							previewSeo.metadesc ||
+							previewSeo.focuskw
 						);
 					}
 					setStatus(status, '', false);
@@ -265,8 +274,17 @@
 			var btn = this;
 			var status = document.getElementById('ai-cat-seo-status');
 
-			if (!previewSeo.title && !previewSeo.metadesc) {
+			if (!previewSeo.title && !previewSeo.metadesc && !previewSeo.focuskw) {
 				window.alert(cfg.i18n.needPreview);
+				return;
+			}
+
+			if (
+				!window.confirm(
+					cfg.i18n.confirmSeo ||
+						'سئوی فعلی دسته با پیشنهاد AI جایگزین شود؟'
+				)
+			) {
 				return;
 			}
 
@@ -276,6 +294,7 @@
 			post(cfg.actions.saveSeo, {
 				seo_title: previewSeo.title,
 				seo_metadesc: previewSeo.metadesc,
+				seo_focuskw: previewSeo.focuskw,
 			})
 				.then(function (result) {
 					setLoading(btn, false);
@@ -293,6 +312,11 @@
 
 					var data = result.payload.data || {};
 					fillText(
+						document.getElementById('ai-cat-current-seo-focuskw'),
+						data.seo_focuskw,
+						cfg.i18n.emptyFocuskw
+					);
+					fillText(
 						document.getElementById('ai-cat-current-seo-title'),
 						data.seo_title,
 						cfg.i18n.emptyTitle
@@ -302,6 +326,18 @@
 						data.seo_metadesc,
 						cfg.i18n.emptyMeta
 					);
+
+					// Sync Yoast focus keyphrase field on the edit screen if present.
+					var focusInput =
+						document.getElementById('focuskw') ||
+						document.querySelector('input[name="wpseo_focuskw"]') ||
+						document.querySelector('#wpseo_focuskw');
+					if (focusInput && data.seo_focuskw) {
+						focusInput.value = data.seo_focuskw;
+						focusInput.dispatchEvent(new Event('input', { bubbles: true }));
+						focusInput.dispatchEvent(new Event('change', { bubbles: true }));
+					}
+
 					setStatus(
 						status,
 						data.message || 'ذخیره شد.',
@@ -369,6 +405,15 @@
 
 			if (!hasMeaningfulContent(html)) {
 				window.alert(cfg.i18n.needPreview);
+				return;
+			}
+
+			if (
+				!window.confirm(
+					cfg.i18n.confirmDesc ||
+						'توضیحات فعلی دسته با پیشنهاد AI جایگزین شود؟'
+				)
+			) {
 				return;
 			}
 
@@ -491,6 +536,177 @@
 			if (saveBtn) {
 				saveBtn.disabled = !hasMeaningfulContent(this.value);
 			}
+		});
+	}
+
+	function fillSpecsTable(tbodyId, fields, emptyLabel) {
+		var tbody = document.getElementById(tbodyId);
+		if (!tbody) {
+			return;
+		}
+		var rows = tbody.querySelectorAll('tr[data-field]');
+		for (var i = 0; i < rows.length; i++) {
+			var row = rows[i];
+			var key = row.getAttribute('data-field') || '';
+			var cell = row.querySelector('td');
+			if (!cell) {
+				continue;
+			}
+			var value =
+				fields && Object.prototype.hasOwnProperty.call(fields, key)
+					? String(fields[key] || '').trim()
+					: '';
+			if (!value) {
+				cell.textContent = emptyLabel || cfg.i18n.emptyValue || 'خالی';
+				cell.classList.add('is-empty');
+			} else {
+				cell.textContent = value;
+				cell.classList.remove('is-empty');
+			}
+		}
+	}
+
+	function syncAcfInputs(fields) {
+		if (!fields || !window.jQuery) {
+			return;
+		}
+		Object.keys(fields).forEach(function (name) {
+			var value = fields[name];
+			var $wrap = window.jQuery('.acf-field[data-name="' + name + '"]');
+			if (!$wrap.length) {
+				return;
+			}
+			var $input = $wrap.find('input[type="text"], textarea').first();
+			if ($input.length) {
+				$input.val(value).trigger('change');
+			}
+		});
+	}
+
+	var generateSpecsBtn = document.getElementById('ai-cat-generate-specs');
+	if (generateSpecsBtn) {
+		generateSpecsBtn.addEventListener('click', function () {
+			var btn = this;
+			var saveBtn = document.getElementById('ai-cat-save-specs');
+			var status = document.getElementById('ai-cat-specs-status');
+			var hint = document.getElementById('ai-cat-specs-hint');
+
+			if (!isConfigured()) {
+				window.alert(cfg.i18n.notConfigured);
+				return;
+			}
+
+			setStatus(status, '');
+			if (hint) {
+				hint.hidden = true;
+				hint.textContent = '';
+			}
+			setLoading(btn, true, cfg.i18n.loading);
+			if (saveBtn) {
+				saveBtn.disabled = true;
+			}
+			previewSpecs = null;
+
+			post(cfg.actions.generateSpecs, {})
+				.then(function (result) {
+					setLoading(btn, false);
+					if (!result.payload || !result.payload.success) {
+						var message =
+							(result.payload &&
+								result.payload.data &&
+								result.payload.data.message) ||
+							cfg.i18n.error;
+						setStatus(status, message, true);
+						return;
+					}
+
+					var data = result.payload.data || {};
+					previewSpecs = data.fields || {};
+					fillSpecsTable(
+						'ai-cat-preview-specs-body',
+						previewSpecs,
+						cfg.i18n.emptyValue
+					);
+
+					if (hint) {
+						if (data.is_single_chemical === false) {
+							hint.textContent =
+								cfg.i18n.notChemical ||
+								'این دسته ماده شیمیایی تکی تشخیص داده نشد.';
+							hint.hidden = false;
+						} else {
+							hint.hidden = true;
+							hint.textContent = '';
+						}
+					}
+
+					if (saveBtn) {
+						saveBtn.disabled = !previewSpecs || !Object.keys(previewSpecs).length;
+					}
+				})
+				.catch(function () {
+					setLoading(btn, false);
+					setStatus(status, cfg.i18n.error, true);
+				});
+		});
+	}
+
+	var saveSpecsBtn = document.getElementById('ai-cat-save-specs');
+	if (saveSpecsBtn) {
+		saveSpecsBtn.addEventListener('click', function () {
+			var btn = this;
+			var status = document.getElementById('ai-cat-specs-status');
+
+			if (!previewSpecs || !Object.keys(previewSpecs).length) {
+				window.alert(cfg.i18n.needPreview);
+				return;
+			}
+
+			if (
+				!window.confirm(
+					cfg.i18n.confirmSpecs ||
+						'مشخصات فنی فعلی دسته با پیشنهاد AI جایگزین شود؟'
+				)
+			) {
+				return;
+			}
+
+			setLoading(btn, true, cfg.i18n.saving);
+			setStatus(status, '');
+
+			post(cfg.actions.saveSpecs, {
+				fields: JSON.stringify(previewSpecs),
+			})
+				.then(function (result) {
+					setLoading(btn, false);
+					btn.disabled = false;
+
+					if (!result.payload || !result.payload.success) {
+						var message =
+							(result.payload &&
+								result.payload.data &&
+								result.payload.data.message) ||
+							cfg.i18n.saveError;
+						setStatus(status, message, true);
+						return;
+					}
+
+					var data = result.payload.data || {};
+					var saved = data.fields || previewSpecs;
+					fillSpecsTable(
+						'ai-cat-current-specs-body',
+						saved,
+						cfg.i18n.emptyValue
+					);
+					syncAcfInputs(saved);
+					cfg.currentSpecs = saved;
+					setStatus(status, data.message || 'ذخیره شد.', false);
+				})
+				.catch(function () {
+					setLoading(btn, false);
+					btn.disabled = false;
+					setStatus(status, cfg.i18n.saveError, true);
+				});
 		});
 	}
 })();

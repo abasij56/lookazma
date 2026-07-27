@@ -20,6 +20,8 @@ final class AI_Product_Desc_Ajax {
 	public const CAT_SEO_SAVE       = 'ai_product_desc_cat_seo_save';
 	public const CAT_DESC_GENERATE  = 'ai_product_desc_cat_desc_generate';
 	public const CAT_DESC_SAVE      = 'ai_product_desc_cat_desc_save';
+	public const CAT_SPECS_GENERATE = 'ai_product_desc_cat_specs_generate';
+	public const CAT_SPECS_SAVE     = 'ai_product_desc_cat_specs_save';
 	public const NONCE_ACTION       = 'ai_product_desc_generate';
 	public const CAPABILITY         = 'manage_options';
 
@@ -33,6 +35,8 @@ final class AI_Product_Desc_Ajax {
 		add_action( 'wp_ajax_' . self::CAT_SEO_SAVE, array( __CLASS__, 'category_seo_save' ) );
 		add_action( 'wp_ajax_' . self::CAT_DESC_GENERATE, array( __CLASS__, 'category_desc_generate' ) );
 		add_action( 'wp_ajax_' . self::CAT_DESC_SAVE, array( __CLASS__, 'category_desc_save' ) );
+		add_action( 'wp_ajax_' . self::CAT_SPECS_GENERATE, array( __CLASS__, 'category_specs_generate' ) );
+		add_action( 'wp_ajax_' . self::CAT_SPECS_SAVE, array( __CLASS__, 'category_specs_save' ) );
 	}
 
 	/**
@@ -44,11 +48,16 @@ final class AI_Product_Desc_Ajax {
 		$product = self::get_master_product_from_request();
 		$product_id = $product->get_id();
 
+		$categories = ai_product_desc_get_product_categories( $product_id );
+		$best_url   = ai_product_desc_pick_best_category_url( $categories, $product->get_name() );
+
 		$product_data = array(
-			'name'       => $product->get_name(),
-			'cas_no'     => ai_product_desc_get_acf_value( $product_id, 'cas_no' ),
-			'brand'      => ai_product_desc_get_acf_value( $product_id, 'آدرس_برند' ),
-			'attributes' => ai_product_desc_format_attributes( $product ),
+			'name'         => $product->get_name(),
+			'cas_no'       => ai_product_desc_get_acf_value( $product_id, 'cas_no' ),
+			'brand'        => ai_product_desc_get_acf_value( $product_id, 'آدرس_برند' ),
+			'attributes'   => ai_product_desc_format_attributes( $product ),
+			'categories'   => $categories,
+			'category_url' => $best_url,
 		);
 
 		$result = AI_Product_Desc_Client::generate_description( $product_data );
@@ -62,12 +71,15 @@ final class AI_Product_Desc_Ajax {
 			);
 		}
 
+		$result = ai_product_desc_ensure_category_link( $result, $categories, $best_url );
+
 		wp_send_json_success(
 			array(
-				'product_id'            => $product_id,
-				'product_name'          => $product_data['name'],
-				'description'           => $result,
-				'current_description'   => self::get_current_description_payload( $product ),
+				'product_id'          => $product_id,
+				'product_name'        => $product_data['name'],
+				'description'         => $result,
+				'category_url'        => $best_url,
+				'current_description' => self::get_current_description_payload( $product ),
 			)
 		);
 	}
@@ -146,9 +158,11 @@ final class AI_Product_Desc_Ajax {
 				'term_id'      => (int) $term->term_id,
 				'seo_title'    => $result['seo_title'],
 				'seo_metadesc' => $result['seo_metadesc'],
+				'seo_focuskw'  => $result['seo_focuskw'],
 				'current'      => array(
 					'seo_title'    => $ctx['seo_title'],
 					'seo_metadesc' => $ctx['seo_metadesc'],
+					'seo_focuskw'  => $ctx['seo_focuskw'],
 				),
 			)
 		);
@@ -161,17 +175,18 @@ final class AI_Product_Desc_Ajax {
 		self::guard_request();
 		$term = self::get_product_cat_from_request();
 
-		$title = isset( $_POST['seo_title'] ) ? sanitize_text_field( wp_unslash( $_POST['seo_title'] ) ) : '';
-		$meta  = isset( $_POST['seo_metadesc'] ) ? sanitize_textarea_field( wp_unslash( $_POST['seo_metadesc'] ) ) : '';
+		$title   = isset( $_POST['seo_title'] ) ? sanitize_text_field( wp_unslash( $_POST['seo_title'] ) ) : '';
+		$meta    = isset( $_POST['seo_metadesc'] ) ? sanitize_textarea_field( wp_unslash( $_POST['seo_metadesc'] ) ) : '';
+		$focuskw = isset( $_POST['seo_focuskw'] ) ? sanitize_text_field( wp_unslash( $_POST['seo_focuskw'] ) ) : '';
 
-		if ( '' === $title && '' === $meta ) {
+		if ( '' === $title && '' === $meta && '' === $focuskw ) {
 			wp_send_json_error(
-				array( 'message' => __( 'عنوان و متا برای ذخیره خالی است.', 'ai-product-description' ) ),
+				array( 'message' => __( 'عنوان، متا و کلمه کلیدی برای ذخیره خالی است.', 'ai-product-description' ) ),
 				400
 			);
 		}
 
-		$ok = AI_Product_Desc_Category_Tools::set_yoast_seo( (int) $term->term_id, $title, $meta );
+		$ok = AI_Product_Desc_Category_Tools::set_yoast_seo( (int) $term->term_id, $title, $meta, $focuskw );
 		if ( ! $ok ) {
 			wp_send_json_error(
 				array( 'message' => __( 'ذخیره سئو در یوست انجام نشد.', 'ai-product-description' ) ),
@@ -186,6 +201,7 @@ final class AI_Product_Desc_Ajax {
 				'message'      => __( 'سئو دسته در یوست ذخیره شد.', 'ai-product-description' ),
 				'seo_title'    => $saved['title'],
 				'seo_metadesc' => $saved['metadesc'],
+				'seo_focuskw'  => $saved['focuskw'],
 			)
 		);
 	}
@@ -261,6 +277,89 @@ final class AI_Product_Desc_Ajax {
 				'message'     => __( 'توضیحات دسته ذخیره شد.', 'ai-product-description' ),
 				'description' => $desc,
 				'html'        => wp_kses_post( $desc ),
+			)
+		);
+	}
+
+	/**
+	 * Generate ACF technical specs preview for product category.
+	 */
+	public static function category_specs_generate(): void {
+		self::guard_request();
+		$term         = self::get_product_cat_from_request();
+		$ctx          = AI_Product_Desc_Category_Tools::get_category_context( $term );
+		$ctx['specs'] = AI_Product_Desc_Category_Tools::get_acf_specs( (int) $term->term_id );
+
+		$result = AI_Product_Desc_Client::generate_category_specs( $ctx );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
+		}
+
+		wp_send_json_success(
+			array(
+				'term_id'            => (int) $term->term_id,
+				'is_single_chemical' => ! empty( $result['is_single_chemical'] ),
+				'fields'             => $result['fields'],
+				'current'            => $ctx['specs'],
+			)
+		);
+	}
+
+	/**
+	 * Replace ACF technical specs for product category.
+	 */
+	public static function category_specs_save(): void {
+		self::guard_request();
+		$term = self::get_product_cat_from_request();
+
+		$raw = isset( $_POST['fields'] ) ? wp_unslash( $_POST['fields'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( is_string( $raw ) ) {
+			$decoded = json_decode( $raw, true );
+		} elseif ( is_array( $raw ) ) {
+			$decoded = $raw;
+		} else {
+			$decoded = null;
+		}
+
+		if ( ! is_array( $decoded ) || array() === $decoded ) {
+			wp_send_json_error(
+				array( 'message' => __( 'مشخصات برای ذخیره خالی یا نامعتبر است.', 'ai-product-description' ) ),
+				400
+			);
+		}
+
+		$allowed = array_keys( AI_Product_Desc_Category_Tools::get_acf_spec_fields() );
+		$clean   = array();
+		foreach ( $allowed as $name ) {
+			if ( ! array_key_exists( $name, $decoded ) ) {
+				continue;
+			}
+			$clean[ $name ] = sanitize_textarea_field( (string) $decoded[ $name ] );
+		}
+
+		if ( array() === $clean ) {
+			wp_send_json_error(
+				array( 'message' => __( 'هیچ فیلد معتبری برای ذخیره ارسال نشد.', 'ai-product-description' ) ),
+				400
+			);
+		}
+
+		$ok = AI_Product_Desc_Category_Tools::set_acf_specs( (int) $term->term_id, $clean );
+		if ( ! $ok ) {
+			wp_send_json_error(
+				array( 'message' => __( 'ذخیره مشخصات در ACF انجام نشد.', 'ai-product-description' ) ),
+				500
+			);
+		}
+
+		$saved = AI_Product_Desc_Category_Tools::get_acf_specs( (int) $term->term_id );
+
+		wp_send_json_success(
+			array(
+				'message' => __( 'مشخصات فنی دسته در ACF ذخیره شد.', 'ai-product-description' ),
+				'fields'  => $saved,
 			)
 		);
 	}
@@ -416,13 +515,14 @@ final class AI_Product_Desc_Ajax {
 	private static function linkify_lookazma( string $escaped ): string {
 		$link = '<a href="https://lookazma.com/" target="_blank" rel="noopener noreferrer">https://lookazma.com/</a>';
 
+		// Only bare homepage — do not rewrite /product-category/... URLs.
 		$escaped = preg_replace(
-			'#https?://(?:www\.)?lookazma\.com/?#iu',
+			'#https?://(?:www\.)?lookazma\.com/?(?=[\s<]|$)#iu',
 			$link,
 			$escaped
 		);
 
-		if ( is_string( $escaped ) && false === strpos( $escaped, 'href="https://lookazma.com/"' ) ) {
+		if ( is_string( $escaped ) && ! preg_match( '#href=["\']https?://[^"\']*lookazma\.com#iu', $escaped ) ) {
 			if ( preg_match( '/خرید\s+از\s+لوک\s*آزما/u', $escaped ) ) {
 				$escaped = preg_replace(
 					'/خرید\s+از\s+لوک\s*آزما/u',

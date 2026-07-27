@@ -65,7 +65,7 @@ body.taxonomy-product_cat #edittag {
 
 .ai-cat-tools__label {
 	display: inline-block;
-	min-width: 90px;
+	min-width: 140px;
 	font-weight: 600;
 }
 
@@ -127,4 +127,30 @@ body.taxonomy-product_cat #edittag {
 
 .ai-cat-tools__status.is-error {
 	color: #b32d2e;
+}
+
+.ai-cat-specs-table {
+	margin-top: 8px;
+	background: #fff;
+}
+
+.ai-cat-specs-table th {
+	width: 38%;
+	font-weight: 600;
+	vertical-align: top;
+}
+
+.ai-cat-specs-table td {
+	word-break: break-word;
+	white-space: pre-wrap;
+}
+
+.ai-cat-specs-table td.is-empty {
+	color: #646970;
+	font-style: italic;
+}
+
+#ai-cat-specs-hint {
+	margin: 8px 0 0;
+	color: #996800;
 }
