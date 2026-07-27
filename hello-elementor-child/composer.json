@@ -1,0 +1,17 @@
+{
+  "name": "lookazma/hello-elementor-child",
+  "description": "Hello Elementor child theme with Timber",
+  "type": "wordpress-theme",
+  "require": {
+    "php": ">=8.1",
+    "timber/timber": "^2.3",
+    "twig/twig": "~3.14.0"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true,
+    "platform": {
+      "php": "8.1.0"
+    }
+  }
+}

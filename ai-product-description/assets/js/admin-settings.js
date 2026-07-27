@@ -1,5 +1,6 @@
 /**
- * Toggle visible AI provider connection fields on the settings page.
+ * Highlight the active AI provider section on the settings page.
+ * All provider fields stay visible so credentials can be filled for any provider.
  */
 document.addEventListener('DOMContentLoaded', function () {
 	const select = document.getElementById('ai-product-desc-active-provider');
@@ -9,38 +10,28 @@ document.addEventListener('DOMContentLoaded', function () {
 		return;
 	}
 
-	const syncProviderPanels = function () {
+	const syncActiveHighlight = function () {
 		const active = select.value;
-		const panels = page.querySelectorAll('[data-provider]');
-
-		panels.forEach(function (el) {
-			const isActive = el.getAttribute('data-provider') === active;
-			el.hidden = !isActive;
-
-			const row = el.closest('tr');
-			if (row) {
-				row.hidden = !isActive;
-			}
-		});
 
 		page.querySelectorAll('h2').forEach(function (heading) {
 			const next = heading.nextElementSibling;
 			if (!next || !next.classList.contains('ai-product-desc-provider-panel')) {
+				heading.classList.remove('ai-provider-active');
 				return;
 			}
 
 			const provider = next.getAttribute('data-provider');
-			const table = next.nextElementSibling;
 			const isActive = provider === active;
+			heading.classList.toggle('ai-provider-active', isActive);
+			next.classList.toggle('ai-provider-active', isActive);
 
-			heading.hidden = !isActive;
-			next.hidden = !isActive;
+			const table = next.nextElementSibling;
 			if (table && table.classList.contains('form-table')) {
-				table.hidden = !isActive;
+				table.classList.toggle('ai-provider-active', isActive);
 			}
 		});
 	};
 
-	select.addEventListener('change', syncProviderPanels);
-	syncProviderPanels();
+	select.addEventListener('change', syncActiveHighlight);
+	syncActiveHighlight();
 });

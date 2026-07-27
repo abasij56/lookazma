@@ -42,6 +42,14 @@ final class AI_Product_Desc_Settings {
 					'model'    => 'gpt-4o',
 				),
 			),
+			'gemini'  => array(
+				'label'    => __( 'Google Gemini', 'ai-product-description' ),
+				'defaults' => array(
+					'api_key'  => '',
+					'base_url' => 'https://generativelanguage.googleapis.com/v1beta/openai',
+					'model'    => 'gemini-2.0-flash',
+				),
+			),
 			'openai'  => array(
 				'label'    => __( 'OpenAI (ChatGPT)', 'ai-product-description' ),
 				'defaults' => array(
@@ -291,27 +299,23 @@ final class AI_Product_Desc_Settings {
 	}
 
 	/**
-	 * Section description + data attribute for JS show/hide.
+	 * Section description for a provider connection block.
 	 *
 	 * @param string $provider_id Provider id.
 	 * @param string $label       Provider label.
 	 */
 	public static function render_provider_connection_section( string $provider_id, string $label ): void {
-		$settings = self::get_settings();
-		$active   = $settings['active_provider'] === $provider_id;
-		?>
-		<div class="ai-product-desc-provider-panel" data-provider="<?php echo esc_attr( $provider_id ); ?>" <?php echo $active ? '' : 'hidden'; ?>>
-			<p>
-				<?php
-				printf(
+		printf(
+			'<p class="ai-product-desc-provider-panel" data-provider="%1$s">%2$s</p>',
+			esc_attr( $provider_id ),
+			esc_html(
+				sprintf(
 					/* translators: %s: provider name */
-					esc_html__( 'Connection details for %s.', 'ai-product-description' ),
-					esc_html( $label )
-				);
-				?>
-			</p>
-		</div>
-		<?php
+					__( 'Connection details for %s. Fill these fields, then set this provider as Active above if you want to use it.', 'ai-product-description' ),
+					$label
+				)
+			)
+		);
 	}
 
 	/**
@@ -326,18 +330,15 @@ final class AI_Product_Desc_Settings {
 		$value    = $settings['providers'][ $provider_id ][ $field ] ?? '';
 		$name     = sprintf( '%s[providers][%s][%s]', self::OPTION_KEY, $provider_id, $field );
 		$id       = sprintf( 'ai-product-desc-%s-%s', $provider_id, $field );
-		$active   = $settings['active_provider'] === $provider_id;
 		?>
-		<div class="ai-product-desc-provider-field" data-provider="<?php echo esc_attr( $provider_id ); ?>" <?php echo $active ? '' : 'hidden'; ?>>
-			<input
-				type="<?php echo esc_attr( $type ); ?>"
-				class="regular-text"
-				name="<?php echo esc_attr( $name ); ?>"
-				id="<?php echo esc_attr( $id ); ?>"
-				value="<?php echo esc_attr( (string) $value ); ?>"
-				autocomplete="off"
-			>
-		</div>
+		<input
+			type="<?php echo esc_attr( $type ); ?>"
+			class="regular-text"
+			name="<?php echo esc_attr( $name ); ?>"
+			id="<?php echo esc_attr( $id ); ?>"
+			value="<?php echo esc_attr( (string) $value ); ?>"
+			autocomplete="off"
+		>
 		<?php
 	}
 }

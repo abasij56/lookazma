@@ -90,6 +90,21 @@
 	line-height: 1.8;
 }
 
+.ai-product-desc__result-body h2,
+.ai-product-desc__result-body h3 {
+	margin: 1em 0 0.5em;
+	line-height: 1.4;
+}
+
+.ai-product-desc__result-body ul {
+	margin: 0.5em 0 1em 1.25em;
+	list-style: disc;
+}
+
+.ai-product-desc__result-body p {
+	margin: 0 0 0.85em;
+}
+
 .ai-product-desc__result-body a {
 	color: inherit;
 	font-weight: 600;

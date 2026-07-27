@@ -1,0 +1,196 @@
+{% extends "base.twig" %}
+
+{% block content %}
+{% if product_data %}
+<div class="lk-container">
+	{% if product_data.breadcrumb_html %}
+		<nav class="lk-breadcrumb" aria-label="breadcrumb">
+			{{ product_data.breadcrumb_html|raw }}
+		</nav>
+	{% endif %}
+</div>
+
+<article class="lk-product lk-container" data-product-id="{{ product_data.id }}" data-product-type="{{ product_data.is_variable ? 'variable' : 'simple' }}">
+	{# RTL: [قیمت | مشخصات | عکس] — کارت محصول راست، کارت قیمت چپ #}
+	<div class="lk-product__row">
+		<section class="lk-info-card" aria-label="اطلاعات محصول">
+			<div class="lk-info-card__inner">
+				<div class="lk-info-card__media">
+					{% if product_data.brand_image %}
+						{% if product_data.brand_link %}
+							<a href="{{ product_data.brand_link }}">
+								<img class="lk-info-card__brand-icon" src="{{ product_data.brand_image }}" alt="{{ product_data.brand_name|default('برند') }}" width="72" height="72">
+							</a>
+						{% else %}
+							<img class="lk-info-card__brand-icon" src="{{ product_data.brand_image }}" alt="{{ product_data.brand_name|default('برند') }}" width="72" height="72">
+						{% endif %}
+					{% endif %}
+
+					<figure class="lk-info-card__photo">
+						{% if product_data.image %}
+							<img src="{{ product_data.image.url }}" alt="{{ product_data.image.alt|default(product_data.name) }}" width="800" height="576">
+						{% else %}
+							<span class="lk-info-card__placeholder">بدون تصویر</span>
+						{% endif %}
+					</figure>
+				</div>
+
+				<div class="lk-info-card__body">
+					{% if product_data.brand_name %}
+						<p class="lk-info-card__brand">
+							{% if product_data.brand_link %}
+								<a href="{{ product_data.brand_link }}">نام برند : {{ product_data.brand_name }}</a>
+							{% else %}
+								نام برند : {{ product_data.brand_name }}
+							{% endif %}
+						</p>
+					{% endif %}
+
+					<h1 class="lk-info-card__title">{{ product_data.name }}</h1>
+
+					{% if product_data.english_name %}
+						<p class="lk-info-card__english">{{ product_data.english_name }}</p>
+					{% endif %}
+
+					<hr class="lk-info-card__divider">
+
+					{% if product_data.highlights or product_data.datasheet %}
+						<div class="lk-info-card__specs">
+							{% if product_data.highlights %}
+								<h2>مشخصات محصول</h2>
+								<ul class="lk-specs-grid">
+									{% for item in product_data.highlights %}
+										<li>
+											<span>{{ item.label }}</span>
+											<strong>{{ item.value }}</strong>
+										</li>
+									{% endfor %}
+								</ul>
+							{% endif %}
+
+							{% if product_data.datasheet %}
+								<a class="lk-datasheet" href="{{ product_data.datasheet }}" target="_blank" rel="noopener noreferrer">دانلود برگه مشخصات فنی</a>
+							{% endif %}
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</section>
+
+		<aside class="lk-price-card" aria-label="خرید محصول">
+			{% if product_data.price_notice %}
+				<p class="lk-price-card__notice">{{ product_data.price_notice }}</p>
+			{% endif %}
+
+			<p class="lk-price-card__label">قیمت محصول</p>
+			<div class="lk-price-card__amount">{{ product_data.price_html|raw }}</div>
+
+			{% if product_data.is_in_stock %}
+				<div class="lk-price-card__stock is-in">موجود در انبار</div>
+			{% else %}
+				<div class="lk-price-card__stock is-muted">ناموجود</div>
+			{% endif %}
+
+			<div class="lk-price-card__cart">
+				{{ product_data.add_to_cart_html|raw }}
+			</div>
+
+			<div class="lk-price-card__actions">
+				{% if product_data.shipping_url %}
+					<a href="{{ product_data.shipping_url }}">روش و هزینه ارسال کالا</a>
+				{% endif %}
+				{% if product_data.whatsapp_url %}
+					<a href="{{ product_data.whatsapp_url }}" target="_blank" rel="noopener noreferrer">واتساپ</a>
+				{% endif %}
+				{% if product_data.phone %}
+					<a href="tel:{{ product_data.phone }}">{{ product_data.phone }}</a>
+				{% endif %}
+			</div>
+		</aside>
+	</div>
+
+	<ul class="lk-badges" aria-label="مزایای خرید">
+		<li>
+			<span class="lk-badges__icon" aria-hidden="true">
+				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h13l5 5v5h-2a2 2 0 1 1-4 0H9a2 2 0 1 1-4 0H3V7z"/><path d="M16 7v5h5"/></svg>
+			</span>
+			<span>تحویل فوری سراسر کشور</span>
+		</li>
+		<li>
+			<span class="lk-badges__icon" aria-hidden="true">
+				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 3v6c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>
+			</span>
+			<span>ضمانت اصالت کالا</span>
+		</li>
+		<li>
+			<span class="lk-badges__icon" aria-hidden="true">
+				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/><path d="M19 4v3M19 10h.01"/></svg>
+			</span>
+			<span>پشتیبانی ۲۴/۷</span>
+		</li>
+	</ul>
+
+	<section class="lk-tabs" data-lk-tabs>
+		<div class="lk-tabs__nav" role="tablist">
+			<button type="button" class="is-active" data-tab="attrs" role="tab" aria-selected="true">مشخصات محصول</button>
+			<button type="button" data-tab="intro" role="tab" aria-selected="false">معرفی محصول</button>
+			<button type="button" data-tab="reviews" role="tab" aria-selected="false">نظرات</button>
+		</div>
+
+		<div class="lk-tabs__panel is-active" data-panel="attrs" role="tabpanel">
+			{% if product_data.attributes %}
+				<table class="lk-table">
+					<tbody>
+						{% for attr in product_data.attributes %}
+							<tr>
+								<th>{{ attr.label }}</th>
+								<td>{{ attr.value }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			{% else %}
+				<p>مشخصاتی ثبت نشده است.</p>
+			{% endif %}
+		</div>
+
+		<div class="lk-tabs__panel" data-panel="intro" role="tabpanel" hidden>
+			{% if product_data.description %}
+				<div class="lk-prose">
+					{{ product_data.description|raw }}
+				</div>
+			{% else %}
+				<p>توضیحی برای این محصول ثبت نشده است.</p>
+			{% endif %}
+		</div>
+
+		<div class="lk-tabs__panel" data-panel="reviews" role="tabpanel" hidden>
+			{{ product_data.reviews_html|raw }}
+		</div>
+	</section>
+
+	{% if product_data.related %}
+		<section class="lk-related" aria-labelledby="lk-related-title">
+			<h2 id="lk-related-title">محصولات مرتبط</h2>
+			<ul class="lk-related__grid">
+				{% for item in product_data.related %}
+					<li>
+						<a href="{{ item.permalink }}">
+							{% if item.image %}
+								<img src="{{ item.image }}" alt="{{ item.name }}">
+							{% endif %}
+							<span class="lk-related__name">{{ item.name }}</span>
+							<span class="lk-related__price">{{ item.price_html|raw }}</span>
+						</a>
+					</li>
+				{% endfor %}
+			</ul>
+		</section>
+	{% endif %}
+</article>
+{% else %}
+	<div class="lk-container">
+		<p>محصول پیدا نشد.</p>
+	</div>
+{% endif %}
+{% endblock %}

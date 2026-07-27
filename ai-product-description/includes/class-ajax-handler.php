@@ -363,12 +363,24 @@ final class AI_Product_Desc_Ajax {
 	}
 
 	/**
-	 * Convert plain AI text into safe HTML for product description.
+	 * Convert AI text into safe HTML for product description.
+	 * Preserves structured HTML (h2/h3/ul/...) when already present.
 	 *
-	 * @param string $text Plain description text.
+	 * @param string $text Plain or HTML description.
 	 * @return string
 	 */
 	private static function format_description_for_product( string $text ): string {
+		$text = trim( $text );
+
+		if ( '' === $text ) {
+			return '';
+		}
+
+		// Structured HTML from the new product prompt.
+		if ( false !== strpos( $text, '<' ) ) {
+			return wp_kses_post( $text );
+		}
+
 		$text = wp_strip_all_tags( $text );
 		$text = preg_replace( "/\r\n|\r/", "\n", $text );
 		$text = is_string( $text ) ? trim( $text ) : '';

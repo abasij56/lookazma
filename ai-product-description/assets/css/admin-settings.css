@@ -2,12 +2,21 @@
 	width: 180px;
 }
 
-.ai-product-desc-settings .ai-product-desc-provider-field input.regular-text {
+.ai-product-desc-settings .form-table input.regular-text {
 	max-width: 420px;
 }
 
-.ai-product-desc-settings h2[hidden],
-.ai-product-desc-settings .form-table[hidden],
-.ai-product-desc-settings .ai-product-desc-provider-panel[hidden] {
-	display: none;
+.ai-product-desc-settings h2.ai-provider-active {
+	color: #1d2327;
+	border-right: 3px solid #2271b1;
+	padding-right: 10px;
+}
+
+.ai-product-desc-settings .form-table.ai-provider-active {
+	background: #f0f6fc;
+	border-radius: 4px;
+}
+
+.ai-product-desc-settings .ai-product-desc-provider-panel.ai-provider-active {
+	font-weight: 600;
 }

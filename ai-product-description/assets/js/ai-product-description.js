@@ -52,7 +52,20 @@
 	 * Escape text, keep line breaks, and turn Lookazma mentions into links.
 	 */
 	function formatDescriptionHtml(text) {
-		var escaped = escapeHtml(text).replace(/\r\n|\r|\n/g, '<br>');
+		var value = String(text || '').trim();
+		if (!value) {
+			return '';
+		}
+
+		// Structured HTML from the product prompt template.
+		if (/<[a-z][\s\S]*>/i.test(value)) {
+			return value.replace(
+				/https?:\/\/(?:www\.)?lookazma\.com\/?/gi,
+				lookazmaLink('https://lookazma.com/')
+			);
+		}
+
+		var escaped = escapeHtml(value).replace(/\r\n|\r|\n/g, '<br>');
 		var storeUrlPattern =
 			/https?:\/\/(?:www\.)?lookazma\.com\/?/gi;
 		var plainDomainPattern = /(?:^|[\s(])((?:www\.)?lookazma\.com\/?)/gi;
