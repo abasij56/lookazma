@@ -2,8 +2,8 @@
 /**
  * Custom WooCommerce archive product filters.
  *
- * Sitewide on product category archives and the shop page. Deactivate JetSmartFilters
- * in WP admin (assets are also dequeued here as a safety net).
+ * Sitewide on product category archives, product tag archives, and the shop page.
+ * Deactivate JetSmartFilters in WP admin (assets are also dequeued here as a safety net).
  *
  * Shortcodes:
  * - [lk_archive_filters]
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Hello_Elementor_Child_Archive_Product_Filter {
 
 	/**
-	 * 'pilot' = only configured category slugs; 'sitewide' = all product category archives + shop.
+	 * 'pilot' = only configured category slugs; 'sitewide' = categories + tags + shop.
 	 */
 	public const MODE = 'sitewide';
 
@@ -64,6 +64,7 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 
 		add_action( 'wp_ajax_lk_archive_filter_products', array( __CLASS__, 'ajax_filter_products' ) );
 		add_action( 'wp_ajax_nopriv_lk_archive_filter_products', array( __CLASS__, 'ajax_filter_products' ) );
+		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
 	}
 
 	/**
@@ -73,7 +74,10 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		$mode = apply_filters( 'lk_archive_filter_mode', self::MODE );
 
 		if ( 'sitewide' === $mode ) {
-			return is_product_category() || is_shop() || self::has_filter_request();
+			return is_product_category()
+				|| is_product_tag()
+				|| is_shop()
+				|| self::has_filter_request();
 		}
 
 		if ( ! is_product_category() ) {
@@ -90,6 +94,77 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 
 		return in_array( urldecode( $term->slug ), $slugs, true )
 			|| in_array( $term->slug, $slugs, true );
+	}
+
+	/**
+	 * Shop-style cards / grid / pagination (shop + product tag archives).
+	 */
+	public static function uses_shop_cards_ui(): bool {
+		return ( function_exists( 'is_shop' ) && is_shop() )
+			|| ( function_exists( 'is_product_tag' ) && is_product_tag() )
+			|| is_tax( 'product_tag' );
+	}
+
+	/**
+	 * Add body class for shared shop-card styles.
+	 *
+	 * @param array<int, string> $classes Body classes.
+	 * @return array<int, string>
+	 */
+	public static function body_class( array $classes ): array {
+		if ( self::uses_shop_cards_ui() ) {
+			$classes[] = 'lk-shop-cards-archive';
+		}
+		// Elementor tag archives always expose tax-product_tag; keep our hook explicit too.
+		if ( is_tax( 'product_tag' ) || ( function_exists( 'is_product_tag' ) && is_product_tag() ) ) {
+			$classes[] = 'lk-shop-cards-archive';
+		}
+		return array_values( array_unique( $classes ) );
+	}
+
+	/**
+	 * Current archive taxonomy for scoping (product_cat|product_tag|empty).
+	 */
+	public static function get_scope_taxonomy(): string {
+		if ( function_exists( 'is_product_category' ) && is_product_category() ) {
+			return 'product_cat';
+		}
+		if ( function_exists( 'is_product_tag' ) && is_product_tag() ) {
+			return 'product_tag';
+		}
+		if ( is_tax( 'product_tag' ) ) {
+			return 'product_tag';
+		}
+		if ( is_tax( 'product_cat' ) ) {
+			return 'product_cat';
+		}
+		return '';
+	}
+
+	/**
+	 * Resolve taxonomy for a term ID (AJAX-safe).
+	 *
+	 * @param int    $term_id  Term ID.
+	 * @param string $taxonomy Requested taxonomy hint.
+	 */
+	private static function resolve_taxonomy_for_term( int $term_id, string $taxonomy = '' ): string {
+		$candidates = array();
+		if ( in_array( $taxonomy, array( 'product_cat', 'product_tag' ), true ) ) {
+			$candidates[] = $taxonomy;
+		}
+		// Prefer product_tag when hint is missing — tag archives are the common AJAX miss.
+		$candidates[] = 'product_tag';
+		$candidates[] = 'product_cat';
+		$candidates   = array_values( array_unique( $candidates ) );
+
+		foreach ( $candidates as $tax ) {
+			$term = get_term( $term_id, $tax );
+			if ( $term instanceof WP_Term && ! is_wp_error( $term ) ) {
+				return $tax;
+			}
+		}
+
+		return '';
 	}
 
 	/**
@@ -202,28 +277,47 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	}
 
 	/**
-	 * Current category term for scoping counts/options.
+	 * Current category/tag term for scoping counts/options.
 	 */
 	private static function get_scope_term(): ?WP_Term {
-		if ( is_product_category() ) {
-			$term = get_queried_object();
-			return $term instanceof WP_Term ? $term : null;
+		$taxonomy = self::get_scope_taxonomy();
+		if ( '' === $taxonomy ) {
+			return null;
 		}
-		return null;
+		$term = get_queried_object();
+		return $term instanceof WP_Term ? $term : null;
 	}
 
 	/**
-	 * Product IDs in current category (for counting filter options).
+	 * Resolve a term for scoping (AJAX or current request).
 	 *
-	 * @param int|null                 $term_id  Optional category term ID (AJAX).
+	 * @param int    $term_id  Term ID.
+	 * @param string $taxonomy Taxonomy slug.
+	 */
+	private static function resolve_scope_term( int $term_id = 0, string $taxonomy = '' ): ?WP_Term {
+		if ( $term_id > 0 ) {
+			$taxonomy = self::resolve_taxonomy_for_term( $term_id, $taxonomy );
+			if ( '' === $taxonomy ) {
+				return null;
+			}
+			$maybe = get_term( $term_id, $taxonomy );
+			return $maybe instanceof WP_Term ? $maybe : null;
+		}
+		return self::get_scope_term();
+	}
+
+	/**
+	 * Product IDs in current category/tag (for counting filter options).
+	 *
+	 * @param int|null                  $term_id  Optional term ID (AJAX).
 	 * @param array<string, mixed>|null $selected Optional filters to apply.
+	 * @param string                    $taxonomy Taxonomy for $term_id.
 	 * @return array<int, int>
 	 */
-	private static function get_scoped_product_ids( ?int $term_id = null, ?array $selected = null ): array {
+	private static function get_scoped_product_ids( ?int $term_id = null, ?array $selected = null, string $taxonomy = '' ): array {
 		$term = null;
 		if ( null !== $term_id && $term_id > 0 ) {
-			$maybe = get_term( $term_id, 'product_cat' );
-			$term  = $maybe instanceof WP_Term ? $maybe : null;
+			$term = self::resolve_scope_term( $term_id, $taxonomy );
 		} else {
 			$term = self::get_scope_term();
 		}
@@ -241,10 +335,10 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		if ( $term ) {
 			$args['tax_query'] = array(
 				array(
-					'taxonomy'         => 'product_cat',
+					'taxonomy'         => $term->taxonomy,
 					'field'            => 'term_id',
 					'terms'            => array( (int) $term->term_id ),
-					'include_children' => true,
+					'include_children' => ( 'product_cat' === $term->taxonomy ),
 				),
 			);
 		}
@@ -260,11 +354,12 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	/**
 	 * Facet options/counts for each filter, excluding that filter's own selection.
 	 *
-	 * @param int                   $term_id  Category term ID.
+	 * @param int                  $term_id  Scope term ID.
 	 * @param array<string, mixed> $selected Current selections.
+	 * @param string               $taxonomy Scope taxonomy.
 	 * @return array<string, array<int, array{slug: string, name: string, count: int}>>
 	 */
-	private static function build_facets( int $term_id, array $selected ): array {
+	private static function build_facets( int $term_id, array $selected, string $taxonomy = '' ): array {
 		$defs   = self::get_filter_definitions();
 		$facets = array();
 
@@ -273,9 +368,14 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 				continue;
 			}
 
+			// On a brand (product_tag) archive, brand facet is redundant.
+			if ( 'brand' === $key && 'product_tag' === $taxonomy ) {
+				continue;
+			}
+
 			$without          = $selected;
 			$without[ $key ] = array();
-			$product_ids      = self::get_scoped_product_ids( $term_id > 0 ? $term_id : null, $without );
+			$product_ids      = self::get_scoped_product_ids( $term_id > 0 ? $term_id : null, $without, $taxonomy );
 			$facets[ $key ]  = self::get_terms_for_products( $def['taxonomy'], $product_ids );
 		}
 
@@ -576,7 +676,9 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			return;
 		}
 
-		$term = self::get_scope_term();
+		$term         = self::get_scope_term();
+		$taxonomy     = self::get_scope_taxonomy();
+		$use_shop_ui  = self::uses_shop_cards_ui();
 
 		wp_enqueue_style(
 			'lk-archive-filters',
@@ -585,9 +687,8 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			HELLO_ELEMENTOR_CHILD_VERSION
 		);
 
-		$is_shop = function_exists( 'is_shop' ) && is_shop();
 		$script_deps = array();
-		if ( $is_shop ) {
+		if ( $use_shop_ui ) {
 			wp_enqueue_script( 'wc-add-to-cart' );
 			$script_deps = array( 'jquery', 'wc-add-to-cart' );
 		}
@@ -600,12 +701,13 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			true
 		);
 
-		if ( $is_shop ) {
+		if ( $use_shop_ui ) {
+			$shop_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-product-shop-cards.css';
 			wp_enqueue_style(
 				'lk-archive-shop-cards',
 				HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-product-shop-cards.css',
 				array( 'lk-archive-filters' ),
-				HELLO_ELEMENTOR_CHILD_VERSION
+				file_exists( $shop_css ) ? (string) filemtime( $shop_css ) : HELLO_ELEMENTOR_CHILD_VERSION
 			);
 		}
 
@@ -617,11 +719,12 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 				'action'         => 'lk_archive_filter_products',
 				'nonce'          => wp_create_nonce( 'lk_archive_filter' ),
 				'termId'         => $term ? (int) $term->term_id : 0,
-				'isShop'         => $is_shop,
-				'layout'         => $is_shop ? 'shop' : 'archive',
+				'taxonomy'       => $taxonomy,
+				'isShop'         => $use_shop_ui,
+				'layout'         => $use_shop_ui ? 'shop' : 'archive',
 				'nativeTemplate' => class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
 					&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled(),
-				'perPage'        => $is_shop
+				'perPage'        => $use_shop_ui
 					? 12
 					: ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
 						? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
@@ -756,10 +859,10 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		if ( $term ) {
 			$args['tax_query'] = array(
 				array(
-					'taxonomy'         => 'product_cat',
+					'taxonomy'         => $term->taxonomy,
 					'field'            => 'term_id',
 					'terms'            => array( (int) $term->term_id ),
-					'include_children' => true,
+					'include_children' => ( 'product_cat' === $term->taxonomy ),
 				),
 			);
 		}
@@ -796,6 +899,12 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		$selected    = self::get_selected_filters();
 		$price_range = self::get_price_range( $product_ids );
 		$term        = self::get_scope_term();
+		$taxonomy    = self::get_scope_taxonomy();
+
+		// Brand archive already scopes by tag — hide brand filter panel.
+		if ( 'product_tag' === $taxonomy ) {
+			unset( $defs['brand'] );
+		}
 
 		ob_start();
 		?>
@@ -804,6 +913,7 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			id="lk-archive-filters"
 			data-lk-custom-filters="1"
 			data-term-id="<?php echo esc_attr( $term ? (string) $term->term_id : '0' ); ?>"
+			data-taxonomy="<?php echo esc_attr( $taxonomy ); ?>"
 		>
 			<div class="lk-archive-filters__head">
 				<strong class="lk-archive-filters__title"><?php esc_html_e( 'فیلترها', 'hello-elementor-child' ); ?></strong>
@@ -890,8 +1000,15 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	public static function ajax_filter_products(): void {
 		check_ajax_referer( 'lk_archive_filter', 'nonce' );
 
-		$term_id = isset( $_POST['term_id'] ) ? absint( $_POST['term_id'] ) : 0;
-		$page    = isset( $_POST['page'] ) ? max( 1, absint( $_POST['page'] ) ) : 1;
+		$term_id  = isset( $_POST['term_id'] ) ? absint( $_POST['term_id'] ) : 0;
+		$page     = isset( $_POST['page'] ) ? max( 1, absint( $_POST['page'] ) ) : 1;
+		$taxonomy = isset( $_POST['taxonomy'] ) ? sanitize_key( (string) wp_unslash( $_POST['taxonomy'] ) ) : '';
+		if ( $term_id > 0 ) {
+			$taxonomy = self::resolve_taxonomy_for_term( $term_id, $taxonomy );
+		} else {
+			$taxonomy = '';
+		}
+
 		$raw     = isset( $_POST['filters'] ) ? wp_unslash( $_POST['filters'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$payload = is_string( $raw ) ? json_decode( $raw, true ) : ( is_array( $raw ) ? $raw : array() );
 		if ( ! is_array( $payload ) ) {
@@ -900,8 +1017,16 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 
 		$selected = self::get_selected_filters( $payload );
 
+		$layout = isset( $_POST['layout'] ) ? sanitize_key( (string) wp_unslash( $_POST['layout'] ) ) : '';
+		if ( 'shop' !== $layout && 'archive' !== $layout ) {
+			$layout = ( 'product_tag' === $taxonomy || 0 === $term_id ) ? 'shop' : 'archive';
+		}
+
 		$per_page = 48;
-		if ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+		if ( 'shop' === $layout ) {
+			$per_page = isset( $_POST['per_page'] ) ? max( 1, absint( $_POST['per_page'] ) ) : 12;
+		} elseif ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+			&& 'product_cat' === $taxonomy
 			&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled( $term_id > 0 ? $term_id : null )
 		) {
 			$per_page = Hello_Elementor_Child_Custom_Category_Archive::get_per_page();
@@ -916,33 +1041,27 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			'paged'          => $page,
 		);
 
-		if ( $term_id > 0 ) {
+		if ( $term_id > 0 && '' !== $taxonomy ) {
 			$args['tax_query'] = array(
 				array(
-					'taxonomy'         => 'product_cat',
+					'taxonomy'         => $taxonomy,
 					'field'            => 'term_id',
 					'terms'            => array( $term_id ),
-					'include_children' => true,
+					'include_children' => ( 'product_cat' === $taxonomy ),
 				),
 			);
 		}
 
 		$args  = self::apply_fragments_to_args( $args, $selected, true );
 		$query = new WP_Query( $args );
-
-		$layout = isset( $_POST['layout'] ) ? sanitize_key( (string) wp_unslash( $_POST['layout'] ) ) : '';
-		if ( 'shop' !== $layout && 'archive' !== $layout ) {
-			$layout = ( 0 === $term_id ) ? 'shop' : 'archive';
-		}
-
-		$html = self::render_products_grid_html( $query, $layout );
+		$html  = self::render_products_grid_html( $query, $layout );
 
 		wp_send_json_success(
 			array(
 				'html'       => $html,
-				'pagination' => self::render_pagination_html( $query, $term_id, $page ),
+				'pagination' => self::render_pagination_html( $query, $term_id, $page, $taxonomy ),
 				'count'      => (int) $query->found_posts,
-				'facets'     => self::build_facets( $term_id, $selected ),
+				'facets'     => self::build_facets( $term_id, $selected, $taxonomy ),
 				'page'       => $page,
 			)
 		);
@@ -1342,12 +1461,13 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	/**
 	 * Pagination markup for light archive / AJAX updates.
 	 *
-	 * @param WP_Query $query   Query.
-	 * @param int      $term_id Category term ID.
-	 * @param int      $current Current page (AJAX).
+	 * @param WP_Query $query    Query.
+	 * @param int      $term_id  Scope term ID.
+	 * @param int      $current  Current page (AJAX).
+	 * @param string   $taxonomy Scope taxonomy.
 	 * @return string
 	 */
-	public static function render_pagination_html( WP_Query $query, int $term_id = 0, int $current = 0 ): string {
+	public static function render_pagination_html( WP_Query $query, int $term_id = 0, int $current = 0, string $taxonomy = '' ): string {
 		$total = (int) $query->max_num_pages;
 		if ( $total <= 1 ) {
 			return '';
@@ -1358,7 +1478,10 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		}
 
 		if ( $term_id > 0 ) {
-			$base_url = get_term_link( $term_id, 'product_cat' );
+			if ( ! in_array( $taxonomy, array( 'product_cat', 'product_tag' ), true ) ) {
+				$taxonomy = 'product_cat';
+			}
+			$base_url = get_term_link( $term_id, $taxonomy );
 		} elseif ( function_exists( 'wc_get_page_permalink' ) ) {
 			$base_url = wc_get_page_permalink( 'shop' );
 		} else {

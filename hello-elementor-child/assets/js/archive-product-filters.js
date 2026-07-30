@@ -404,6 +404,27 @@
 		});
 	}
 
+	function resolveTermId(root) {
+		var fromDom = root ? parseInt(root.getAttribute('data-term-id') || '', 10) : 0;
+		if (fromDom > 0) {
+			return fromDom;
+		}
+		var fromCfg = parseInt(cfg.termId, 10);
+		return fromCfg > 0 ? fromCfg : 0;
+	}
+
+	function resolveTaxonomy(root) {
+		var fromDom = root ? String(root.getAttribute('data-taxonomy') || '').trim() : '';
+		if (fromDom === 'product_cat' || fromDom === 'product_tag') {
+			return fromDom;
+		}
+		var fromCfg = String(cfg.taxonomy || '').trim();
+		if (fromCfg === 'product_cat' || fromCfg === 'product_tag') {
+			return fromCfg;
+		}
+		return '';
+	}
+
 	function runFilter(root, page) {
 		if (!cfg.ajaxUrl || !cfg.action || !cfg.nonce) {
 			return;
@@ -418,7 +439,8 @@
 		var formData = new FormData();
 		formData.append('action', cfg.action);
 		formData.append('nonce', cfg.nonce);
-		formData.append('term_id', root.getAttribute('data-term-id') || cfg.termId || 0);
+		formData.append('term_id', String(resolveTermId(root)));
+		formData.append('taxonomy', resolveTaxonomy(root));
 		formData.append('page', String(currentPage));
 		formData.append('per_page', String(cfg.perPage || 12));
 		formData.append('layout', cfg.layout || (cfg.isShop ? 'shop' : 'archive'));
@@ -567,6 +589,10 @@
 	}
 
 	function markShopGrid() {
+		document.documentElement.classList.add('lk-shop-filters-ready');
+		if (document.body) {
+			document.body.classList.add('lk-shop-cards-archive');
+		}
 		var loop = getLoopContainer();
 		if (loop) {
 			loop.classList.add('lk-shop-products-grid');
