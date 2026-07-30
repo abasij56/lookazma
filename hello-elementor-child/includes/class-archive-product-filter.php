@@ -2,8 +2,8 @@
 /**
  * Custom WooCommerce archive product filters.
  *
- * Sitewide on product category archives. Deactivate JetSmartFilters in WP admin
- * (assets are also dequeued here as a safety net).
+ * Sitewide on product category archives and the shop page. Deactivate JetSmartFilters
+ * in WP admin (assets are also dequeued here as a safety net).
  *
  * Shortcodes:
  * - [lk_archive_filters]
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Hello_Elementor_Child_Archive_Product_Filter {
 
 	/**
-	 * 'pilot' = only configured category slugs; 'sitewide' = all product category archives.
+	 * 'pilot' = only configured category slugs; 'sitewide' = all product category archives + shop.
 	 */
 	public const MODE = 'sitewide';
 
@@ -73,7 +73,7 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		$mode = apply_filters( 'lk_archive_filter_mode', self::MODE );
 
 		if ( 'sitewide' === $mode ) {
-			return is_product_category() || self::has_filter_request();
+			return is_product_category() || is_shop() || self::has_filter_request();
 		}
 
 		if ( ! is_product_category() ) {
@@ -545,7 +545,10 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		if ( ! self::is_active_context() ) {
 			return;
 		}
-		if ( ! $query->is_post_type_archive( 'product' ) && ! $query->is_tax( get_object_taxonomies( 'product' ) ) ) {
+		$is_product_archive = $query->is_post_type_archive( 'product' )
+			|| $query->is_tax( get_object_taxonomies( 'product' ) )
+			|| ( function_exists( 'wc_get_page_id' ) && (int) $query->get( 'page_id' ) === (int) wc_get_page_id( 'shop' ) );
+		if ( ! $is_product_archive ) {
 			return;
 		}
 		self::filter_wc_query( $query );
@@ -582,13 +585,29 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			HELLO_ELEMENTOR_CHILD_VERSION
 		);
 
+		$is_shop = function_exists( 'is_shop' ) && is_shop();
+		$script_deps = array();
+		if ( $is_shop ) {
+			wp_enqueue_script( 'wc-add-to-cart' );
+			$script_deps = array( 'jquery', 'wc-add-to-cart' );
+		}
+
 		wp_enqueue_script(
 			'lk-archive-filters',
 			HELLO_ELEMENTOR_CHILD_URI . 'assets/js/archive-product-filters.js',
-			array(),
+			$script_deps,
 			HELLO_ELEMENTOR_CHILD_VERSION,
 			true
 		);
+
+		if ( $is_shop ) {
+			wp_enqueue_style(
+				'lk-archive-shop-cards',
+				HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-product-shop-cards.css',
+				array( 'lk-archive-filters' ),
+				HELLO_ELEMENTOR_CHILD_VERSION
+			);
+		}
 
 		wp_localize_script(
 			'lk-archive-filters',
@@ -598,17 +617,27 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 				'action'         => 'lk_archive_filter_products',
 				'nonce'          => wp_create_nonce( 'lk_archive_filter' ),
 				'termId'         => $term ? (int) $term->term_id : 0,
+				'isShop'         => $is_shop,
+				'layout'         => $is_shop ? 'shop' : 'archive',
 				'nativeTemplate' => class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
 					&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled(),
-				'perPage'        => class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
-					? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
-					: 12,
+				'perPage'        => $is_shop
+					? 12
+					: ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+						? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
+						: 12 ),
 				'i18n'           => array(
-					'empty'   => __( 'محصولی با این فیلترها پیدا نشد.', 'hello-elementor-child' ),
-					'error'   => __( 'خطا در فیلتر محصولات.', 'hello-elementor-child' ),
-					'search'  => __( 'جستجو…', 'hello-elementor-child' ),
-					'loading' => __( 'در حال فیلتر…', 'hello-elementor-child' ),
+					'empty'      => __( 'محصولی با این فیلترها پیدا نشد.', 'hello-elementor-child' ),
+					'error'      => __( 'خطا در فیلتر محصولات.', 'hello-elementor-child' ),
+					'search'     => __( 'جستجو…', 'hello-elementor-child' ),
+					'loading'    => __( 'در حال فیلتر…', 'hello-elementor-child' ),
+					'addToCart'  => __( 'افزودن به سبد', 'hello-elementor-child' ),
+					'added'      => __( 'افزوده شد', 'hello-elementor-child' ),
+					'adding'     => __( 'در حال افزودن…', 'hello-elementor-child' ),
+					'viewCart'   => __( 'مشاهده سبد خرید', 'hello-elementor-child' ),
+					'pagination' => __( 'صفحه‌بندی محصولات', 'hello-elementor-child' ),
 				),
+				'cartUrl'        => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/cart/' ),
 			)
 		);
 	}
@@ -691,10 +720,6 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	 * @return string
 	 */
 	public static function shortcode_filters(): string {
-		if ( ! self::is_active_context() && ! is_product_category() && ! is_shop() ) {
-			return '';
-		}
-		// Allow shortcode on pilot category even if MODE checks pass via is_product_category inside is_active_context.
 		if ( ! self::is_active_context() ) {
 			return '';
 		}
@@ -904,7 +929,13 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 
 		$args  = self::apply_fragments_to_args( $args, $selected, true );
 		$query = new WP_Query( $args );
-		$html  = self::render_products_grid_html( $query );
+
+		$layout = isset( $_POST['layout'] ) ? sanitize_key( (string) wp_unslash( $_POST['layout'] ) ) : '';
+		if ( 'shop' !== $layout && 'archive' !== $layout ) {
+			$layout = ( 0 === $term_id ) ? 'shop' : 'archive';
+		}
+
+		$html = self::render_products_grid_html( $query, $layout );
 
 		wp_send_json_success(
 			array(
@@ -920,13 +951,16 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	/**
 	 * Render product cards for loop/grid replacement.
 	 *
-	 * @param WP_Query $query Query.
+	 * @param WP_Query $query  Query.
+	 * @param string   $layout Card layout: archive|shop.
 	 * @return string
 	 */
-	public static function render_products_grid_html( WP_Query $query ): string {
+	public static function render_products_grid_html( WP_Query $query, string $layout = 'archive' ): string {
 		if ( ! $query->have_posts() ) {
 			return '<div class="lk-filtered-products__empty" role="listitem">' . esc_html__( 'محصولی با این فیلترها پیدا نشد.', 'hello-elementor-child' ) . '</div>';
 		}
+
+		$layout = 'shop' === $layout ? 'shop' : 'archive';
 
 		ob_start();
 		while ( $query->have_posts() ) {
@@ -935,7 +969,7 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			if ( ! $product ) {
 				continue;
 			}
-			echo self::render_product_card_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo self::render_product_card_html( $product, $layout ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 		wp_reset_postdata();
 
@@ -943,12 +977,62 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	}
 
 	/**
-	 * Single product card HTML (mirrors Elementor loop-item layout).
+	 * Resolve a product attribute value by label aliases (same approach as single-product-light).
+	 *
+	 * @param WC_Product         $product Product.
+	 * @param array<int, string> $aliases Label aliases.
+	 */
+	private static function get_product_attr_value( WC_Product $product, array $aliases ): string {
+		$attr_map = array();
+		foreach ( $product->get_attributes() as $attribute ) {
+			$label = wc_attribute_label( $attribute->get_name() );
+			if ( $attribute->is_taxonomy() ) {
+				$terms = wc_get_product_terms( $product->get_id(), $attribute->get_name(), array( 'fields' => 'names' ) );
+				$value = is_wp_error( $terms ) ? '' : implode( ', ', $terms );
+			} else {
+				$value = implode( ', ', array_map( 'strval', $attribute->get_options() ) );
+			}
+			if ( '' === $value ) {
+				continue;
+			}
+			$attr_map[ $label ] = $value;
+		}
+
+		foreach ( $aliases as $alias ) {
+			if ( isset( $attr_map[ $alias ] ) && '' !== $attr_map[ $alias ] ) {
+				return $attr_map[ $alias ];
+			}
+		}
+		foreach ( $attr_map as $label => $value ) {
+			foreach ( $aliases as $alias ) {
+				if ( false !== mb_stripos( (string) $label, $alias ) && '' !== $value ) {
+					return $value;
+				}
+			}
+		}
+
+		// Fall back to filter definition taxonomy if available.
+		$defs = self::get_filter_definitions();
+		$tax  = isset( $defs['grade']['taxonomy'] ) ? (string) $defs['grade']['taxonomy'] : '';
+		if ( '' !== $tax && taxonomy_exists( $tax ) ) {
+			$terms = wc_get_product_terms( $product->get_id(), $tax, array( 'fields' => 'names' ) );
+			if ( ! is_wp_error( $terms ) && array() !== $terms ) {
+				return implode( ', ', $terms );
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Single product card HTML.
 	 *
 	 * @param WC_Product $product Product.
+	 * @param string     $layout  archive|shop.
 	 * @return string
 	 */
-	public static function render_product_card_html( WC_Product $product ): string {
+	public static function render_product_card_html( WC_Product $product, string $layout = 'archive' ): string {
+		$layout    = 'shop' === $layout ? 'shop' : 'archive';
 		$post_id   = $product->get_id();
 		$permalink = get_permalink( $post_id );
 		$title     = $product->get_name();
@@ -962,18 +1046,24 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		);
 
 		$english = '';
+		$en_keys = array( 'en-name', 'en_name', 'english_name', 'نام_انگلیسی' );
 		if ( function_exists( 'get_field' ) ) {
-			$raw = get_field( 'english_name', $post_id );
-			if ( ! is_scalar( $raw ) || '' === trim( (string) $raw ) ) {
-				$raw = get_field( 'نام_انگلیسی', $post_id );
-			}
-			if ( is_scalar( $raw ) ) {
-				$english = trim( (string) $raw );
+			foreach ( $en_keys as $en_key ) {
+				$raw = get_field( $en_key, $post_id );
+				if ( is_scalar( $raw ) && '' !== trim( (string) $raw ) ) {
+					$english = trim( (string) $raw );
+					break;
+				}
 			}
 		}
 		if ( '' === $english ) {
-			$meta_en = get_post_meta( $post_id, 'english_name', true );
-			$english = is_scalar( $meta_en ) ? trim( (string) $meta_en ) : '';
+			foreach ( $en_keys as $en_key ) {
+				$meta_en = get_post_meta( $post_id, $en_key, true );
+				if ( is_scalar( $meta_en ) && '' !== trim( (string) $meta_en ) ) {
+					$english = trim( (string) $meta_en );
+					break;
+				}
+			}
 		}
 
 		$brand_name  = '';
@@ -997,11 +1087,14 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		}
 
 		if ( function_exists( 'get_field' ) ) {
-			foreach ( array( 'brand_logo', 'لوگو_برند', 'brand_image', 'آدرس_برند' ) as $logo_key ) {
+			foreach ( array( 'لوگو_شرکت', 'brand_logo', 'لوگو_برند', 'brand_image', 'آدرس_برند' ) as $logo_key ) {
 				$logo = get_field( $logo_key, $post_id );
 				$url  = '';
 				if ( is_array( $logo ) && isset( $logo['url'] ) ) {
 					$url = (string) $logo['url'];
+				} elseif ( is_numeric( $logo ) ) {
+					$maybe = wp_get_attachment_image_url( (int) $logo, 'medium' );
+					$url   = $maybe ? (string) $maybe : '';
 				} elseif ( is_string( $logo ) && (bool) preg_match( '#^(https?:)?//#i', $logo ) ) {
 					$url = $logo;
 				}
@@ -1010,6 +1103,22 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 					break;
 				}
 			}
+		}
+
+		if ( 'shop' === $layout ) {
+			return self::render_shop_product_card_html(
+				$product,
+				array(
+					'permalink'   => (string) $permalink,
+					'title'       => $title,
+					'price'       => $price,
+					'image'       => $image,
+					'english'     => $english,
+					'brand_name'  => $brand_name,
+					'brand_link'  => (string) $brand_link,
+					'brand_image' => $brand_image,
+				)
+			);
 		}
 
 		ob_start();
@@ -1085,6 +1194,152 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	}
 
 	/**
+	 * Compact shop-only product card (visual style; CTA links to product for now).
+	 *
+	 * @param WC_Product           $product Product.
+	 * @param array<string, mixed> $data    Precomputed fields.
+	 * @return string
+	 */
+	private static function render_shop_product_card_html( WC_Product $product, array $data ): string {
+		$post_id     = $product->get_id();
+		$permalink   = (string) ( $data['permalink'] ?? '' );
+		$title       = (string) ( $data['title'] ?? '' );
+		$price       = (string) ( $data['price'] ?? '' );
+		$image       = (string) ( $data['image'] ?? '' );
+		$english     = trim( (string) ( $data['english'] ?? '' ) );
+		$brand_name  = (string) ( $data['brand_name'] ?? '' );
+		$brand_link  = (string) ( $data['brand_link'] ?? '' );
+		$brand_image = (string) ( $data['brand_image'] ?? '' );
+
+		$grade_raw = trim( self::get_product_attr_value( $product, array( 'گرید', 'Grade' ) ) );
+		$grade_raw = preg_replace( '/\s*(grade|گرید)\s*$/iu', '', $grade_raw ) ?? $grade_raw;
+		$grade_raw = trim( (string) $grade_raw );
+
+		// Format: "{english name} {grade} grade"
+		$grade_line = '';
+		if ( '' !== $english && '' !== $grade_raw ) {
+			$grade_line = trim( $english ) . ' ' . $grade_raw . ' grade';
+		} elseif ( '' !== $english ) {
+			$grade_line = trim( $english );
+		} elseif ( '' !== $grade_raw ) {
+			$grade_line = $grade_raw . ' grade';
+		}
+
+		$brand_label = '' !== $brand_name
+			? sprintf(
+				/* translators: %s brand name */
+				__( 'محصولی از %s', 'hello-elementor-child' ),
+				$brand_name
+			)
+			: '';
+
+		ob_start();
+		?>
+		<article
+			class="elementor-loop-item elementor-grid-item lk-loop-item lk-loop-item--shop post-<?php echo esc_attr( (string) $post_id ); ?> product type-product"
+			role="listitem"
+			data-elementor-type="loop-item"
+			data-product-id="<?php echo esc_attr( (string) $post_id ); ?>"
+			data-lk-shop-card="1"
+		>
+			<div class="lk-loop-item__inner">
+				<div class="lk-loop-item__media">
+					<?php if ( $brand_image || '' !== $brand_name ) : ?>
+						<a
+							class="lk-loop-item__company-badge<?php echo $brand_image ? ' lk-loop-item__company-badge--logo' : ' lk-loop-item__company-badge--text'; ?>"
+							href="<?php echo esc_url( $brand_link ? $brand_link : $permalink ); ?>"
+							<?php echo $brand_link ? 'target="_blank" rel="nofollow"' : ''; ?>
+							aria-label="<?php echo esc_attr( $brand_name ? $brand_name : __( 'برند', 'hello-elementor-child' ) ); ?>"
+						>
+							<?php if ( $brand_image ) : ?>
+								<img src="<?php echo esc_url( $brand_image ); ?>" alt="<?php echo esc_attr( $brand_name ); ?>" loading="lazy" width="64" height="28">
+							<?php else : ?>
+								<span class="lk-loop-item__company-badge-label"><?php echo esc_html( $brand_name ); ?></span>
+							<?php endif; ?>
+						</a>
+					<?php endif; ?>
+
+					<a class="lk-loop-item__image" href="<?php echo esc_url( $permalink ); ?>" rel="nofollow">
+						<?php echo $image; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</a>
+				</div>
+
+				<div class="lk-loop-item__body">
+					<h3 class="lk-loop-item__title">
+						<a href="<?php echo esc_url( $permalink ); ?>" rel="nofollow"><?php echo esc_html( $title ); ?></a>
+					</h3>
+
+					<?php if ( '' !== $grade_line ) : ?>
+						<p class="lk-loop-item__grade"><?php echo esc_html( $grade_line ); ?></p>
+					<?php endif; ?>
+
+					<?php if ( '' !== $brand_label ) : ?>
+						<p class="lk-loop-item__brand">
+							<?php if ( $brand_link ) : ?>
+								<a class="lk-loop-item__brand-link" href="<?php echo esc_url( $brand_link ); ?>">
+									<span><?php echo esc_html( $brand_label ); ?></span>
+									<svg aria-hidden="true" class="lk-loop-item__brand-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" width="12" height="12" focusable="false"><path d="M437.2 403.5L320 215V64h8c13.3 0 24-10.7 24-24V24c0-13.3-10.7-24-24-24H120c-13.3 0-24 10.7-24 24v16c0 13.3 10.7 24 24 24h8v151L10.8 403.5C-18.5 450.6 15.3 512 70.9 512h306.2c55.7 0 89.4-61.5 60.1-108.5zM137.9 320l48.2-77.6c3.7-5.2 5.8-11.6 5.8-18.4V64h64v160c0 6.9 2.2 13.2 5.8 18.4l48.2 77.6h-172z"></path></svg>
+								</a>
+							<?php else : ?>
+								<span class="lk-loop-item__brand-link">
+									<span><?php echo esc_html( $brand_label ); ?></span>
+									<svg aria-hidden="true" class="lk-loop-item__brand-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" width="12" height="12" focusable="false"><path d="M437.2 403.5L320 215V64h8c13.3 0 24-10.7 24-24V24c0-13.3-10.7-24-24-24H120c-13.3 0-24 10.7-24 24v16c0 13.3 10.7 24 24 24h8v151L10.8 403.5C-18.5 450.6 15.3 512 70.9 512h306.2c55.7 0 89.4-61.5 60.1-108.5zM137.9 320l48.2-77.6c3.7-5.2 5.8-11.6 5.8-18.4V64h64v160c0 6.9 2.2 13.2 5.8 18.4l48.2 77.6h-172z"></path></svg>
+								</span>
+							<?php endif; ?>
+						</p>
+					<?php endif; ?>
+				</div>
+
+				<div class="lk-loop-item__footer">
+					<?php
+					$can_ajax_cart = $product->is_purchasable()
+						&& $product->is_in_stock()
+						&& $product->supports( 'ajax_add_to_cart' );
+					$cart_classes  = array(
+						'lk-loop-item__add-to-cart',
+						'product_type_' . $product->get_type(),
+					);
+					if ( $product->is_purchasable() && $product->is_in_stock() ) {
+						$cart_classes[] = 'add_to_cart_button';
+					}
+					if ( $can_ajax_cart ) {
+						$cart_classes[] = 'ajax_add_to_cart';
+					}
+					$cart_label = $can_ajax_cart
+						? __( 'افزودن به سبد', 'hello-elementor-child' )
+						: ( $product->is_type( 'variable' )
+							? __( 'انتخاب گزینه‌ها', 'hello-elementor-child' )
+							: __( 'مشاهده محصول', 'hello-elementor-child' ) );
+					$cart_url   = $can_ajax_cart
+						? $product->add_to_cart_url()
+						: $permalink;
+					?>
+					<a
+						class="<?php echo esc_attr( implode( ' ', $cart_classes ) ); ?>"
+						href="<?php echo esc_url( (string) $cart_url ); ?>"
+						data-quantity="1"
+						data-product_id="<?php echo esc_attr( (string) $post_id ); ?>"
+						data-product_sku="<?php echo esc_attr( (string) $product->get_sku() ); ?>"
+						aria-label="<?php echo esc_attr( $cart_label ); ?>"
+						rel="nofollow"
+					>
+						<span class="lk-loop-item__add-to-cart-label"><?php echo esc_html( $cart_label ); ?></span>
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
+							<path d="M18,6A6,6,0,0,0,6,6H0V21a3,3,0,0,0,3,3H14V22H3a1,1,0,0,1-1-1V8H6v2H8V8h8v2h2V8h4v6h2V6ZM8,6a4,4,0,0,1,8,0Z"></path>
+							<polygon points="21 16 19 16 19 19 16 19 16 21 19 21 19 24 21 24 21 21 24 21 24 19 21 19 21 16"></polygon>
+						</svg>
+					</a>
+					<div class="lk-loop-item__price price">
+						<?php echo $price ? wp_kses_post( $price ) : '&nbsp;'; ?>
+					</div>
+				</div>
+			</div>
+		</article>
+		<?php
+		return (string) ob_get_clean();
+	}
+
+	/**
 	 * Pagination markup for light archive / AJAX updates.
 	 *
 	 * @param WP_Query $query   Query.
@@ -1102,18 +1357,27 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			$current = max( 1, (int) $query->get( 'paged' ), (int) get_query_var( 'paged' ), (int) get_query_var( 'page' ) );
 		}
 
-		$base_url = $term_id > 0 ? get_term_link( $term_id, 'product_cat' ) : get_pagenum_link( 1 );
-		if ( is_wp_error( $base_url ) ) {
-			$base_url = get_pagenum_link( 1 );
+		if ( $term_id > 0 ) {
+			$base_url = get_term_link( $term_id, 'product_cat' );
+		} elseif ( function_exists( 'wc_get_page_permalink' ) ) {
+			$base_url = wc_get_page_permalink( 'shop' );
+		} else {
+			$base_url = home_url( '/' );
+		}
+
+		if ( is_wp_error( $base_url ) || ! is_string( $base_url ) || '' === $base_url ) {
+			$base_url = home_url( '/' );
 		}
 
 		$links = paginate_links(
 			array(
-				'base'      => esc_url_raw( trailingslashit( (string) $base_url ) . 'page/%#%/' ),
+				'base'      => esc_url_raw( trailingslashit( $base_url ) . 'page/%#%/' ),
 				'format'    => '',
 				'current'   => $current,
 				'total'     => $total,
 				'type'      => 'list',
+				'mid_size'  => 2,
+				'end_size'  => 1,
 				'prev_text' => '&raquo;',
 				'next_text' => '&laquo;',
 			)

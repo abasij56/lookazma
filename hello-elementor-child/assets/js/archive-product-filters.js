@@ -6,6 +6,7 @@
 	var debounceTimer = null;
 	var requestId = 0;
 	var currentPage = 1;
+	var shopCardsLoaded = false;
 
 	function qs(sel, root) {
 		return (root || document).querySelector(sel);
@@ -194,15 +195,53 @@
 	}
 
 	function getPaginationContainer() {
-		return qs('#lk-archive-products-pagination') || qs('.lk-archive-products__pagination');
+		return (
+			qs('#lk-archive-products-pagination') ||
+			qs('.lk-shop-pagination') ||
+			qs('.lk-archive-products__pagination')
+		);
+	}
+
+	function ensurePaginationContainer() {
+		var existing = getPaginationContainer();
+		if (existing) {
+			return existing;
+		}
+
+		var loop = getLoopContainer();
+		if (!loop) {
+			return null;
+		}
+
+		var nav = document.createElement('nav');
+		nav.id = 'lk-archive-products-pagination';
+		nav.className = 'lk-shop-pagination lk-archive-products__pagination';
+		nav.setAttribute(
+			'aria-label',
+			(cfg.i18n && cfg.i18n.pagination) || 'صفحه‌بندی محصولات'
+		);
+
+		var widget = loop.closest('.elementor-element') || loop.parentElement;
+		if (widget && widget.parentElement) {
+			widget.parentElement.insertBefore(nav, widget.nextSibling);
+		} else if (loop.parentElement) {
+			loop.parentElement.appendChild(nav);
+		} else {
+			return null;
+		}
+
+		return nav;
 	}
 
 	function updatePagination(html) {
-		var nav = getPaginationContainer();
+		var nav = cfg.isShop
+			? ensurePaginationContainer() || getPaginationContainer()
+			: getPaginationContainer();
 		if (!nav) {
 			return;
 		}
 		nav.innerHTML = html || '';
+		nav.hidden = !html;
 	}
 
 	function pageFromHref(href) {
@@ -382,6 +421,7 @@
 		formData.append('term_id', root.getAttribute('data-term-id') || cfg.termId || 0);
 		formData.append('page', String(currentPage));
 		formData.append('per_page', String(cfg.perPage || 12));
+		formData.append('layout', cfg.layout || (cfg.isShop ? 'shop' : 'archive'));
 		formData.append('filters', JSON.stringify(collectFilters(root)));
 
 		fetch(cfg.ajaxUrl, {
@@ -414,6 +454,10 @@
 					'<div class="lk-filtered-products__empty">' +
 						((cfg.i18n && cfg.i18n.empty) || '') +
 						'</div>';
+				if (cfg.isShop) {
+					markShopGrid();
+					shopCardsLoaded = true;
+				}
 				if (json.data && typeof json.data.pagination !== 'undefined') {
 					updatePagination(json.data.pagination);
 				}
@@ -448,8 +492,34 @@
 		});
 	}
 
+	function bindPagination(root) {
+		if (!root) {
+			return;
+		}
+		var pagination = cfg.isShop
+			? ensurePaginationContainer()
+			: getPaginationContainer();
+		if (!pagination || pagination.getAttribute('data-lk-bound') === '1') {
+			return;
+		}
+		pagination.setAttribute('data-lk-bound', '1');
+		pagination.addEventListener('click', function (event) {
+			var link = event.target.closest('a.page-numbers');
+			if (!link) {
+				return;
+			}
+			event.preventDefault();
+			scheduleFilter(root, pageFromHref(link.getAttribute('href')));
+			var loop = getLoopContainer();
+			if (loop && typeof loop.scrollIntoView === 'function') {
+				loop.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		});
+	}
+
 	function bindEvents(root) {
 		if (!root || root.getAttribute('data-lk-bound') === '1') {
+			bindPagination(root);
 			return;
 		}
 		root.setAttribute('data-lk-bound', '1');
@@ -493,24 +563,119 @@
 			});
 		}
 
-		var pagination = getPaginationContainer();
-		if (pagination && pagination.getAttribute('data-lk-bound') !== '1') {
-			pagination.setAttribute('data-lk-bound', '1');
-			pagination.addEventListener('click', function (event) {
-				var link = event.target.closest('a.page-numbers');
-				if (!link) {
-					return;
-				}
-				event.preventDefault();
-				scheduleFilter(root, pageFromHref(link.getAttribute('href')));
-			});
+		bindPagination(root);
+	}
+
+	function markShopGrid() {
+		var loop = getLoopContainer();
+		if (loop) {
+			loop.classList.add('lk-shop-products-grid');
 		}
+		ensurePaginationContainer();
+	}
+
+	function getCartUrl() {
+		if (cfg.cartUrl) {
+			return cfg.cartUrl;
+		}
+		if (window.wc_add_to_cart_params && window.wc_add_to_cart_params.cart_url) {
+			return window.wc_add_to_cart_params.cart_url;
+		}
+		return '/cart/';
+	}
+
+	function ensureViewCartIcon(card) {
+		if (!card) {
+			return null;
+		}
+		var media = card.querySelector('.lk-loop-item__media');
+		if (!media) {
+			return null;
+		}
+		var existing = media.querySelector('.lk-loop-item__view-cart');
+		if (existing) {
+			return existing;
+		}
+
+		var tip = (cfg.i18n && cfg.i18n.viewCart) || 'مشاهده سبد خرید';
+		var link = document.createElement('a');
+		link.className = 'lk-loop-item__view-cart';
+		link.href = getCartUrl();
+		link.setAttribute('aria-label', tip);
+		link.setAttribute('data-tooltip', tip);
+		link.setAttribute('title', tip);
+		link.innerHTML =
+			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true" focusable="false">' +
+			'<path d="M572.52 241.4C518.29 135.59 410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 0 0 0 29.19C57.71 376.41 165.07 448 288 448s230.32-71.64 284.52-177.41a32.35 32.35 0 0 0 0-29.19zM288 400a144 144 0 1 1 144-144 143.93 143.93 0 0 1-144 144zm0-240a95.31 95.31 0 0 0-25.31 3.79 47.85 47.85 0 0 1-66.9 66.9A95.78 95.78 0 1 0 288 160z"/>' +
+			'</svg>';
+		media.appendChild(link);
+		return link;
+	}
+
+	function showViewCartIcon(card) {
+		var icon = ensureViewCartIcon(card);
+		if (icon) {
+			icon.classList.add('is-visible');
+		}
+	}
+
+	function bindShopAddToCartFeedback() {
+		if (!cfg.isShop || window.lkShopAddToCartBound) {
+			return;
+		}
+		window.lkShopAddToCartBound = true;
+
+		if (typeof jQuery === 'undefined') {
+			return;
+		}
+
+		jQuery(document.body).on('adding_to_cart', function (event, $button) {
+			if (!$button || !$button.length || !$button.hasClass('lk-loop-item__add-to-cart')) {
+				return;
+			}
+			var label = $button.find('.lk-loop-item__add-to-cart-label');
+			if (label.length) {
+				label.text((cfg.i18n && cfg.i18n.adding) || 'در حال افزودن…');
+			}
+		});
+
+		jQuery(document.body).on('added_to_cart', function (event, fragments, cartHash, $button) {
+			if (!$button || !$button.length || !$button.hasClass('lk-loop-item__add-to-cart')) {
+				return;
+			}
+			var label = $button.find('.lk-loop-item__add-to-cart-label');
+			if (label.length) {
+				label.text((cfg.i18n && cfg.i18n.added) || 'افزوده شد');
+			}
+
+			var card = $button.closest('.lk-loop-item--shop').get(0);
+			showViewCartIcon(card);
+
+			// Remove WooCommerce's default "View cart" text link if inserted.
+			$button.siblings('a.added_to_cart').remove();
+
+			window.setTimeout(function () {
+				if (label.length) {
+					label.text((cfg.i18n && cfg.i18n.addToCart) || 'افزودن به سبد');
+				}
+				$button.removeClass('added');
+			}, 1800);
+		});
 	}
 
 	function boot() {
 		var root = injectFilters();
 		if (root) {
 			bindEvents(root);
+		}
+		if (cfg.isShop) {
+			markShopGrid();
+			bindShopAddToCartFeedback();
+			document.documentElement.classList.add('lk-shop-filters-ready');
+			if (root && !shopCardsLoaded && !document.querySelector('.lk-loop-item--shop')) {
+				shopCardsLoaded = true;
+				runFilter(root, 1);
+			}
 		}
 	}
 
