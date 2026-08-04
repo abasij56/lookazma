@@ -1,0 +1,156 @@
+/* WordPress limits #edittag to ~800px; allow full content width for AI tools. */
+body.taxonomy-product_cat #edittag {
+	max-width: none;
+}
+
+.ai-cat-tools {
+	margin-top: 24px;
+	width: 100%;
+	max-width: none;
+	box-sizing: border-box;
+}
+
+.ai-cat-tools__card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+	padding: 16px 18px;
+	margin: 16px 0;
+	box-sizing: border-box;
+}
+
+#ai-cat-desc-card {
+	width: 100%;
+	max-width: none;
+}
+
+#ai-cat-desc-card .ai-cat-tools__compare {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 16px;
+	width: 100%;
+}
+
+#ai-cat-desc-card .ai-cat-tools__col {
+	width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+}
+
+.ai-cat-tools__card h3 {
+	margin-top: 0;
+}
+
+.ai-cat-tools__compare {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 16px;
+	margin: 12px 0 16px;
+	width: 100%;
+}
+
+@media (max-width: 960px) {
+	.ai-cat-tools__compare,
+	#ai-cat-desc-card .ai-cat-tools__compare {
+		grid-template-columns: 1fr;
+	}
+}
+
+.ai-cat-tools__col {
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 12px;
+}
+
+.ai-cat-tools__label {
+	display: inline-block;
+	min-width: 140px;
+	font-weight: 600;
+}
+
+.ai-cat-tools__col .is-empty,
+.ai-cat-tools__box.is-empty {
+	color: #646970;
+	font-style: italic;
+}
+
+.ai-cat-tools__box {
+	margin-top: 8px;
+	line-height: 1.7;
+	max-height: 260px;
+	overflow: auto;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	padding: 10px;
+}
+
+.ai-cat-tools__col--editor {
+	background: #fff;
+}
+
+.ai-cat-tools__col--editor .wp-editor-wrap {
+	margin-top: 8px;
+	width: 100%;
+}
+
+.ai-cat-tools__col--editor .wp-editor-container,
+.ai-cat-tools__col--editor .mce-tinymce,
+.ai-cat-tools__col--editor iframe {
+	width: 100% !important;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.ai-cat-tools__col--editor .wp-editor-area {
+	width: 100%;
+	min-height: 240px;
+}
+
+.ai-cat-tools__actions .button {
+	margin-left: 6px;
+}
+
+.ai-cat-tools__actions .button.is-loading {
+	opacity: 0.85;
+}
+
+.ai-cat-tools__status {
+	display: inline-block;
+	margin-right: 8px;
+	vertical-align: middle;
+}
+
+.ai-cat-tools__status.is-success {
+	color: #007017;
+}
+
+.ai-cat-tools__status.is-error {
+	color: #b32d2e;
+}
+
+.ai-cat-specs-table {
+	margin-top: 8px;
+	background: #fff;
+}
+
+.ai-cat-specs-table th {
+	width: 38%;
+	font-weight: 600;
+	vertical-align: top;
+}
+
+.ai-cat-specs-table td {
+	word-break: break-word;
+	white-space: pre-wrap;
+}
+
+.ai-cat-specs-table td.is-empty {
+	color: #646970;
+	font-style: italic;
+}
+
+#ai-cat-specs-hint {
+	margin: 8px 0 0;
+	color: #996800;
+}

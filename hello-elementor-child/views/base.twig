@@ -1,0 +1,32 @@
+<!doctype html>
+<!-- LK-LIGHT-TWIG-RENDERED -->
+<html {{ html_language_attributes|raw }}>
+<head>
+	<meta charset="{{ site.charset }}">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	{% if light_css_url %}
+		<link rel="stylesheet" href="{{ light_css_url }}?v={{ light_css_ver }}">
+	{% endif %}
+	{% if light_css_inline %}
+		<style id="lk-spl-inline">{{ light_css_inline|raw }}</style>
+	{% endif %}
+	{{ function('wp_head') }}
+</head>
+<body class="{{ body_class }}">
+{{ function('wp_body_open') }}
+
+{# After wp_head so Elementor Menu Cart CSS/JS enqueue correctly #}
+{% do function('lk_light_print_theme_location', 'header') %}
+
+<main class="lk-main">
+	{% block content %}{% endblock %}
+</main>
+
+{% do function('lk_light_print_theme_location', 'footer') %}
+
+{{ function('wp_footer') }}
+</body>
+</html>

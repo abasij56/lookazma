@@ -1,0 +1,37 @@
+#price-table .attr-price-input,
+#price-table .attr-sku-input.short {
+	width: 100%;
+	max-width: 140px;
+	box-sizing: border-box;
+}
+
+.btn-loading::after {
+	content: "⏳";
+	margin-left: 6px;
+	font-size: 0.9em;
+	display: inline-block;
+	animation: attr-price-editor-spin 1s linear infinite;
+}
+
+.btn-success::after {
+	content: "✓";
+	margin-left: 6px;
+	color: green;
+	font-weight: bold;
+}
+
+.btn-error::after {
+	content: "!";
+	margin-left: 6px;
+	color: red;
+	font-weight: bold;
+}
+
+@keyframes attr-price-editor-spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}

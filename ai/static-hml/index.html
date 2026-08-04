@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="fa-IR" dir="rtl">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>دیتیزون گرید Indicator (دکترمجللی) | Lookazma Static</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="./assets/css/single-product.css">
+</head>
+<body class="lk-single">
+	<header class="lk-header">
+		<div class="lk-container lk-header__inner">
+			<a class="lk-header__brand" href="#">lookazma</a>
+			<nav class="lk-header__nav" aria-label="منوی اصلی">
+				<a href="#">فروشگاه</a>
+				<a href="#">درباره ما</a>
+				<a href="#">تماس</a>
+			</nav>
+			<a class="lk-header__cart" href="#" aria-label="سبد خرید">
+				<span>سبد</span>
+				<strong id="lk-cart-count">0</strong>
+			</a>
+		</div>
+	</header>
+
+	<main class="lk-main">
+		<div class="lk-container">
+			<nav class="lk-breadcrumb" aria-label="مسیر صفحه">
+				<a href="#">خانه</a>
+				<span>/</span>
+				<a href="#">مواد شیمیایی</a>
+				<span>/</span>
+				<a href="#">علوم زیستی</a>
+				<span>/</span>
+				<span>دیتیزون گرید Indicator (دکترمجللی)</span>
+			</nav>
+
+			<div class="lk-demo-switch" role="group" aria-label="حالت نمایش قیمت">
+				<span>کارت قیمت:</span>
+				<button type="button" class="is-active" data-mode="simple">ساده</button>
+				<button type="button" data-mode="variable">متغیر</button>
+			</div>
+		</div>
+
+		<article class="lk-product lk-container" data-product-type="simple">
+			<!--
+				چیدمان بصری (RTL):
+				[ کارت قیمت ] [ مشخصات محصول ] [ عکس ]
+				     چپ              وسط            راست
+				عکس + مشخصات داخل یک کارت محصول در سمت راست صفحه
+			-->
+			<div class="lk-product__row">
+				<section class="lk-info-card" aria-label="اطلاعات محصول">
+					<div class="lk-info-card__inner">
+						<!-- داخل کارت: راست = عکس -->
+						<div class="lk-info-card__media">
+							<img
+								class="lk-info-card__brand-icon"
+								src="https://lookazma.com/wp-content/uploads/2024/05/download-183.jpg.webp"
+								alt="برند دکتر مجللی"
+								width="72"
+								height="72"
+							>
+							<figure class="lk-info-card__photo">
+								<img
+									src="https://lookazma.com/wp-content/uploads/2024/05/new-product-1.jpg.webp"
+									alt="دیتیزون گرید Indicator"
+									width="800"
+									height="576"
+								>
+							</figure>
+						</div>
+
+						<!-- داخل کارت: چپ = عنوان + مشخصات -->
+						<div class="lk-info-card__body">
+							<p class="lk-info-card__brand"><a href="#">نام برند : دکترمجللی</a></p>
+							<h1 class="lk-info-card__title">دیتیزون گرید Indicator (دکترمجللی)</h1>
+							<p class="lk-info-card__english">Dithizone Indicator grade</p>
+
+							<hr class="lk-info-card__divider">
+
+							<div class="lk-info-card__specs">
+								<h2>مشخصات محصول</h2>
+								<ul class="lk-specs-grid">
+									<li>
+										<span>گرید</span>
+										<strong>Indicator</strong>
+									</li>
+									<li>
+										<span>درصد خلوص</span>
+										<strong>۹۸٪</strong>
+									</li>
+									<li>
+										<span>کشور تولید کننده</span>
+										<strong>ایران</strong>
+									</li>
+									<li>
+										<span>بسته بندی</span>
+										<strong>۱۰ گرم</strong>
+									</li>
+								</ul>
+
+								<a class="lk-datasheet" href="#" target="_blank" rel="noopener">دانلود برگه مشخصات فنی</a>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<aside class="lk-price-card" id="lk-price-card" aria-label="خرید محصول">
+					<p class="lk-price-card__notice">به علت نوسانات قیمت لطفا قبل از اقدام به خرید از طریق تماس تلفنی استعلام قیمت بگیرید</p>
+
+					<div class="lk-price-card__simple" data-panel="simple">
+						<p class="lk-price-card__label">قیمت محصول</p>
+						<div class="lk-price-card__amount">
+							<span class="lk-money">۳,۷۰۰,۰۰۰</span>
+							<span class="lk-currency">تومان</span>
+						</div>
+						<div class="lk-price-card__stock is-in">موجود در انبار</div>
+					</div>
+
+					<div class="lk-price-card__variable" data-panel="variable" hidden>
+						<p class="lk-price-card__label">انتخاب بسته‌بندی و گزینه‌ها</p>
+						<div class="lk-variations">
+							<label>
+								<span>بسته بندی</span>
+								<select id="lk-attr-pack">
+									<option value="">انتخاب کنید</option>
+									<option value="10g" data-price="3700000" data-regular="4200000">۱۰ گرم</option>
+									<option value="25g" data-price="7800000" data-regular="8600000">۲۵ گرم</option>
+									<option value="100g" data-price="24500000" data-regular="">۱۰۰ گرم</option>
+								</select>
+							</label>
+							<label>
+								<span>گرید</span>
+								<select id="lk-attr-grade">
+									<option value="">انتخاب کنید</option>
+									<option value="indicator">Indicator</option>
+									<option value="acs">ACS</option>
+								</select>
+							</label>
+						</div>
+						<div class="lk-price-card__amount" id="lk-variable-price">
+							<span class="lk-money">۸۷۵,۰۰۰</span>
+							<span class="lk-sep">–</span>
+							<span class="lk-money">۳,۷۰۰,۰۰۰</span>
+							<span class="lk-currency">تومان</span>
+						</div>
+						<div class="lk-price-card__stock is-muted" id="lk-variable-stock">یک گزینه را انتخاب کنید</div>
+					</div>
+
+					<form class="lk-cart-form" id="lk-cart-form" action="#" method="post">
+						<div class="lk-qty">
+							<button type="button" data-qty="-1" aria-label="کاهش">−</button>
+							<input type="number" id="lk-qty" name="quantity" value="1" min="1" max="99" inputmode="numeric">
+							<button type="button" data-qty="1" aria-label="افزایش">+</button>
+						</div>
+						<button type="submit" class="lk-add-to-cart" id="lk-add-to-cart">افزودن به سبد خرید</button>
+					</form>
+
+					<div class="lk-price-card__actions">
+						<a href="#">روش و هزینه ارسال کالا</a>
+						<a href="https://wa.me/989122114322" target="_blank" rel="noopener">واتساپ</a>
+						<a href="tel:02182802125">02182802125</a>
+					</div>
+				</aside>
+			</div>
+
+			<ul class="lk-badges" aria-label="مزایای خرید">
+				<li>
+					<span class="lk-badges__icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h13l5 5v5h-2a2 2 0 1 1-4 0H9a2 2 0 1 1-4 0H3V7z"/><path d="M16 7v5h5"/></svg>
+					</span>
+					<span>تحویل فوری سراسر کشور</span>
+				</li>
+				<li>
+					<span class="lk-badges__icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 3v6c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>
+					</span>
+					<span>ضمانت اصالت کالا</span>
+				</li>
+				<li>
+					<span class="lk-badges__icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/><path d="M19 4v3M19 10h.01"/></svg>
+					</span>
+					<span>پشتیبانی ۲۴/۷</span>
+				</li>
+			</ul>
+
+			<section class="lk-tabs" data-tabs>
+				<div class="lk-tabs__nav" role="tablist">
+					<button type="button" class="is-active" role="tab" aria-selected="true" data-tab="attrs">مشخصات محصول</button>
+					<button type="button" role="tab" aria-selected="false" data-tab="intro">معرفی محصول</button>
+					<button type="button" role="tab" aria-selected="false" data-tab="reviews">نظرات</button>
+				</div>
+
+				<div class="lk-tabs__panel is-active" data-panel="attrs" role="tabpanel">
+					<table class="lk-table">
+						<tbody>
+							<tr><th>بسته بندی</th><td>۱۰ گرم</td></tr>
+							<tr><th>کشور تولید کننده</th><td>ایران</td></tr>
+							<tr><th>گرید</th><td>Indicator</td></tr>
+							<tr><th>درصد خلوص</th><td>۹۸٪</td></tr>
+							<tr><th>برند</th><td>دکتر مجللی</td></tr>
+							<tr><th>CAS Number</th><td>60-10-6</td></tr>
+							<tr><th>SKU</th><td>648.09.00010.01</td></tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div class="lk-tabs__panel" data-panel="intro" role="tabpanel" hidden>
+					<div class="lk-prose">
+						<h3>دیتیزون Indicator چیست؟</h3>
+						<p>
+							دیتیزون (Dithizone) یک شناساگر آلی پرکاربرد در شیمی تجزیه برای شناسایی و اندازه‌گیری یون‌های فلزی است.
+							این محصول با گرید Indicator برای کاربردهای آزمایشگاهی عمومی مناسب است.
+						</p>
+						<ul>
+							<li>مناسب تیتراسیون و تست‌های کیفی فلزات سنگین</li>
+							<li>پایداری مناسب در شرایط نگهداری استاندارد</li>
+							<li>بسته‌بندی آزمایشگاهی ۱۰ گرمی</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="lk-tabs__panel" data-panel="reviews" role="tabpanel" hidden>
+					<div class="lk-reviews">
+						<p class="lk-reviews__empty">هنوز دیدگاهی برای این محصول ثبت نشده است.</p>
+						<form class="lk-review-form" action="#" method="post">
+							<label>
+								<span>امتیاز</span>
+								<select>
+									<option>۵ - عالی</option>
+									<option>۴ - خوب</option>
+									<option>۳ - متوسط</option>
+									<option>۲ - ضعیف</option>
+									<option>۱ - خیلی ضعیف</option>
+								</select>
+							</label>
+							<label>
+								<span>نظر شما</span>
+								<textarea rows="4" placeholder="تجربه خود را بنویسید..."></textarea>
+							</label>
+							<button type="submit">ثبت دیدگاه</button>
+						</form>
+					</div>
+				</div>
+			</section>
+
+			<section class="lk-related" aria-labelledby="lk-related-title">
+				<h2 id="lk-related-title">محصولات مرتبط</h2>
+				<ul class="lk-related__grid">
+					<li>
+						<a href="#">
+							<img src="https://lookazma.com/wp-content/uploads/2023/08/DM-Pic-Edit-07-2-scaled-960x1385-4-208x300.jpg.webp" alt="">
+							<span class="lk-related__name">زایلیـن (مخلوط ایزومرها) گرید ACS</span>
+							<span class="lk-related__price">۸۷۵,۰۰۰ – ۱,۹۵۰,۰۰۰ تومان</span>
+						</a>
+					</li>
+					<li>
+						<a href="#">
+							<img src="https://lookazma.com/wp-content/uploads/2023/08/Karl-Fisher-Reagent-pic-1-265x300.jpg.webp" alt="">
+							<span class="lk-related__name">محلول کارل فیشر ۵ بدون پیریدین</span>
+							<span class="lk-related__price">۱۲,۵۰۰,۰۰۰ تومان</span>
+						</a>
+					</li>
+					<li>
+						<a href="#">
+							<img src="https://lookazma.com/wp-content/uploads/2023/08/HF40-scaled-1310x1138-1-300x261.jpg.webp" alt="">
+							<span class="lk-related__name">هیدروفلوئوریک اسید ۴۸٪ Extra pure</span>
+							<span class="lk-related__price">۲,۵۲۰,۰۰۰ – ۵,۸۰۰,۰۰۰ تومان</span>
+						</a>
+					</li>
+					<li>
+						<a href="#">
+							<img src="https://lookazma.com/wp-content/uploads/2024/05/new-product-1-300x216.jpg.webp" alt="">
+							<span class="lk-related__name">دیتیزون گرید آزمایشگاهی</span>
+							<span class="lk-related__price">۲,۹۵۰,۰۰۰ تومان</span>
+						</a>
+					</li>
+				</ul>
+			</section>
+		</article>
+	</main>
+
+	<footer class="lk-footer">
+		<div class="lk-container">
+			<p>نمونه استاتیک سینگل محصول Lookazma</p>
+		</div>
+	</footer>
+
+	<div class="lk-toast" id="lk-toast" hidden>به سبد خرید اضافه شد</div>
+	<script src="./assets/js/single-product.js"></script>
+</body>
+</html>

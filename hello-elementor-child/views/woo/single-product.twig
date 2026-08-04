@@ -1,0 +1,92 @@
+{% extends "base.twig" %}
+
+{% block content %}
+{% if product_data %}
+<article class="lk-product lk-container" data-product-id="{{ product_data.id }}">
+	<div class="lk-product__grid">
+		<div class="lk-product__media">
+			{% if product_data.images %}
+				<figure class="lk-product__figure">
+					<img
+						src="{{ product_data.images[0].url }}"
+						alt="{{ product_data.images[0].alt|default(product_data.name) }}"
+						class="lk-product__image"
+						width="800"
+						height="800"
+					>
+				</figure>
+				{% if product_data.images|length > 1 %}
+					<ul class="lk-product__thumbs">
+						{% for image in product_data.images %}
+							<li>
+								<img src="{{ image.url }}" alt="{{ image.alt|default(product_data.name) }}">
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			{% else %}
+				<div class="lk-product__placeholder">بدون تصویر</div>
+			{% endif %}
+		</div>
+
+		<div class="lk-product__summary">
+			<h1 class="lk-product__title">{{ product_data.name }}</h1>
+
+			{% if product_data.brand or product_data.cas_no or product_data.sku %}
+				<ul class="lk-product__meta">
+					{% if product_data.brand %}
+						<li><span>برند</span> {{ product_data.brand }}</li>
+					{% endif %}
+					{% if product_data.cas_no %}
+						<li><span>CAS</span> {{ product_data.cas_no }}</li>
+					{% endif %}
+					{% if product_data.sku %}
+						<li><span>SKU</span> {{ product_data.sku }}</li>
+					{% endif %}
+				</ul>
+			{% endif %}
+
+			<div class="lk-product__price">{{ product_data.price_html|raw }}</div>
+
+			<p class="lk-product__stock {% if product_data.is_in_stock %}is-in{% else %}is-out{% endif %}">
+				{% if product_data.is_in_stock %}موجود{% else %}ناموجود{% endif %}
+			</p>
+
+			{% if product_data.short_desc %}
+				<div class="lk-product__excerpt">{{ product_data.short_desc|raw }}</div>
+			{% endif %}
+
+			{% if product_data.attributes %}
+				<table class="lk-product__attrs">
+					<tbody>
+						{% for attr in product_data.attributes %}
+							<tr>
+								<th>{{ attr.label }}</th>
+								<td>{{ attr.value }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			{% endif %}
+
+			<div class="lk-product__cart">
+				{{ product_data.add_to_cart_html|raw }}
+			</div>
+		</div>
+	</div>
+
+	{% if product_data.description %}
+		<section class="lk-product__description">
+			<h2>توضیحات محصول</h2>
+			<div class="lk-product__description-body">
+				{{ product_data.description|raw }}
+			</div>
+		</section>
+	{% endif %}
+</article>
+{% else %}
+	<div class="lk-container">
+		<p>محصول پیدا نشد.</p>
+	</div>
+{% endif %}
+{% endblock %}
