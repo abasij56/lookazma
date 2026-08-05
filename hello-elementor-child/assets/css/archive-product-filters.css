@@ -27,7 +27,11 @@
   cursor: pointer;
   font-size: 0.9rem;
   padding: 0;
-  text-decoration: underline;
+	text-decoration: none;
+}
+
+.lk-archive-filters__clear:hover {
+	text-decoration: underline;
 }
 
 .lk-archive-filters__panels {
@@ -150,12 +154,14 @@
 .lk-archive-filters__check-title {
   flex: 1 1 auto;
   min-width: 0;
+	font-weight: 500;
 }
 
 .lk-archive-filters__check-count {
   color: #646970;
   font-size: 0.85rem;
   flex: 0 0 auto;
+	font-weight: 500;
 }
 
 .lk-archive-filters__price-inputs {
@@ -287,4 +293,119 @@
 .lk-archive-filters-host > .elementor-widget-container,
 .elementor-element-09116fc > .elementor-widget-container {
   width: 100%;
+}
+
+/*
+ * Category archive pagination (non-light) — same look as shop / tag pagination.
+ * Light templates keep styles in archive-product-light.css.
+ */
+body.tax-product_cat {
+  --lk-shop-ink: #0b1f3a;
+  --lk-shop-muted: #5b6b7c;
+  --lk-shop-line: #d9e3ec;
+  --lk-shop-accent: #001f3f;
+  --lk-shop-accent-2: #0d6e6e;
+}
+
+body.tax-product_cat .lk-shop-pagination,
+body.tax-product_cat .lk-archive-products__pagination {
+  margin: 1.75rem 0 0.5rem;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  direction: rtl;
+}
+
+body.tax-product_cat .lk-shop-pagination[hidden],
+body.tax-product_cat .lk-archive-products__pagination[hidden] {
+  display: none !important;
+}
+
+body.tax-product_cat .lk-shop-pagination .page-numbers,
+body.tax-product_cat .lk-archive-products__pagination .page-numbers {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+body.tax-product_cat .lk-shop-pagination .page-numbers li,
+body.tax-product_cat .lk-archive-products__pagination .page-numbers li {
+  list-style: none;
+  margin: 0;
+}
+
+body.tax-product_cat .lk-shop-pagination a.page-numbers,
+body.tax-product_cat .lk-shop-pagination span.page-numbers,
+body.tax-product_cat .lk-archive-products__pagination a.page-numbers,
+body.tax-product_cat .lk-archive-products__pagination span.page-numbers {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.6rem;
+  border: 1px solid var(--lk-shop-line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  color: var(--lk-shop-ink);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(11, 31, 58, 0.04);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+body.tax-product_cat .lk-shop-pagination a.page-numbers:hover,
+body.tax-product_cat .lk-archive-products__pagination a.page-numbers:hover {
+  background: var(--lk-shop-accent-2);
+  border-color: var(--lk-shop-accent-2);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(13, 110, 110, 0.22);
+  transform: translateY(-1px);
+}
+
+body.tax-product_cat .lk-shop-pagination span.page-numbers.current,
+body.tax-product_cat .lk-archive-products__pagination span.page-numbers.current {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 45%),
+    linear-gradient(180deg, #0a2a4d 0%, var(--lk-shop-accent) 100%);
+  border-color: var(--lk-shop-accent);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 4px 10px rgba(1, 30, 62, 0.2);
+}
+
+body.tax-product_cat .lk-shop-pagination span.page-numbers.dots,
+body.tax-product_cat .lk-archive-products__pagination span.page-numbers.dots {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  min-width: 1.5rem;
+  color: var(--lk-shop-muted);
+  font-weight: 700;
+}
+
+body.tax-product_cat .lk-shop-pagination a.page-numbers.prev,
+body.tax-product_cat .lk-shop-pagination a.page-numbers.next,
+body.tax-product_cat .lk-archive-products__pagination a.page-numbers.prev,
+body.tax-product_cat .lk-archive-products__pagination a.page-numbers.next {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Prefer our nav over Elementor / Woo leftovers on category archives */
+body.tax-product_cat .elementor-pagination,
+body.tax-product_cat .woocommerce-pagination {
+  display: none !important;
 }

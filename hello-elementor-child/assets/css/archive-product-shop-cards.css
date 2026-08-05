@@ -2,7 +2,7 @@
  * Shop + product-tag archive cards — formal catalog look.
  */
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) {
   --lk-shop-ink: #0b1f3a;
   --lk-shop-muted: #5b6b7c;
   --lk-shop-line: #d9e3ec;
@@ -16,11 +16,11 @@
 }
 
 /* 4 cards per row on desktop */
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid {
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 14px !important;
@@ -28,27 +28,27 @@
 }
 
 @media (max-width: 1024px) {
-  :where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
-  :where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container,
-  :where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid,
-  :where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
-  :where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid {
+  :where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
+  :where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container,
+  :where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid,
+  :where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
+  :where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
 @media (max-width: 560px) {
-  :where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
-  :where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container,
-  :where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid,
-  :where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
-  :where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid {
+  :where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
+  :where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container,
+  :where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid,
+  :where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-loop-container.elementor-grid,
+  :where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-products-grid {
     grid-template-columns: minmax(0, 1fr) !important;
   }
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop {
   position: relative;
   background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
   border: 1px solid var(--lk-shop-line);
@@ -62,8 +62,8 @@
     transform 0.2s ease;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop::before,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop::before {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop::before,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop::before {
   content: "";
   position: absolute;
   inset-inline: 0;
@@ -75,8 +75,8 @@
   z-index: 3;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop:hover,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop:hover {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop:hover,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop:hover {
   border-color: #b7c9da;
   box-shadow:
     0 4px 10px rgba(11, 31, 58, 0.06),
@@ -84,13 +84,13 @@
   transform: translateY(-2px);
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop:hover::before,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop:hover::before {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop:hover::before,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop:hover::before {
   opacity: 1;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__inner,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__inner {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__inner,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__inner {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -98,8 +98,8 @@
   background: transparent;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__media,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__media {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__media,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__media {
   position: relative;
   background: linear-gradient(
     165deg,
@@ -111,8 +111,8 @@
   border-bottom: 1px solid rgba(217, 227, 236, 0.7);
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__media::after,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__media::after {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__media::after,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__media::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -125,10 +125,10 @@
   z-index: 1;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-logo,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-logo {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-logo,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-logo {
   position: absolute;
   top: 0.45rem;
   right: 0.45rem;
@@ -152,8 +152,8 @@
   box-sizing: border-box;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge--text,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge--text {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge--text,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge--text {
   line-height: 1.15;
   padding: 0.25rem;
   width: 2.7rem;
@@ -161,8 +161,8 @@
   max-width: 2.7rem;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge-label,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge-label {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge-label,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge-label {
   display: block;
   font-size: 0.55rem;
   font-weight: 700;
@@ -176,10 +176,10 @@
   max-height: 100%;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge img,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge img,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-logo img,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-logo img {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge img,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__company-badge img,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-logo img,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-logo img {
   width: 100%;
   height: 100%;
   max-height: none;
@@ -188,8 +188,8 @@
   border-radius: 999px;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__image,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__image {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__image,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__image {
   position: relative;
   z-index: 0;
   display: block;
@@ -197,8 +197,8 @@
   padding: 0.35rem 0.2rem 0.45rem; /* keep logo clear; outer media already has 3px */
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__image img,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__image img {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__image img,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__image img {
   width: 100%;
   height: 150px;
   object-fit: contain;
@@ -206,8 +206,8 @@
   margin: 0 auto;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__body,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__body {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__body,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__body {
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* RTL → physical right */
@@ -218,8 +218,8 @@
   direction: rtl;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title {
   margin: 0;
   font-size: var(--lk-shop-title);
   font-weight: 700;
@@ -239,8 +239,8 @@
   max-width: 100%;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title a,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title a {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title a,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title a {
   color: inherit;
   text-decoration: none;
   direction: rtl;
@@ -248,13 +248,13 @@
   text-align: right;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title a:hover,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title a:hover {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title a:hover,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__title a:hover {
   color: var(--lk-shop-accent-2);
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__grade,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__grade {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__grade,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__grade {
   margin: 0;
   font-size: var(--lk-shop-grade);
   font-family: inherit;
@@ -272,10 +272,11 @@
   width: 100%;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand {
   margin: 0.1rem 0 0;
   font-size: var(--lk-shop-meta);
+  font-weight: 500;
   line-height: 1.35;
   color: var(--lk-shop-accent-2);
   width: 100%;
@@ -283,8 +284,8 @@
   justify-content: flex-start; /* RTL body → physical right */
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-link,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-link {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-link,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-link {
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
@@ -292,22 +293,24 @@
   flex-direction: row; /* text then icon → icon on physical right of text */
   direction: ltr;
   color: inherit;
+  font-weight: 500;
   text-decoration: none;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-link > span,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-link > span {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-link > span,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-link > span {
   direction: rtl;
   unicode-bidi: isolate;
+  font-weight: 500;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop a.lk-loop-item__brand-link:hover,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop a.lk-loop-item__brand-link:hover {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop a.lk-loop-item__brand-link:hover,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop a.lk-loop-item__brand-link:hover {
   text-decoration: underline;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-icon,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-icon {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-icon,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__brand-icon {
   flex: 0 0 auto;
   width: 0.85rem;
   height: 0.85rem;
@@ -318,8 +321,8 @@
   border-radius: 999px;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__footer,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__footer {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__footer,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -331,8 +334,8 @@
   direction: ltr; /* physical: CTA left, price right */
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
@@ -358,37 +361,37 @@
   transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart span,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart span,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart-label,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart-label {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart span,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart span,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart-label,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart-label {
   direction: rtl;
   unicode-bidi: isolate;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart.loading,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart.loading {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart.loading,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart.loading {
   opacity: 0.72;
   pointer-events: none;
   cursor: wait;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart.added,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart.added {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart.added,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart.added {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 45%),
     linear-gradient(180deg, #1a8f4a 0%, #147a3d 100%);
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart svg,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart svg {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart svg,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart svg {
   flex: 0 0 auto;
   fill: currentColor;
   display: block;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart:hover,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart:hover {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart:hover,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__add-to-cart:hover {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 45%),
     linear-gradient(180deg, #128080 0%, var(--lk-shop-accent-2) 100%);
@@ -399,8 +402,8 @@
   transform: translateY(-1px);
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price {
   margin: 0;
   font-size: var(--lk-shop-meta);
   font-weight: 700;
@@ -410,26 +413,26 @@
   direction: rtl;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price .woocommerce-Price-amount,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price .amount,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price .woocommerce-Price-amount,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price .amount {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price .woocommerce-Price-amount,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price .amount,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price .woocommerce-Price-amount,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price .amount {
   color: inherit;
   font-weight: inherit;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__cart,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__cart,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price-bar,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price-bar,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .added_to_cart,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .added_to_cart {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__cart,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__cart,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price-bar,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__price-bar,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .added_to_cart,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .added_to_cart {
   display: none !important;
 }
 
 /* Eye icon: view cart — top-left of product image */
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart {
   position: absolute;
   top: 0.45rem;
   left: 0.45rem;
@@ -452,30 +455,30 @@
   transition: opacity 0.2s ease, transform 0.2s ease, background 0.15s ease, color 0.15s ease;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart.is-visible,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart.is-visible {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart.is-visible,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart.is-visible {
   opacity: 1;
   transform: scale(1);
   pointer-events: auto;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart:hover,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart:hover {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart:hover,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart:hover {
   background: var(--lk-shop-accent);
   color: #fff;
   border-color: var(--lk-shop-accent);
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart svg,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart svg {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart svg,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart svg {
   width: 1rem;
   height: 1rem;
   display: block;
   fill: currentColor;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart::after,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart::after {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart::after,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart::after {
   content: attr(data-tooltip);
   position: absolute;
   top: calc(100% + 0.35rem);
@@ -499,18 +502,18 @@
   box-shadow: 0 4px 12px rgba(11, 31, 58, 0.18);
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart:hover::after,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart:hover::after {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart:hover::after,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__view-cart:hover::after {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
 }
 
 /* Shop pagination */
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-archive-products__pagination,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-archive-products__pagination {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-archive-products__pagination,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-archive-products__pagination {
   margin: 1.75rem 0 0.5rem;
   display: flex;
   justify-content: center;
@@ -518,15 +521,15 @@
   direction: rtl;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination[hidden],
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination[hidden] {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination[hidden],
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination[hidden] {
   display: none !important;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination .page-numbers,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination .page-numbers,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-archive-products__pagination .page-numbers,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-archive-products__pagination .page-numbers {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination .page-numbers,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination .page-numbers,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-archive-products__pagination .page-numbers,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-archive-products__pagination .page-numbers {
   display: inline-flex;
   flex-wrap: wrap;
   gap: 0.4rem;
@@ -537,16 +540,16 @@
   justify-content: center;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination .page-numbers li,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination .page-numbers li {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination .page-numbers li,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination .page-numbers li {
   list-style: none;
   margin: 0;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -569,8 +572,8 @@
     transform 0.15s ease;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers:hover,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers:hover {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers:hover,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers:hover {
   background: var(--lk-shop-accent-2);
   border-color: var(--lk-shop-accent-2);
   color: #fff;
@@ -578,8 +581,8 @@
   transform: translateY(-1px);
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers.current,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers.current {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers.current,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers.current {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 45%),
     linear-gradient(180deg, #0a2a4d 0%, var(--lk-shop-accent) 100%);
@@ -590,8 +593,8 @@
     0 4px 10px rgba(1, 30, 62, 0.2);
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers.dots,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers.dots {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers.dots,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination span.page-numbers.dots {
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -600,18 +603,18 @@
   font-weight: 700;
 }
 
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.prev,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.next,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.prev,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.next {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.prev,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.next,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.prev,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.next {
   font-size: 1rem;
   line-height: 1;
 }
 
 /* Hide leftover Elementor / Woo pagination on shop when our nav is present */
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-pagination,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .woocommerce-pagination,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-pagination,
-:where(body.lk-shop-cards-archive, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .woocommerce-pagination {
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-pagination,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .woocommerce-pagination,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .elementor-pagination,
+:where(body.lk-shop-cards-archive, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .woocommerce-pagination {
   display: none !important;
 }

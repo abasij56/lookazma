@@ -138,7 +138,7 @@ $query = new WP_Query( $args );
 $products_html = '';
 $pagination    = '';
 if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' ) ) {
-	$products_html = Hello_Elementor_Child_Archive_Product_Filter::render_products_grid_html( $query );
+	$products_html = Hello_Elementor_Child_Archive_Product_Filter::render_products_grid_html( $query, 'shop' );
 	$pagination    = Hello_Elementor_Child_Archive_Product_Filter::render_pagination_html( $query, $term_id );
 } else {
 	ob_start();

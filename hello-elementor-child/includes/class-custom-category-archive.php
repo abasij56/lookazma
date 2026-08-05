@@ -242,6 +242,16 @@ final class Hello_Elementor_Child_Custom_Category_Archive {
 			HELLO_ELEMENTOR_CHILD_VERSION
 		);
 
+		$shop_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-product-shop-cards.css';
+		if ( file_exists( $shop_css ) ) {
+			wp_enqueue_style(
+				'lk-archive-shop-cards',
+				HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-product-shop-cards.css',
+				array( 'lk-archive-product-light' ),
+				(string) filemtime( $shop_css )
+			);
+		}
+
 		wp_enqueue_script(
 			'lk-elementor-menu-cart',
 			HELLO_ELEMENTOR_CHILD_URI . 'assets/js/lk-elementor-menu-cart.js',

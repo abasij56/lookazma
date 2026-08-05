@@ -112,3 +112,22 @@ body *:not(i):not(svg):not(path):not(.fa):not(.fas):not(.far):not(.fal):not(.fab
 .lk-breadcrumb a {
 	font-weight: 600 !important;
 }
+
+/* Category / taxonomy archive descriptions (non-light Woo + Elementor) */
+.term-description,
+.woocommerce-taxonomy-description,
+.term-description p,
+.term-description li,
+.woocommerce-taxonomy-description p,
+.woocommerce-taxonomy-description li {
+	font-family: var(--lk-font-family) !important;
+	font-weight: 450 !important;
+	line-height: 1.85 !important;
+}
+
+.term-description strong,
+.term-description b,
+.woocommerce-taxonomy-description strong,
+.woocommerce-taxonomy-description b {
+	font-weight: 600 !important;
+}
