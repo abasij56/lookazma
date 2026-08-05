@@ -143,7 +143,7 @@ final class AI_Product_Desc_Ajax {
 	}
 
 	/**
-	 * Save (append or set) AI description into product content.
+	 * Save AI description into product content (replaces existing description).
 	 */
 	public static function save(): void {
 		self::guard_request();
@@ -162,15 +162,7 @@ final class AI_Product_Desc_Ajax {
 			);
 		}
 
-		$new_html      = self::format_description_for_product( $raw_text );
-		$existing_html = (string) $product->get_description();
-		$existing_trim = trim( wp_strip_all_tags( $existing_html ) );
-
-		if ( '' !== $existing_trim ) {
-			$final_html = rtrim( $existing_html ) . "\n\n" . $new_html;
-		} else {
-			$final_html = $new_html;
-		}
+		$final_html = self::format_description_for_product( $raw_text );
 
 		$product->set_description( $final_html );
 		$saved_id = $product->save();
@@ -189,10 +181,8 @@ final class AI_Product_Desc_Ajax {
 		wp_send_json_success(
 			array(
 				'product_id'          => $product_id,
-				'appended'            => '' !== $existing_trim,
-				'message'             => '' !== $existing_trim
-					? __( 'توضیحات به انتهای توضیحات محصول اضافه شد.', 'ai-product-description' )
-					: __( 'توضیحات به عنوان توضیحات محصول ذخیره شد.', 'ai-product-description' ),
+				'appended'            => false,
+				'message'             => __( 'توضیحات محصول جایگزین و ذخیره شد.', 'ai-product-description' ),
 				'current_description' => self::get_current_description_payload( $product ),
 			)
 		);

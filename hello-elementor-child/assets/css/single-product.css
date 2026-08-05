@@ -15,7 +15,7 @@ body.lk-single-product {
 	margin: 0;
 	background: var(--lk-bg);
 	color: var(--lk-text);
-	font-family: Tahoma, "Segoe UI", sans-serif;
+	font-family: "Vazirmatn", Tahoma, "Segoe UI", sans-serif;
 	line-height: 1.7;
 }
 
@@ -189,10 +189,6 @@ body.lk-single-product {
 	border: 1px solid var(--lk-line);
 	border-radius: var(--lk-radius);
 	padding: 1.25rem;
-}
-
-.lk-product__description h2 {
-	margin-top: 0;
 }
 
 .lk-site-footer {

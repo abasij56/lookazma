@@ -162,16 +162,9 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 		}
 
 		wp_enqueue_style(
-			'lk-spl-vazirmatn',
-			'https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap',
-			array(),
-			null
-		);
-
-		wp_enqueue_style(
 			'lk-spl-css',
 			HELLO_ELEMENTOR_CHILD_URI . 'assets/css/single-product-light.css',
-			array( 'lk-spl-vazirmatn' ),
+			array( HELLO_ELEMENTOR_CHILD_VAZIRMATN_HANDLE ),
 			(string) filemtime( HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/single-product-light.css' )
 		);
 

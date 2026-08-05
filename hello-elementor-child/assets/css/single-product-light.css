@@ -567,7 +567,7 @@ body.lk-single-product-light {
 	font-weight: 700;
 }
 
-/* Category CTA in «معرفی محصول» — same vibe as datasheet, smaller, no icon */
+/* Category CTA in «معرفی محصول» — typography in product-intro-typography.css */
 .lk-prose a,
 .lk-prose a.lk-cat-archive-btn {
 	display: inline-flex;

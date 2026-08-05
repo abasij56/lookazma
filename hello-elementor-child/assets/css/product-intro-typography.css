@@ -1,0 +1,162 @@
+/**
+ * «معرفی محصول» typography — light template + Elementor / Jet Woo tabs.
+ *
+ * Elementor nested tabs (معرفی محصول) render inside:
+ * .elementor-widget-jet-single-content .jet-single-content .product
+ * Tab panels use id="e-n-tab-content-*" (not class .e-n-tab-content).
+ */
+
+/* Shared scope: Jet intro + classic Woo + light template */
+.lk-prose,
+.lk-product__description,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product,
+body.single-product:not(.lk-single-product-light) #tab-description,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content {
+	font-size: 0.95rem !important;
+	font-weight: 500 !important;
+	line-height: 1.85 !important;
+}
+
+.lk-prose p,
+.lk-prose li,
+.lk-product__description p,
+.lk-product__description li,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content p,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content li,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product p,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product li,
+body.single-product:not(.lk-single-product-light) #tab-description p,
+body.single-product:not(.lk-single-product-light) #tab-description li,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description p,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description li,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description p,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description li,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content p,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content li {
+	font-size: 0.95rem !important;
+	font-weight: 500 !important;
+	line-height: 1.85 !important;
+}
+
+.lk-prose p,
+.lk-product__description p,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content p,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product p,
+body.single-product:not(.lk-single-product-light) #tab-description p,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description p,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description p,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content p {
+	margin: 0 0 0.85rem !important;
+}
+
+.lk-prose strong,
+.lk-prose b,
+.lk-product__description strong,
+.lk-product__description b,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content strong,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content b,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product strong,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product b,
+body.single-product:not(.lk-single-product-light) #tab-description strong,
+body.single-product:not(.lk-single-product-light) #tab-description b,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description strong,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description b,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description strong,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description b,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content strong,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content b {
+	font-weight: 700 !important;
+}
+
+/* Main product title — first h2 */
+.lk-prose h2:first-of-type,
+.lk-product__description h2:first-of-type,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content h2:first-of-type,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product h2:first-of-type,
+body.single-product:not(.lk-single-product-light) #tab-description h2:first-of-type,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description h2:first-of-type,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description h2:first-of-type,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content h2:first-of-type {
+	margin: 0 0 0.75rem !important;
+	font-size: clamp(1.25rem, 1.2vw + 1rem, 1.6rem) !important;
+	font-weight: 800 !important;
+	line-height: 1.45 !important;
+}
+
+/* Application / numbered h2s after the first */
+.lk-prose h2 ~ h2,
+.lk-product__description h2 ~ h2,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content h2 ~ h2,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product h2 ~ h2,
+body.single-product:not(.lk-single-product-light) #tab-description h2 ~ h2,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description h2 ~ h2,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description h2 ~ h2,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content h2 ~ h2 {
+	margin: 1.35rem 0 0.45rem !important;
+	font-size: 1.12rem !important;
+	font-weight: 700 !important;
+	line-height: 1.5 !important;
+}
+
+/* Section subtitles */
+.lk-prose h3,
+.lk-product__description h3,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content h3,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product h3,
+body.single-product:not(.lk-single-product-light) #tab-description h3,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description h3,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description h3,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content h3 {
+	margin: 1.25rem 0 0.45rem !important;
+	font-size: 1.15rem !important;
+	font-weight: 700 !important;
+	line-height: 1.5 !important;
+}
+
+.lk-prose h4,
+.lk-product__description h4,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content h4,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product h4,
+body.single-product:not(.lk-single-product-light) #tab-description h4,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description h4,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description h4,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content h4 {
+	margin: 1rem 0 0.4rem !important;
+	font-size: 1.05rem !important;
+	font-weight: 700 !important;
+	line-height: 1.5 !important;
+}
+
+.lk-prose ul,
+.lk-prose ol,
+.lk-product__description ul,
+.lk-product__description ol,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content ul,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content ol,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product ul,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product ol,
+body.single-product:not(.lk-single-product-light) #tab-description ul,
+body.single-product:not(.lk-single-product-light) #tab-description ol,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description ul,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description ol,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description ul,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description ol,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content ul,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content ol {
+	margin: 0 0 0.85rem !important;
+	padding-inline-start: 1.25rem !important;
+}
+
+.lk-prose li,
+.lk-product__description li,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content .jet-single-content li,
+body.single-product:not(.lk-single-product-light) .jet-single-content .product li,
+body.single-product:not(.lk-single-product-light) #tab-description li,
+body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description li,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description li,
+body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content li {
+	margin-bottom: 0.35rem !important;
+}

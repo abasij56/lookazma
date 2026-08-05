@@ -1,0 +1,114 @@
+/**
+ * Site-wide Vazirmatn override (Elementor Kit / Yekan / Hello defaults).
+ * Icon font classes are excluded so Elementor Icons / FA keep working.
+ */
+
+:root {
+	--lk-font-family: "Vazirmatn", Tahoma, sans-serif;
+}
+
+body,
+button,
+input,
+select,
+textarea,
+.elementor-widget,
+.elementor-heading-title,
+.elementor-button-text,
+.elementor-icon-list-text,
+.elementor-nav-menu,
+.elementor-nav-menu a,
+.woocommerce,
+.woocommerce-page {
+	font-family: var(--lk-font-family) !important;
+}
+
+/* Broad override, skip icon fonts */
+body *:not(i):not(svg):not(path):not(.fa):not(.fas):not(.far):not(.fal):not(.fab):not(.fad):not(.eicon):not(.elementor-icon):not(.dashicons):not([class^="eicon-"]):not([class*=" eicon-"]) {
+	font-family: var(--lk-font-family) !important;
+}
+
+/*
+ * Search AJAX preview (FiboSearch / Ajax Search for WooCommerce).
+ * Vazirmatn at 400 reads thin vs Yekan — bump secondary lines.
+ */
+.dgwt-wcas-suggestion,
+.dgwt-wcas-suggestion *,
+.dgwt-wcas-sp,
+.dgwt-wcas-sd,
+.dgwt-wcas-st,
+.dgwt-wcas-meta,
+.dgwt-wcas-sku,
+.dgwt-wcas-tax,
+.dgwt-wcas-content,
+.dgwt-wcas-details-wrapp,
+.dgwt-wcas-details-wrapp * {
+	font-family: var(--lk-font-family) !important;
+}
+
+.dgwt-wcas-st {
+	font-weight: 700 !important;
+}
+
+.dgwt-wcas-sp,
+.dgwt-wcas-sd,
+.dgwt-wcas-meta,
+.dgwt-wcas-sku,
+.dgwt-wcas-tax,
+.dgwt-wcas-content,
+.dgwt-wcas-suggestion .dgwt-wcas-desc,
+.dgwt-wcas-suggestion em,
+.dgwt-wcas-suggestion small {
+	font-weight: 500 !important;
+}
+
+/* FiboSearch “no results” message */
+.dgwt-wcas-suggestion-nores,
+.dgwt-wcas-suggestion-nores *,
+.dgwt-wcas-suggestion.dgwt-wcas-suggestion-nores .dgwt-wcas-st,
+.dgwt-wcas-suggestion-nores p,
+.dgwt-wcas-suggestion-nores a,
+.dgwt-wcas-suggestion-nores li,
+.dgwt-wcas-suggestion-nores span {
+	font-family: var(--lk-font-family) !important;
+	font-weight: 500 !important;
+}
+
+/* Elementor / generic search dropdown fallbacks */
+.elementor-search-form__suggestions,
+.elementor-autocomplete-suggestion,
+.elementor-autocomplete-suggestion *,
+.jet-ajax-search__results-item,
+.jet-ajax-search__results-item * {
+	font-family: var(--lk-font-family) !important;
+}
+
+.elementor-autocomplete-suggestion,
+.jet-ajax-search__results-item-title {
+	font-weight: 700 !important;
+}
+
+.elementor-autocomplete-suggestion span,
+.elementor-autocomplete-suggestion small,
+.jet-ajax-search__results-item-content,
+.jet-ajax-search__results-item-price {
+	font-weight: 500 !important;
+}
+
+/* Breadcrumbs — Vazirmatn at 400 reads thin */
+.woocommerce-breadcrumb,
+.woocommerce-breadcrumb a,
+.elementor-widget-woocommerce-breadcrumb,
+.elementor-widget-woocommerce-breadcrumb a,
+.lk-breadcrumb,
+.lk-breadcrumb a,
+.lk-breadcrumb .woocommerce-breadcrumb {
+	font-family: var(--lk-font-family) !important;
+	font-weight: 500 !important;
+}
+
+.woocommerce-breadcrumb a,
+.elementor-widget-woocommerce-breadcrumb a,
+.lk-breadcrumb a {
+	font-weight: 600 !important;
+}

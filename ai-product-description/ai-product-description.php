@@ -544,19 +544,23 @@ function ai_product_desc_ensure_category_link( string $html, array $categories, 
 		}
 	}
 
-	// Ensure the category CTA has a stable class for front-end button styling.
+	// Ensure category CTAs have a stable class and correct «دسته بندی …» label.
 	$html = preg_replace_callback(
-		'#<a\s([^>]*?)>#iu',
-		static function ( array $m ) use ( $allowed ): string {
+		'#<a\s([^>]*?)>(.*?)</a>#isu',
+		static function ( array $m ) use ( $allowed, $label_by_url, $chosen_label ): string {
 			$attrs = $m[1];
+			$inner = $m[2];
 			if ( ! preg_match( '#href=(["\'])(.*?)\1#iu', $attrs, $href_m ) ) {
 				return $m[0];
 			}
-			$href = trailingslashit( html_entity_decode( (string) $href_m[2], ENT_QUOTES, 'UTF-8' ) );
-			$ok   = false;
+			$href_raw = html_entity_decode( (string) $href_m[2], ENT_QUOTES, 'UTF-8' );
+			$href     = trailingslashit( $href_raw );
+			$ok       = false;
+			$label    = $chosen_label;
 			foreach ( $allowed as $url ) {
 				if ( $href === $url || untrailingslashit( $href ) === untrailingslashit( $url ) ) {
-					$ok = true;
+					$ok    = true;
+					$label = $label_by_url[ $url ] ?? $label;
 					break;
 				}
 			}
@@ -577,7 +581,26 @@ function ai_product_desc_ensure_category_link( string $html, array $categories, 
 			} else {
 				$attrs = 'class="lk-cat-archive-btn" ' . ltrim( $attrs );
 			}
-			return '<a ' . $attrs . '>';
+
+			$text = trim(
+				html_entity_decode(
+					wp_strip_all_tags( $inner ),
+					ENT_QUOTES,
+					'UTF-8'
+				)
+			);
+			$prefix   = 'دسته بندی ';
+			$looks_ok = ( 0 === strpos( $text, $prefix ) )
+				&& strlen( $text ) > strlen( $prefix )
+				&& false === stripos( $text, 'http' )
+				&& '...' !== $text
+				&& '…' !== $text;
+
+			if ( ! $looks_ok ) {
+				$inner = esc_html( $label );
+			}
+
+			return '<a ' . $attrs . '>' . $inner . '</a>';
 		},
 		$html
 	);

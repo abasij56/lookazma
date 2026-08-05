@@ -238,7 +238,7 @@ final class Hello_Elementor_Child_Custom_Category_Archive {
 		wp_enqueue_style(
 			'lk-archive-product-light',
 			HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-product-light.css',
-			array(),
+			array( HELLO_ELEMENTOR_CHILD_VAZIRMATN_HANDLE ),
 			HELLO_ELEMENTOR_CHILD_VERSION
 		);
 

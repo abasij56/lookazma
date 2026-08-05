@@ -7,6 +7,8 @@
 body.single-product:not(.lk-single-product-light) a.lk-cat-archive-btn,
 body.single-product:not(.lk-single-product-light) #tab-description a[href*="product-category"],
 body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description a[href*="product-category"],
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content a[href*="product-category"],
+body.single-product:not(.lk-single-product-light) .jet-single-content a[href*="product-category"],
 body.single-product:not(.lk-single-product-light) .e-n-tabs-content a[href*="product-category"],
 body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description a[href*="product-category"],
 body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content a[href*="product-category"] {
@@ -29,6 +31,8 @@ body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-
 body.single-product:not(.lk-single-product-light) a.lk-cat-archive-btn:hover,
 body.single-product:not(.lk-single-product-light) #tab-description a[href*="product-category"]:hover,
 body.single-product:not(.lk-single-product-light) .woocommerce-Tabs-panel--description a[href*="product-category"]:hover,
+body.single-product:not(.lk-single-product-light) .elementor-widget-jet-single-content a[href*="product-category"]:hover,
+body.single-product:not(.lk-single-product-light) .jet-single-content a[href*="product-category"]:hover,
 body.single-product:not(.lk-single-product-light) .e-n-tabs-content a[href*="product-category"]:hover,
 body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-data-tabs .woocommerce-Tabs-panel--description a[href*="product-category"]:hover,
 body.single-product:not(.lk-single-product-light) .elementor-widget-woocommerce-product-content a[href*="product-category"]:hover {
