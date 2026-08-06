@@ -1,0 +1,327 @@
+/**
+ * Lookazma Search widget — minimal autocomplete dropdown.
+ * Root class: .lookazma_pas  (max-width ~600px)
+ */
+
+.lookazma_pas {
+	--lk-pas-ink: #0b1f3a;
+	--lk-pas-muted: #5b6b7c;
+	--lk-pas-line: #d9e3ec;
+	--lk-pas-soft: #f3f7fb;
+	--lk-pas-accent: #001f3f;
+	--lk-pas-icon: #080191;
+	--lk-pas-field-h: 3.25rem;
+	--lk-pas-icon-zone: 3.25rem;
+	position: relative;
+	width: 100%;
+	max-width: 600px;
+	font-family: "Vazirmatn", Tahoma, sans-serif;
+	direction: rtl;
+	box-sizing: border-box;
+}
+
+.lookazma_pas *,
+.lookazma_pas *::before,
+.lookazma_pas *::after {
+	box-sizing: border-box;
+}
+
+.lookazma_pas__form {
+	margin: 0;
+	width: 100%;
+}
+
+/*
+ * Capsule field — flat top/bottom, half-circle left & right:
+ *   ______________
+ * (                )
+ *   ______________
+ */
+.lookazma_pas__field {
+	position: relative;
+	width: 100%;
+	height: var(--lk-pas-field-h);
+	border: 1px solid var(--lk-pas-line);
+	border-radius: calc(var(--lk-pas-field-h) / 2);
+	background: #fff;
+	overflow: hidden;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lookazma_pas__field:focus-within {
+	border-color: #9eb4c8;
+	box-shadow: 0 0 0 3px rgba(8, 1, 145, 0.08);
+}
+
+/* Icon on physical left; divider on its right — placeholder/text stop at this line */
+.lookazma_pas__icon {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: auto;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--lk-pas-icon-zone);
+	color: var(--lk-pas-icon);
+	pointer-events: none;
+	background: #fff;
+}
+
+.lookazma_pas__icon::after {
+	content: "";
+	position: absolute;
+	top: 22%;
+	bottom: 22%;
+	right: 0;
+	width: 1px;
+	background: var(--lk-pas-line);
+}
+
+.lookazma_pas__icon svg {
+	display: block;
+	width: 22px;
+	height: 22px;
+}
+
+.lookazma_pas__icon svg.lookazma_pas__icon-loading {
+	display: none;
+}
+
+.lookazma_pas.is-loading .lookazma_pas__icon svg.lookazma_pas__icon-search {
+	display: none;
+}
+
+.lookazma_pas.is-loading .lookazma_pas__icon svg.lookazma_pas__icon-loading {
+	display: block;
+	animation: lk-pas-spin 0.75s linear infinite;
+}
+
+@keyframes lk-pas-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.lookazma_pas__input {
+	display: block;
+	width: 100%;
+	height: 100%;
+	/* Leave icon zone clear so placeholder ends at the divider */
+	padding: 0 1.15rem 0 calc(var(--lk-pas-icon-zone) + 0.65rem);
+	border: 0 !important;
+	border-radius: 0 !important;
+	background: transparent;
+	color: var(--lk-pas-ink);
+	font-family: inherit;
+	font-size: 0.9rem;
+	font-weight: 500;
+	line-height: var(--lk-pas-field-h);
+	outline: none !important;
+	box-shadow: none !important;
+	text-overflow: ellipsis;
+}
+
+.lookazma_pas__input::-webkit-search-decoration,
+.lookazma_pas__input::-webkit-search-cancel-button,
+.lookazma_pas__input::-webkit-search-results-button,
+.lookazma_pas__input::-webkit-search-results-decoration {
+	display: none;
+}
+
+.lookazma_pas__input::placeholder {
+	color: var(--lk-pas-muted);
+	font-weight: 450;
+	opacity: 1;
+	text-overflow: ellipsis;
+}
+
+.lookazma_pas__field:focus-within .lookazma_pas__icon {
+	color: var(--lk-pas-icon);
+}
+
+.lookazma_pas__dropdown {
+	position: absolute;
+	z-index: 10050;
+	top: calc(100% + 6px);
+	right: 0;
+	left: 0;
+	display: flex;
+	flex-direction: column;
+	max-height: 360px;
+	background: #fff;
+	border: 1px solid var(--lk-pas-line);
+	border-radius: 16px;
+	box-shadow: 0 10px 28px rgba(11, 31, 58, 0.12);
+	overflow: hidden;
+}
+
+.lookazma_pas__dropdown[hidden] {
+	display: none !important;
+}
+
+.lookazma_pas__scroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 0.35rem 0;
+}
+
+.lookazma_pas__section {
+	padding: 0.25rem 0 0.35rem;
+}
+
+.lookazma_pas__section + .lookazma_pas__section {
+	border-top: 1px solid var(--lk-pas-line);
+	margin-top: 0.15rem;
+	padding-top: 0.45rem;
+}
+
+.lookazma_pas__section-title {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+	margin: 0;
+	padding: 0.1rem 0.9rem 0.25rem;
+	font-size: 0.58rem;
+	font-weight: 600;
+	color: #0d7573;
+	letter-spacing: 0.01em;
+}
+
+.lookazma_pas__section-icon {
+	flex: 0 0 auto;
+	width: 10px;
+	height: 10px;
+	color: #0d7573;
+}
+
+.lookazma_pas__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.lookazma_pas__item {
+	margin: 0;
+}
+
+.lookazma_pas__link {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.65rem;
+	padding: 0.4rem 0.9rem;
+	color: var(--lk-pas-ink);
+	text-decoration: none;
+	font-size: 0.88rem;
+	font-weight: 500;
+	line-height: 1.35;
+	transition: background 0.12s ease;
+}
+
+.lookazma_pas__link:hover,
+.lookazma_pas__link:focus {
+	background: var(--lk-pas-soft);
+	color: var(--lk-pas-accent);
+	outline: none;
+}
+
+.lookazma_pas__text {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.1rem;
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.lookazma_pas__name {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.lookazma_pas__thumb {
+	flex: 0 0 auto;
+	width: 40px;
+	height: 40px;
+	border-radius: 6px;
+	overflow: hidden;
+	background: #fff;
+	border: 1px solid var(--lk-pas-line);
+}
+
+.lookazma_pas__thumb img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	object-position: center;
+}
+
+.lookazma_pas__thumb--empty {
+	background: linear-gradient(135deg, #eef3f8 0%, #e2ebf2 100%);
+}
+
+.lookazma_pas__meta {
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--lk-pas-muted);
+}
+
+.lookazma_pas__empty {
+	margin: 0;
+	padding: 0.85rem 0.9rem;
+	font-size: 0.88rem;
+	font-weight: 500;
+	color: var(--lk-pas-muted);
+	text-align: center;
+}
+
+.lookazma_pas__more {
+	flex: 0 0 auto;
+	display: block;
+	width: 100%;
+	padding: 0.7rem 0.9rem;
+	border: 0;
+	border-top: 1px solid var(--lk-pas-line);
+	background: var(--lk-pas-accent);
+	color: #fff !important;
+	text-align: center;
+	text-decoration: none !important;
+	font-family: inherit;
+	font-size: 0.88rem;
+	font-weight: 600;
+	line-height: 1.3;
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+
+.lookazma_pas__more:hover,
+.lookazma_pas__more:focus {
+	background: #0a3a6b;
+	color: #fff !important;
+}
+
+.lookazma_pas__more[hidden] {
+	display: none !important;
+}
+
+.lookazma_pas.is-loading .lookazma_pas__input {
+	opacity: 0.92;
+}
+
+/* Elementor editor / narrow columns */
+.elementor-widget-lookazma_search {
+	width: 100%;
+}
+
+.elementor-widget-lookazma_search .lookazma_pas {
+	max-width: 600px;
+}
