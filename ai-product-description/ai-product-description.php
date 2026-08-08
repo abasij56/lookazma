@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'AI_PRODUCT_DESC_VERSION', '1.3.4' );
+define( 'AI_PRODUCT_DESC_VERSION', '1.4.4' );
 define( 'AI_PRODUCT_DESC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AI_PRODUCT_DESC_URL', plugin_dir_url( __FILE__ ) );
 
@@ -21,6 +21,7 @@ require_once AI_PRODUCT_DESC_PATH . 'includes/class-admin-menu.php';
 require_once AI_PRODUCT_DESC_PATH . 'includes/class-ai-client.php';
 require_once AI_PRODUCT_DESC_PATH . 'includes/class-ajax-handler.php';
 require_once AI_PRODUCT_DESC_PATH . 'includes/class-category-tools.php';
+require_once AI_PRODUCT_DESC_PATH . 'includes/class-auto-submit.php';
 
 /**
  * Bootstrap plugin.
@@ -35,6 +36,7 @@ function ai_product_desc_init() {
 		AI_Product_Desc_Settings::init();
 		AI_Product_Desc_Admin_Menu::init();
 		AI_Product_Desc_Category_Tools::init();
+		AI_Product_Desc_Auto_Submit::init();
 	}
 }
 add_action( 'plugins_loaded', 'ai_product_desc_init' );

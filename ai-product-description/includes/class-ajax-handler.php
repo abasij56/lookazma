@@ -23,6 +23,8 @@ final class AI_Product_Desc_Ajax {
 	public const CAT_DESC_SAVE      = 'ai_product_desc_cat_desc_save';
 	public const CAT_SPECS_GENERATE = 'ai_product_desc_cat_specs_generate';
 	public const CAT_SPECS_SAVE     = 'ai_product_desc_cat_specs_save';
+	public const AUTO_BRAND_PRODUCTS = 'ai_product_desc_auto_brand_products';
+	public const AUTO_PROCESS_ONE    = 'ai_product_desc_auto_process_one';
 	public const NONCE_ACTION       = 'ai_product_desc_generate';
 	public const CAPABILITY         = 'manage_options';
 
@@ -39,6 +41,8 @@ final class AI_Product_Desc_Ajax {
 		add_action( 'wp_ajax_' . self::CAT_DESC_SAVE, array( __CLASS__, 'category_desc_save' ) );
 		add_action( 'wp_ajax_' . self::CAT_SPECS_GENERATE, array( __CLASS__, 'category_specs_generate' ) );
 		add_action( 'wp_ajax_' . self::CAT_SPECS_SAVE, array( __CLASS__, 'category_specs_save' ) );
+		add_action( 'wp_ajax_' . self::AUTO_BRAND_PRODUCTS, array( __CLASS__, 'auto_brand_products' ) );
+		add_action( 'wp_ajax_' . self::AUTO_PROCESS_ONE, array( __CLASS__, 'auto_process_one' ) );
 	}
 
 	/**
@@ -186,6 +190,159 @@ final class AI_Product_Desc_Ajax {
 				'current_description' => self::get_current_description_payload( $product ),
 			)
 		);
+	}
+
+	/**
+	 * List master products for a brand (product_tag) — id + name only.
+	 */
+	public static function auto_brand_products(): void {
+		self::guard_request();
+
+		$tag_id = isset( $_POST['tag_id'] ) ? absint( $_POST['tag_id'] ) : 0;
+		if ( $tag_id <= 0 ) {
+			wp_send_json_error(
+				array( 'message' => __( 'برند نامعتبر است.', 'ai-product-description' ) ),
+				400
+			);
+		}
+
+		$term = get_term( $tag_id, 'product_tag' );
+		if ( ! $term instanceof WP_Term ) {
+			wp_send_json_error(
+				array( 'message' => __( 'برند پیدا نشد.', 'ai-product-description' ) ),
+				404
+			);
+		}
+
+		$products = self::get_master_products_for_tag( $tag_id );
+
+		wp_send_json_success(
+			array(
+				'tag_id'   => $tag_id,
+				'tag_name' => $term->name,
+				'count'    => count( $products ),
+				'products' => $products,
+			)
+		);
+	}
+
+	/**
+	 * Generate + save description for one product (no refine). Overwrites existing.
+	 */
+	public static function auto_process_one(): void {
+		self::guard_request();
+
+		$product    = self::get_master_product_from_request();
+		$product_id = $product->get_id();
+		$name       = $product->get_name();
+
+		$categories = ai_product_desc_get_product_categories( $product_id );
+		$best_url   = ai_product_desc_pick_best_category_url( $categories, $name );
+
+		$product_data = array(
+			'name'         => $name,
+			'cas_no'       => ai_product_desc_get_acf_value( $product_id, 'cas_no' ),
+			'brand'        => ai_product_desc_get_acf_value( $product_id, 'آدرس_برند' ),
+			'attributes'   => ai_product_desc_format_attributes( $product ),
+			'categories'   => $categories,
+			'category_url' => $best_url,
+		);
+
+		$result = AI_Product_Desc_Client::generate_description( $product_data );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error(
+				array(
+					'product_id' => $product_id,
+					'name'       => $name,
+					'message'    => $result->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$result     = ai_product_desc_ensure_category_link( $result, $categories, $best_url );
+		$final_html = self::format_description_for_product( is_string( $result ) ? $result : '' );
+
+		if ( '' === trim( wp_strip_all_tags( $final_html ) ) ) {
+			wp_send_json_error(
+				array(
+					'product_id' => $product_id,
+					'name'       => $name,
+					'message'    => __( 'متن توضیحات خالی است.', 'ai-product-description' ),
+				),
+				400
+			);
+		}
+
+		$product->set_description( $final_html );
+		$saved_id = $product->save();
+
+		if ( ! $saved_id ) {
+			wp_send_json_error(
+				array(
+					'product_id' => $product_id,
+					'name'       => $name,
+					'message'    => __( 'ذخیره توضیحات محصول انجام نشد.', 'ai-product-description' ),
+				),
+				500
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'product_id' => $product_id,
+				'name'       => $name,
+				'message'    => __( 'توضیحات محصول جایگزین و ذخیره شد.', 'ai-product-description' ),
+			)
+		);
+	}
+
+	/**
+	 * Master (non-variation) products for a product_tag.
+	 *
+	 * @param int $tag_id Term ID.
+	 * @return array<int, array{id:int,name:string,has_description:bool}>
+	 */
+	public static function get_master_products_for_tag( int $tag_id ): array {
+		$query = new WP_Query(
+			array(
+				'post_type'              => 'product',
+				'post_status'            => 'publish',
+				'posts_per_page'         => -1,
+				'post_parent'            => 0,
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+				'tax_query'              => array(
+					array(
+						'taxonomy' => 'product_tag',
+						'field'    => 'term_id',
+						'terms'    => $tag_id,
+					),
+				),
+				'orderby'                => 'title',
+				'order'                  => 'ASC',
+			)
+		);
+
+		$out = array();
+		foreach ( $query->posts as $product_id ) {
+			$product_id = (int) $product_id;
+			$product    = wc_get_product( $product_id );
+			if ( ! $product || $product->is_type( 'variation' ) ) {
+				continue;
+			}
+			$description = trim( wp_strip_all_tags( (string) $product->get_description() ) );
+			$out[]         = array(
+				'id'               => $product_id,
+				'name'             => $product->get_name(),
+				'has_description'  => '' !== $description,
+			);
+		}
+
+		return $out;
 	}
 
 	/**
