@@ -1,0 +1,35 @@
+{% extends "woo/base-light-product.twig" %}
+
+{% block content %}
+{% if archive %}
+<div class="lk-lpt lk-lpt-container">
+	{% if archive.breadcrumb_html %}
+		<nav class="lk-lpt-breadcrumb" aria-label="breadcrumb">
+			{{ archive.breadcrumb_html|raw }}
+		</nav>
+	{% endif %}
+
+	<section class="lk-lpt-shop" aria-label="محصولات">
+		<aside class="lk-lpt-shop__filters" aria-label="فیلترها">
+			{{ archive.filters_html|raw }}
+		</aside>
+
+		<div class="lk-lpt-shop__products">
+			<div
+				class="lk-archive-products__grid lk-shop-products-grid"
+				id="lk-archive-products"
+				role="list"
+				data-lk-native-grid="1"
+				style="--lk-lpt-cols: 4"
+			>
+				{{ archive.products_html|raw }}
+			</div>
+
+			<nav class="lk-archive-products__pagination lk-shop-pagination" id="lk-archive-products-pagination" aria-label="صفحه‌بندی">
+				{{ archive.pagination_html|raw }}
+			</nav>
+		</div>
+	</section>
+</div>
+{% endif %}
+{% endblock %}

@@ -126,6 +126,70 @@ final class Hello_Elementor_Child_Lookazma_Search {
 	}
 
 	/**
+	 * Markup for native (non-Elementor) templates.
+	 *
+	 * @param string $placeholder Input placeholder.
+	 * @param string $input_id    Input element ID.
+	 */
+	public static function render_markup( string $placeholder = '', string $input_id = 'lk-lookazma-search-native' ): string {
+		self::enqueue_assets();
+
+		if ( '' === $placeholder ) {
+			$placeholder = 'از طریق نام محصول یا Cas No محصول مورد نظر خود را جستجو کنید';
+		}
+
+		$action    = home_url( '/' );
+		$dropdown  = $input_id . '-dropdown';
+		$search_q  = get_search_query();
+
+		ob_start();
+		?>
+		<div class="lookazma_pas" data-lk-lookazma-search>
+			<form class="lookazma_pas__form" role="search" method="get" action="<?php echo esc_url( $action ); ?>">
+				<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>">
+					<?php esc_html_e( 'جستجوی محصول', 'hello-elementor-child' ); ?>
+				</label>
+				<div class="lookazma_pas__field">
+					<span class="lookazma_pas__icon" aria-hidden="true">
+						<svg class="lookazma_pas__icon-search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" focusable="false">
+							<path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+						</svg>
+						<svg class="lookazma_pas__icon-loading" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" focusable="false">
+							<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="40 60"/>
+						</svg>
+					</span>
+					<input
+						type="search"
+						id="<?php echo esc_attr( $input_id ); ?>"
+						class="lookazma_pas__input"
+						name="s"
+						value="<?php echo esc_attr( $search_q ); ?>"
+						placeholder="<?php echo esc_attr( $placeholder ); ?>"
+						autocomplete="off"
+						aria-autocomplete="list"
+						aria-expanded="false"
+						aria-controls="<?php echo esc_attr( $dropdown ); ?>"
+					/>
+				</div>
+				<input type="hidden" name="post_type" value="product" />
+			</form>
+			<div
+				class="lookazma_pas__dropdown"
+				id="<?php echo esc_attr( $dropdown ); ?>"
+				hidden
+				role="listbox"
+			>
+				<div class="lookazma_pas__scroll" data-lk-scroll></div>
+				<a class="lookazma_pas__more" data-lk-more href="#" hidden>
+					<?php esc_html_e( 'مشاهده سایر محصولات', 'hello-elementor-child' ); ?>
+				</a>
+			</div>
+		</div>
+		<?php
+		return (string) ob_get_clean();
+	}
+
+	/**
 	 * AJAX: autocomplete results.
 	 */
 	public static function ajax_search(): void {

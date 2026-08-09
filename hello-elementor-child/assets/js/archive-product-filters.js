@@ -138,8 +138,22 @@
 		return true;
 	}
 
+	function isNativeListingTemplate() {
+		var body = document.body;
+		return !!(
+			cfg.nativeTemplate ||
+			(body && body.classList.contains('lk-light-product')) ||
+			(body && body.classList.contains('lk-archive-product-light')) ||
+			qs('#lk-archive-products[data-lk-native-grid]')
+		);
+	}
+
 	function injectFilters() {
 		var existing = document.getElementById('lk-archive-filters');
+		if (isNativeListingTemplate()) {
+			return existing;
+		}
+
 		var host = hideOldFilters() || findAccordionFilterHost();
 
 		if (existing) {
@@ -705,7 +719,12 @@
 			markShopGrid();
 			bindShopAddToCartFeedback();
 			document.documentElement.classList.add('lk-shop-filters-ready');
-			// Light Timber category already prints shop cards; Elementor archives need AJAX hydrate.
+			if (isNativeListingTemplate()) {
+				shopCardsLoaded = true;
+				ensurePaginationContainer();
+				return;
+			}
+			// Elementor archives need AJAX hydrate when loop is not our shop cards.
 			if (root && !shopCardsLoaded && !document.querySelector('.lk-loop-item--shop')) {
 				shopCardsLoaded = true;
 				runFilter(root, pageFromHref(window.location.href));
