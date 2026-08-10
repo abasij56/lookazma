@@ -381,18 +381,6 @@ body.lk-single-product-light {
 
 .lk-breadcrumb {
 	margin-bottom: 1rem;
-	font-size: 0.88rem;
-	color: var(--lk-muted);
-}
-
-.lk-breadcrumb a {
-	color: var(--lk-accent);
-	font-weight: 600;
-}
-
-.lk-breadcrumb .woocommerce-breadcrumb {
-	margin: 0;
-	padding: 0;
 }
 
 .lk-product {

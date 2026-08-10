@@ -259,9 +259,9 @@ if ( $product->get_sku() ) {
 	);
 }
 
-ob_start();
-woocommerce_breadcrumb();
-$breadcrumb_html = ob_get_clean();
+$breadcrumb_html = function_exists( 'hello_elementor_child_get_breadcrumb_html' )
+	? hello_elementor_child_get_breadcrumb_html()
+	: '';
 
 ob_start();
 woocommerce_template_single_add_to_cart();

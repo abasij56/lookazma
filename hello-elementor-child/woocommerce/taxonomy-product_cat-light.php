@@ -1,6 +1,6 @@
 <?php
 /**
- * Light product category archive – Timber entry (opt-in via category checkbox).
+ * Light category template – Timber entry (all product categories).
  *
  * @package HelloElementorChild
  */
@@ -46,22 +46,30 @@ $lk_field = static function ( string $acf_id, string $key ): string {
 	return is_scalar( $value ) ? trim( (string) $value ) : '';
 };
 
-$context         = \Timber\Timber::context();
-$context['term'] = \Timber\Timber::get_term( $term_id );
+$context = \Timber\Timber::context();
+if ( class_exists( 'Hello_Elementor_Child_Light_Product_Template' ) ) {
+	$context = array_merge( $context, Hello_Elementor_Child_Light_Product_Template::get_chrome_context() );
+}
 
 ob_start();
 language_attributes();
 $context['html_language_attributes'] = trim( ob_get_clean() );
-$context['body_class']               = implode( ' ', get_body_class( 'lk-archive-product-light' ) );
+$context['body_class']               = implode( ' ', get_body_class( 'lk-light-product lk-light-category lk-shop-cards-archive lz-chrome' ) );
 
-$css_file = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-product-light.css';
-$context['light_css_inline'] = file_exists( $css_file ) ? (string) file_get_contents( $css_file ) : '';
-$context['light_css_url']    = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-product-light.css';
-$context['light_css_ver']    = file_exists( $css_file ) ? (string) filemtime( $css_file ) : HELLO_ELEMENTOR_CHILD_VERSION;
+$css_file = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-light-product.css';
+$context['light_css_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-light-product.css';
+$context['light_css_ver'] = file_exists( $css_file ) ? (string) filemtime( $css_file ) : HELLO_ELEMENTOR_CHILD_VERSION;
 
-// Category image(s).
-$images      = array();
-$thumb_id    = (int) get_term_meta( $term_id, 'thumbnail_id', true );
+$card_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-product-shop-cards.css';
+$context['card_css_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-product-shop-cards.css';
+$context['card_css_ver'] = file_exists( $card_css ) ? (string) filemtime( $card_css ) : HELLO_ELEMENTOR_CHILD_VERSION;
+
+$cat_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-light-category.css';
+$context['cat_css_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-light-category.css';
+$context['cat_css_ver'] = file_exists( $cat_css ) ? (string) filemtime( $cat_css ) : HELLO_ELEMENTOR_CHILD_VERSION;
+
+$images   = array();
+$thumb_id = (int) get_term_meta( $term_id, 'thumbnail_id', true );
 if ( $thumb_id > 0 ) {
 	$url = wp_get_attachment_image_url( $thumb_id, 'large' );
 	if ( $url ) {
@@ -73,44 +81,82 @@ if ( $thumb_id > 0 ) {
 }
 
 $english_name = $lk_field( $acf_id, 'en-cat' );
-$description  = term_description( $term_id, 'product_cat' );
-if ( '' === trim( wp_strip_all_tags( (string) $description ) ) ) {
-	$description = $lk_field( $acf_id, 'توضیحات' );
-}
+$description  = Hello_Elementor_Child_Custom_Category_Archive::resolve_category_description_html( $term_id, $acf_id );
+$parsed       = Hello_Elementor_Child_Custom_Category_Archive::parse_description_sections( (string) $description );
 
 $spec_defs = array(
-	array( 'key' => 'cas_no-cat', 'label' => 'CAS Number' ),
-	array( 'key' => 'شکل_ظاهری_دسته', 'label' => 'شکل ظاهری' ),
-	array( 'key' => 'مترادف', 'label' => 'مترادف' ),
-	array( 'key' => 'فرمول_شیمیایی_دسته', 'label' => 'فرمول شیمیایی' ),
-	array( 'key' => 'وزن_مولوکول', 'label' => 'وزن مولکولی' ),
-	array( 'key' => 'نقطه_ذوب', 'label' => 'نقطه ذوب' ),
-	array( 'key' => 'نقطه_جوش', 'label' => 'نقطه جوش' ),
-	array( 'key' => 'نقطه_اشتعال', 'label' => 'نقطه اشتعال' ),
-	array( 'key' => 'چگالی', 'label' => 'چگالی' ),
-	array( 'key' => 'ویسکوزیته', 'label' => 'ویسکوزیته' ),
-	array( 'key' => 'فشار_بخار', 'label' => 'فشار بخار' ),
-	array( 'key' => 'حلالیت در آب', 'label' => 'حلالیت در آب' ),
-	array( 'key' => 'حلالیت_دسته', 'label' => 'حلالیت' ),
+	array( 'key' => 'cas_no-cat', 'label' => 'CAS Number', 'icon' => 'cas' ),
+	array( 'key' => 'شکل_ظاهری_دسته', 'label' => 'شکل ظاهری', 'icon' => 'appearance' ),
+	array( 'key' => 'حلالیت در آب', 'label' => 'حلالیت در آب', 'icon' => 'water' ),
+	array( 'key' => 'مترادف', 'label' => 'مترادف', 'icon' => 'synonym' ),
+	array( 'key' => 'فرمول_شیمیایی_دسته', 'label' => 'فرمول شیمیایی', 'icon' => 'formula' ),
+	array( 'key' => 'وزن_مولوکول', 'label' => 'وزن مولکولی', 'icon' => 'weight' ),
+	array( 'key' => 'نقطه_ذوب', 'label' => 'نقطه ذوب', 'icon' => 'melt' ),
+	array( 'key' => 'نقطه_جوش', 'label' => 'نقطه جوش', 'icon' => 'boil' ),
+	array( 'key' => 'نقطه_اشتعال', 'label' => 'نقطه اشتعال', 'icon' => 'flash' ),
+	array( 'key' => 'چگالی', 'label' => 'چگالی', 'icon' => 'density' ),
+	array( 'key' => 'ویسکوزیته', 'label' => 'ویسکوزیته', 'icon' => 'viscosity' ),
+	array( 'key' => 'فشار_بخار', 'label' => 'فشار بخار', 'icon' => 'vapor' ),
+	array( 'key' => 'حلالیت_دسته', 'label' => 'حلالیت', 'icon' => 'solubility' ),
 );
 
-$specs = array();
+$specs      = array();
+$wide_items = array();
 foreach ( $spec_defs as $def ) {
 	$value = $lk_field( $acf_id, $def['key'] );
-	if ( '' === $value ) {
+	if ( '' === $value || 0 === strcasecmp( $value, 'N/A' ) ) {
 		continue;
 	}
-	$specs[] = array(
+	$item = array(
 		'label' => $def['label'],
 		'value' => $value,
+		'icon'  => $def['icon'],
+		'wide'  => in_array( $def['label'], array( 'مترادف', 'حلالیت در آب' ), true ),
 	);
+	if ( $item['wide'] ) {
+		$wide_items[] = $item;
+		continue;
+	}
+	$specs[] = $item;
+}
+foreach ( $wide_items as $wide_item ) {
+	$specs[] = $wide_item;
 }
 
-ob_start();
-woocommerce_breadcrumb();
-$breadcrumb_html = ob_get_clean();
+$msds_url  = '';
+$msds_keys = array( 'msds', 'MSDS', 'msds-cat', 'msds_cat', 'msds_file', 'فایل_msds', 'برگه_ایمنی', 'sds', 'safety_data_sheet' );
+foreach ( $msds_keys as $msds_key ) {
+	$candidate = $lk_field( $acf_id, $msds_key );
+	if ( '' !== $candidate && preg_match( '#^https?://#i', $candidate ) ) {
+		$msds_url = $candidate;
+		break;
+	}
+	if ( '' !== $candidate && is_numeric( $candidate ) ) {
+		$att = wp_get_attachment_url( (int) $candidate );
+		if ( $att ) {
+			$msds_url = $att;
+			break;
+		}
+	}
+	$meta = get_term_meta( $term_id, $msds_key, true );
+	if ( is_numeric( $meta ) ) {
+		$att = wp_get_attachment_url( (int) $meta );
+		if ( $att ) {
+			$msds_url = $att;
+			break;
+		}
+	}
+	if ( is_string( $meta ) && preg_match( '#^https?://#i', $meta ) ) {
+		$msds_url = $meta;
+		break;
+	}
+}
 
-$paged   = max( 1, (int) get_query_var( 'paged' ), (int) get_query_var( 'page' ) );
+$breadcrumb_html = function_exists( 'hello_elementor_child_get_breadcrumb_html' )
+	? hello_elementor_child_get_breadcrumb_html()
+	: '';
+
+$paged    = max( 1, (int) get_query_var( 'paged' ), (int) get_query_var( 'page' ) );
 $per_page = Hello_Elementor_Child_Custom_Category_Archive::get_per_page();
 
 $args = array(
@@ -137,45 +183,34 @@ $query = new WP_Query( $args );
 
 $products_html = '';
 $pagination    = '';
+$filters_html  = '';
 if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' ) ) {
 	$products_html = Hello_Elementor_Child_Archive_Product_Filter::render_products_grid_html( $query, 'shop' );
-	$pagination    = Hello_Elementor_Child_Archive_Product_Filter::render_pagination_html( $query, $term_id );
-} else {
-	ob_start();
-	if ( $query->have_posts() ) {
-		while ( $query->have_posts() ) {
-			$query->the_post();
-			$product = wc_get_product( get_the_ID() );
-			if ( ! $product ) {
-				continue;
-			}
-			echo '<article class="lk-loop-item"><h3>' . esc_html( $product->get_name() ) . '</h3></article>';
-		}
-		wp_reset_postdata();
-	}
-	$products_html = (string) ob_get_clean();
-}
-
-$filters_html = '';
-if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' ) ) {
-	$filters_html = Hello_Elementor_Child_Archive_Product_Filter::render_filters_html();
+	$pagination    = Hello_Elementor_Child_Archive_Product_Filter::render_pagination_html( $query, $term_id, $paged, 'product_cat' );
+	$filters_html  = Hello_Elementor_Child_Archive_Product_Filter::render_filters_html();
 }
 
 $context['category_data'] = array(
 	'id'              => $term_id,
 	'name'            => $term->name,
 	'english_name'    => $english_name,
-	'description'     => $description,
+	'msds_url'        => $msds_url,
+	'excerpt'         => (string) ( $parsed['excerpt'] ?? '' ),
 	'images'          => $images,
 	'specs'           => $specs,
+	'h1_label'        => (string) ( $parsed['h1_label'] ?? '' ),
+	'full_html'       => (string) ( $parsed['full_html'] ?? '' ),
+	'sections'        => is_array( $parsed['sections'] ?? null ) ? $parsed['sections'] : array(),
+	'has_specs'       => ! empty( $parsed['has_specs'] ) || array() !== $specs,
 	'count'           => (int) $query->found_posts,
 	'breadcrumb_html' => $breadcrumb_html,
 	'filters_html'    => $filters_html,
 	'products_html'   => $products_html,
 	'pagination_html' => $pagination,
 	'permalink'       => get_term_link( $term ),
+	'columns'         => 4,
 );
 
 echo '<!-- LK-LIGHT-CATEGORY-TEMPLATE-ACTIVE term_id=' . (int) $term_id . ' -->' . "\n";
 
-\Timber\Timber::render( 'woo/archive-product-light.twig', $context );
+\Timber\Timber::render( 'woo/archive-light-category.twig', $context );

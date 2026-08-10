@@ -99,11 +99,9 @@ if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' )
 	}
 }
 
-ob_start();
-if ( function_exists( 'woocommerce_breadcrumb' ) ) {
-	woocommerce_breadcrumb();
-}
-$breadcrumb_html = ob_get_clean();
+$breadcrumb_html = function_exists( 'hello_elementor_child_get_breadcrumb_html' )
+	? hello_elementor_child_get_breadcrumb_html()
+	: '';
 
 $paged    = max( 1, (int) get_query_var( 'paged' ), (int) get_query_var( 'page' ) );
 $per_page = Hello_Elementor_Child_Light_Product_Template::get_per_page();

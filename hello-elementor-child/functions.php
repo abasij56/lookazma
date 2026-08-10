@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HELLO_ELEMENTOR_CHILD_VERSION', '1.8.2' );
+define( 'HELLO_ELEMENTOR_CHILD_VERSION', '1.9.9' );
 define( 'HELLO_ELEMENTOR_CHILD_PATH', get_stylesheet_directory() . '/' );
 define( 'HELLO_ELEMENTOR_CHILD_URI', get_stylesheet_directory_uri() . '/' );
 
@@ -79,6 +79,12 @@ function hello_elementor_child_enqueue_styles() {
 
 	if ( class_exists( 'Hello_Elementor_Child_Light_Product_Template' )
 		&& Hello_Elementor_Child_Light_Product_Template::is_enabled()
+	) {
+		return;
+	}
+
+	if ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+		&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled()
 	) {
 		return;
 	}
@@ -250,3 +256,44 @@ function hello_elementor_child_category_name_from_url( string $url ): string {
 
 	return '';
 }
+
+/**
+ * WooCommerce breadcrumb HTML: [خانه] > [صفحه] > [صفحه].
+ */
+function hello_elementor_child_get_breadcrumb_html(): string {
+	if ( ! function_exists( 'woocommerce_breadcrumb' ) ) {
+		return '';
+	}
+
+	ob_start();
+	woocommerce_breadcrumb(
+		array(
+			'delimiter'   => '<span class="lk-lpt-breadcrumb__sep" aria-hidden="true">&gt;</span>',
+			'wrap_before' => '<div class="woocommerce-breadcrumb">',
+			'wrap_after'  => '</div>',
+			'before'      => '<span class="lk-lpt-breadcrumb__crumb">',
+			'after'       => '</span>',
+			'home'        => __( 'خانه', 'hello-elementor-child' ),
+		)
+	);
+
+	return trim( (string) ob_get_clean() );
+}
+
+/**
+ * Shared pill breadcrumb styles for light templates.
+ */
+function hello_elementor_child_enqueue_breadcrumb_style(): void {
+	$css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/lk-lpt-breadcrumb.css';
+	if ( ! file_exists( $css ) ) {
+		return;
+	}
+
+	wp_enqueue_style(
+		'lk-lpt-breadcrumb',
+		HELLO_ELEMENTOR_CHILD_URI . 'assets/css/lk-lpt-breadcrumb.css',
+		array( HELLO_ELEMENTOR_CHILD_VAZIRMATN_HANDLE ),
+		(string) filemtime( $css )
+	);
+}
+add_action( 'wp_enqueue_scripts', 'hello_elementor_child_enqueue_breadcrumb_style', 1000 );

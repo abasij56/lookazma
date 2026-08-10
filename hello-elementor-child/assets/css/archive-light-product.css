@@ -34,6 +34,13 @@ body.lk-light-product {
 	overflow-x: hidden;
 }
 
+body.lk-light-product button,
+body.lk-light-product input,
+body.lk-light-product select,
+body.lk-light-product textarea {
+	font-family: inherit;
+}
+
 body.admin-bar.lk-light-product {
 	--lz-header-offset: 32px;
 }
@@ -432,74 +439,6 @@ body.lk-light-product.lz-nav-open .lz-menu-toggle__icon--close {
 	padding-inline: var(--lz-gutter);
 }
 
-.lk-lpt-breadcrumb {
-	margin: 0 0 1.25rem;
-}
-
-.lk-lpt-breadcrumb,
-.lk-lpt-breadcrumb .woocommerce-breadcrumb {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 0.3rem 0.15rem;
-	font-size: 0.86rem;
-	line-height: 1.5;
-	color: #5b6b7c;
-}
-
-.lk-lpt-breadcrumb .woocommerce-breadcrumb {
-	position: relative;
-	width: 100%;
-	margin: 0;
-	padding: 0.7rem 0.95rem 0.7rem 1.05rem;
-	background: linear-gradient(180deg, #ffffff 0%, #f4f8fb 100%);
-	border: 1px solid #d9e3ec;
-	border-radius: 14px;
-	box-shadow: 0 8px 22px rgba(11, 31, 58, 0.05);
-	overflow: hidden;
-}
-
-.lk-lpt-breadcrumb .woocommerce-breadcrumb::before {
-	content: "";
-	position: absolute;
-	inset-block: 0;
-	inset-inline-start: 0;
-	width: 4px;
-	background: linear-gradient(180deg, #001f3f 0%, #0d6e6e 100%);
-}
-
-.lk-lpt-breadcrumb a {
-	display: inline-flex;
-	align-items: center;
-	padding: 0.22rem 0.75rem;
-	border-radius: 999px;
-	background: #eef5f9;
-	color: #001f3f;
-	font-weight: 700;
-	text-decoration: none;
-}
-
-.lk-lpt-breadcrumb a::after {
-	content: "‹";
-	margin-inline-start: 0.45rem;
-	color: #8aa0b3;
-	font-weight: 500;
-}
-
-.lk-lpt-breadcrumb a:hover {
-	background: #001f3f;
-	color: #fff;
-}
-
-.lk-lpt-breadcrumb a:hover::after {
-	color: rgba(255, 255, 255, 0.7);
-}
-
-.lk-lpt-breadcrumb .woocommerce-breadcrumb {
-	font-weight: 700;
-	color: #0d6e6e;
-}
-
 .lk-lpt-intro {
 	background: var(--lk-lpt-surface);
 	border: 1px solid #d9e3ec;
@@ -591,14 +530,17 @@ body.lk-light-product .lk-archive-filters__title {
 	letter-spacing: -0.01em;
 }
 
-body.lk-light-product .lk-archive-filters__clear {
+body.lk-light-product .lk-archive-filters__clear,
+body.lk-light-category .lk-archive-filters__clear {
 	border: 0;
 	border-radius: 999px;
 	background: rgba(255, 255, 255, 0.16);
 	color: #fff !important;
 	padding: 0.32rem 0.8rem;
+	font-family: var(--lk-lpt-font), "Vazirmatn", Tahoma, sans-serif !important;
 	font-size: 0.82rem;
 	font-weight: 700;
+	line-height: 1.4;
 	cursor: pointer;
 	text-decoration: none !important;
 }

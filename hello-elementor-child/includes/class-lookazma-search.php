@@ -24,6 +24,8 @@ final class Hello_Elementor_Child_Lookazma_Search {
 
 	public const LIMIT_TAGS = 4;
 
+	public const PLACEHOLDER = 'از طریق نام محصول یا Cas No یا دسته بندی محصول مورد نظر خود را جستجو کنید';
+
 	/**
 	 * Register hooks.
 	 */
@@ -134,9 +136,7 @@ final class Hello_Elementor_Child_Lookazma_Search {
 	public static function render_markup( string $placeholder = '', string $input_id = 'lk-lookazma-search-native' ): string {
 		self::enqueue_assets();
 
-		if ( '' === $placeholder ) {
-			$placeholder = 'از طریق نام محصول یا Cas No محصول مورد نظر خود را جستجو کنید';
-		}
+		$placeholder = self::PLACEHOLDER;
 
 		$action    = home_url( '/' );
 		$dropdown  = $input_id . '-dropdown';

@@ -10,6 +10,9 @@
 	{% if light_css_url %}
 		<link rel="stylesheet" href="{{ light_css_url }}?v={{ light_css_ver }}">
 	{% endif %}
+	{% if cat_css_url %}
+		<link rel="stylesheet" href="{{ cat_css_url }}?v={{ cat_css_ver }}">
+	{% endif %}
 	{{ function('wp_head') }}
 </head>
 <body class="{{ body_class }}">

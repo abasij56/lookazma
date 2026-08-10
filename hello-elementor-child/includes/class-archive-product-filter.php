@@ -64,6 +64,8 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 
 		add_action( 'wp_ajax_lk_archive_filter_products', array( __CLASS__, 'ajax_filter_products' ) );
 		add_action( 'wp_ajax_nopriv_lk_archive_filter_products', array( __CLASS__, 'ajax_filter_products' ) );
+		add_action( 'wp_ajax_lk_add_variation_to_cart', array( __CLASS__, 'ajax_add_variation_to_cart' ) );
+		add_action( 'wp_ajax_nopriv_lk_add_variation_to_cart', array( __CLASS__, 'ajax_add_variation_to_cart' ) );
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
 	}
 
@@ -793,11 +795,16 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 					&& Hello_Elementor_Child_Light_Product_Template::is_enabled()
 				)
 					? Hello_Elementor_Child_Light_Product_Template::get_per_page()
-					: ( ( $use_shop_ui && 'product_cat' !== $taxonomy )
-						? 12
-						: ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
-							? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
-							: 12 ) ),
+					: ( (
+						class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+						&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled()
+					)
+						? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
+						: ( ( $use_shop_ui && 'product_cat' !== $taxonomy )
+							? 12
+							: ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+								? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
+								: 12 ) ) ),
 				'i18n'           => array(
 					'empty'      => __( 'محصولی با این فیلترها پیدا نشد.', 'hello-elementor-child' ),
 					'error'      => __( 'خطا در فیلتر محصولات.', 'hello-elementor-child' ),
@@ -1225,6 +1232,45 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	}
 
 	/**
+	 * AJAX add a variation to the cart from shop-card option menus.
+	 */
+	public static function ajax_add_variation_to_cart(): void {
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			wp_send_json( array( 'error' => true ) );
+		}
+
+		$variation_id = isset( $_POST['variation_id'] ) ? absint( wp_unslash( $_POST['variation_id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$quantity     = isset( $_POST['quantity'] ) ? wc_stock_amount( wp_unslash( $_POST['quantity'] ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( $quantity < 1 ) {
+			$quantity = 1;
+		}
+
+		$variation = $variation_id ? wc_get_product( $variation_id ) : null;
+		if ( ! $variation instanceof WC_Product_Variation || ! $variation->is_purchasable() || ! $variation->is_in_stock() ) {
+			wp_send_json( array( 'error' => true ) );
+		}
+
+		$parent_id     = (int) $variation->get_parent_id();
+		$attributes    = $variation->get_variation_attributes();
+		$cart_item_key = WC()->cart->add_to_cart( $parent_id, $quantity, $variation_id, $attributes );
+
+		if ( ! $cart_item_key ) {
+			wp_send_json( array( 'error' => true ) );
+		}
+
+		if ( class_exists( 'WC_AJAX' ) ) {
+			WC_AJAX::get_refreshed_fragments();
+		}
+
+		wp_send_json(
+			array(
+				'fragments' => array(),
+				'cart_hash' => WC()->cart->get_cart_hash(),
+			)
+		);
+	}
+
+	/**
 	 * Render product cards for loop/grid replacement.
 	 *
 	 * @param WP_Query $query  Query.
@@ -1496,6 +1542,200 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	}
 
 	/**
+	 * Purchasable variation rows for the shop-card glass menu.
+	 *
+	 * @param WC_Product $product Product.
+	 * @return array<int, array{id:int,parent_id:int,sku:string,label:string,price_html:string,url:string,attributes:array<string,string>}>
+	 */
+	private static function get_shop_card_variations( WC_Product $product ): array {
+		if ( ! $product->is_type( 'variable' ) || ! $product instanceof WC_Product_Variable ) {
+			return array();
+		}
+
+		$objects = $product->get_available_variations( 'objects' );
+		if ( ! is_array( $objects ) ) {
+			return array();
+		}
+
+		$out = array();
+		foreach ( $objects as $variation ) {
+			if ( ! $variation instanceof WC_Product_Variation ) {
+				continue;
+			}
+			if ( ! $variation->is_purchasable() || ! $variation->is_in_stock() ) {
+				continue;
+			}
+
+			$attrs = array();
+			foreach ( $variation->get_variation_attributes() as $key => $value ) {
+				$attrs[ (string) $key ] = is_scalar( $value ) ? (string) $value : '';
+			}
+
+			$out[] = array(
+				'id'          => $variation->get_id(),
+				'parent_id'   => (int) $variation->get_parent_id(),
+				'sku'         => (string) $variation->get_sku(),
+				'label'       => self::format_variation_option_label( $variation ),
+				'price_html'  => (string) $variation->get_price_html(),
+				'url'         => (string) $variation->add_to_cart_url(),
+				'attributes'  => $attrs,
+			);
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Collapse attribute keys for fuzzy taxonomy matching.
+	 *
+	 * @param string $value Raw taxonomy / label.
+	 */
+	private static function normalize_attr_key( string $value ): string {
+		$value = str_replace( array( "\u{200C}", "\xE2\x80\x8C" ), '', $value );
+		$value = strtolower( $value );
+		$value = preg_replace( '/^attribute_/', '', $value ) ?? $value;
+		$value = preg_replace( '/^pa_/', '', $value ) ?? $value;
+		$clean = preg_replace( '/[^\p{L}\p{N}]+/u', '', $value );
+
+		return is_string( $clean ) ? $clean : $value;
+	}
+
+	/**
+	 * Resolve a variation attribute key to a registered product taxonomy.
+	 *
+	 * @param string $key Attribute key from variation meta.
+	 */
+	private static function resolve_attribute_taxonomy( string $key ): string {
+		$key = preg_replace( '/^attribute_/', '', $key ) ?? $key;
+		if ( taxonomy_exists( $key ) ) {
+			return $key;
+		}
+		if ( 0 !== strpos( $key, 'pa_' ) && taxonomy_exists( 'pa_' . $key ) ) {
+			return 'pa_' . $key;
+		}
+
+		$needle = self::normalize_attr_key( $key );
+		if ( '' === $needle || ! function_exists( 'wc_get_attribute_taxonomies' ) ) {
+			return $key;
+		}
+
+		foreach ( (array) wc_get_attribute_taxonomies() as $tax ) {
+			$name  = isset( $tax->attribute_name ) ? (string) $tax->attribute_name : '';
+			$label = isset( $tax->attribute_label ) ? (string) $tax->attribute_label : '';
+			if (
+				$needle === self::normalize_attr_key( $name )
+				|| $needle === self::normalize_attr_key( 'pa_' . $name )
+				|| $needle === self::normalize_attr_key( $label )
+			) {
+				return function_exists( 'wc_attribute_taxonomy_name' )
+					? wc_attribute_taxonomy_name( $name )
+					: 'pa_' . $name;
+			}
+		}
+
+		return $key;
+	}
+
+	/**
+	 * Public Woo attribute label (e.g. «بسته بندی»), never a pa_ slug.
+	 *
+	 * @param string               $taxonomy Taxonomy or attribute key.
+	 * @param WC_Product_Variation $variation Variation.
+	 */
+	private static function get_variation_attribute_public_label( string $taxonomy, WC_Product_Variation $variation ): string {
+		$taxonomy = self::resolve_attribute_taxonomy( $taxonomy );
+		$label    = function_exists( 'wc_attribute_label' )
+			? (string) wc_attribute_label( $taxonomy, $variation )
+			: $taxonomy;
+
+		if ( 0 === stripos( $label, 'pa_' ) ) {
+			$label = substr( $label, 3 );
+		}
+
+		$label = str_replace( array( "\u{200C}", "\xE2\x80\x8C", '-', '_' ), ' ', $label );
+		$label = preg_replace( '/\s+/u', ' ', $label );
+
+		return is_string( $label ) ? trim( $label ) : '';
+	}
+
+	/**
+	 * Decode a variation slug/value (handles %da%af encoded Persian).
+	 *
+	 * @param string $value Raw meta / slug.
+	 */
+	private static function decode_variation_slug( string $value ): string {
+		$value = trim( $value );
+		$prev  = '';
+		$guard = 0;
+		while ( $value !== $prev && $guard < 4 && false !== strpos( $value, '%' ) ) {
+			$prev  = $value;
+			$value = rawurldecode( $value );
+			++$guard;
+		}
+
+		$value = str_replace( array( "\u{200C}", "\xE2\x80\x8C", '-', '_' ), ' ', $value );
+		$value = preg_replace( '/\s+/u', ' ', $value );
+
+		return is_string( $value ) ? trim( $value ) : '';
+	}
+
+	/**
+	 * Human label like «بسته بندی 100 گرم».
+	 *
+	 * @param WC_Product_Variation $variation Variation.
+	 */
+	private static function format_variation_option_label( WC_Product_Variation $variation ): string {
+		$parts = array();
+		foreach ( $variation->get_variation_attributes() as $key => $value ) {
+			$value = is_string( $value ) ? trim( $value ) : '';
+			if ( '' === $value ) {
+				continue;
+			}
+
+			$taxonomy   = self::resolve_attribute_taxonomy( (string) $key );
+			$attr_label = self::get_variation_attribute_public_label( $taxonomy, $variation );
+			$term_name  = (string) $variation->get_attribute( $taxonomy );
+			if ( false !== strpos( $term_name, '%' ) ) {
+				$term_name = '';
+			}
+
+			if ( '' === $term_name && taxonomy_exists( $taxonomy ) ) {
+				$slug_tries = array_unique(
+					array_filter(
+						array(
+							$value,
+							rawurldecode( $value ),
+							rawurldecode( rawurldecode( $value ) ),
+						)
+					)
+				);
+				foreach ( $slug_tries as $slug ) {
+					$term = get_term_by( 'slug', $slug, $taxonomy );
+					if ( $term instanceof WP_Term && ! is_wp_error( $term ) ) {
+						$term_name = $term->name;
+						break;
+					}
+				}
+			}
+
+			if ( '' === $term_name ) {
+				$term_name = self::decode_variation_slug( $value );
+			} else {
+				$term_name = self::decode_variation_slug( $term_name );
+			}
+
+			$parts[] = trim( $attr_label . ' ' . $term_name );
+		}
+
+		if ( array() === $parts ) {
+			$name = trim( (string) $variation->get_name() );
+			return '' !== $name ? $name : (string) $variation->get_id();
+		}
+
+		return implode( ' / ', $parts );
+	}
+
+	/**
 	 * Compact shop-only product card (visual style; CTA links to product for now).
 	 *
 	 * @param WC_Product           $product Product.
@@ -1523,10 +1763,14 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			)
 			: '';
 
+		$is_variable  = $product->is_type( 'variable' );
+		$variations   = $is_variable ? self::get_shop_card_variations( $product ) : array();
+		$has_var_menu = $is_variable && array() !== $variations;
+
 		ob_start();
 		?>
 		<article
-			class="lk-loop-item lk-loop-item--shop post-<?php echo esc_attr( (string) $post_id ); ?> product type-product"
+			class="lk-loop-item lk-loop-item--shop post-<?php echo esc_attr( (string) $post_id ); ?> product type-product<?php echo $has_var_menu ? ' lk-loop-item--variable' : ''; ?>"
 			role="listitem"
 			data-product-id="<?php echo esc_attr( (string) $post_id ); ?>"
 			data-lk-shop-card="1"
@@ -1581,27 +1825,37 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 
 				<div class="lk-loop-item__footer">
 					<?php
-					$can_ajax_cart = $product->is_purchasable()
+					$can_ajax_cart = ! $is_variable
+						&& $product->is_purchasable()
 						&& $product->is_in_stock()
 						&& $product->supports( 'ajax_add_to_cart' );
 					$cart_classes  = array(
 						'lk-loop-item__add-to-cart',
 						'product_type_' . $product->get_type(),
 					);
-					if ( $product->is_purchasable() && $product->is_in_stock() ) {
+					if ( $has_var_menu ) {
+						$cart_classes[] = 'lk-loop-item__add-to-cart--options';
+					}
+					if ( ( $product->is_purchasable() && $product->is_in_stock() ) || $has_var_menu ) {
 						$cart_classes[] = 'add_to_cart_button';
 					}
 					if ( $can_ajax_cart ) {
 						$cart_classes[] = 'ajax_add_to_cart';
 					}
-					$cart_label = $can_ajax_cart
-						? __( 'افزودن به سبد', 'hello-elementor-child' )
-						: ( $product->is_type( 'variable' )
-							? __( 'انتخاب گزینه‌ها', 'hello-elementor-child' )
-							: __( 'مشاهده محصول', 'hello-elementor-child' ) );
-					$cart_url   = $can_ajax_cart
-						? $product->add_to_cart_url()
-						: $permalink;
+					if ( $has_var_menu ) {
+						$cart_label = __( 'مشاهده گزینه‌ها', 'hello-elementor-child' );
+						$cart_url   = '#';
+					} elseif ( $can_ajax_cart ) {
+						$cart_label = __( 'افزودن به سبد', 'hello-elementor-child' );
+						$cart_url   = $product->add_to_cart_url();
+					} elseif ( $is_variable ) {
+						$cart_label = __( 'مشاهده گزینه‌ها', 'hello-elementor-child' );
+						$cart_url   = $permalink;
+					} else {
+						$cart_label = __( 'مشاهده محصول', 'hello-elementor-child' );
+						$cart_url   = $permalink;
+					}
+					$options_id = 'lk-card-opts-' . $post_id;
 					?>
 					<a
 						class="<?php echo esc_attr( implode( ' ', $cart_classes ) ); ?>"
@@ -1610,18 +1864,68 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 						data-product_id="<?php echo esc_attr( (string) $post_id ); ?>"
 						data-product_sku="<?php echo esc_attr( (string) $product->get_sku() ); ?>"
 						aria-label="<?php echo esc_attr( $cart_label ); ?>"
+						<?php if ( $has_var_menu ) : ?>
+							aria-expanded="false"
+							aria-controls="<?php echo esc_attr( $options_id ); ?>"
+							data-lk-options-trigger="1"
+						<?php endif; ?>
 						rel="nofollow"
 					>
 						<span class="lk-loop-item__add-to-cart-label"><?php echo esc_html( $cart_label ); ?></span>
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
-							<path d="M18,6A6,6,0,0,0,6,6H0V21a3,3,0,0,0,3,3H14V22H3a1,1,0,0,1-1-1V8H6v2H8V8h8v2h2V8h4v6h2V6ZM8,6a4,4,0,0,1,8,0Z"></path>
-							<polygon points="21 16 19 16 19 19 16 19 16 21 19 21 19 24 21 24 21 21 24 21 24 19 21 19 21 16"></polygon>
-						</svg>
+						<?php if ( $is_variable ) : ?>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
+								<path fill="currentColor" d="M4 5h2v2H4V5zm4 0h12v2H8V5zM4 11h2v2H4v-2zm4 0h12v2H8v-2zM4 17h2v2H4v-2zm4 0h12v2H8v-2z"/>
+							</svg>
+						<?php else : ?>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
+								<path d="M18,6A6,6,0,0,0,6,6H0V21a3,3,0,0,0,3,3H14V22H3a1,1,0,0,1-1-1V8H6v2H8V8h8v2h2V8h4v6h2V6ZM8,6a4,4,0,0,1,8,0Z"></path>
+								<polygon points="21 16 19 16 19 19 16 19 16 21 19 21 19 24 21 24 21 21 24 21 24 19 21 19 21 16"></polygon>
+							</svg>
+						<?php endif; ?>
 					</a>
 					<div class="lk-loop-item__price price">
 						<?php echo $price ? wp_kses_post( $price ) : '&nbsp;'; ?>
 					</div>
 				</div>
+
+				<?php if ( $has_var_menu ) : ?>
+					<div class="lk-loop-item__options" id="<?php echo esc_attr( $options_id ); ?>" hidden>
+						<div class="lk-loop-item__options-head">
+							<span><?php esc_html_e( 'مشاهده گزینه‌ها', 'hello-elementor-child' ); ?></span>
+							<button type="button" class="lk-loop-item__options-close" aria-label="<?php esc_attr_e( 'بستن', 'hello-elementor-child' ); ?>">×</button>
+						</div>
+						<ul class="lk-loop-item__options-list">
+							<?php foreach ( $variations as $row ) : ?>
+								<li>
+									<span class="lk-loop-item__options-name"><?php echo esc_html( (string) $row['label'] ); ?></span>
+									<?php if ( ! empty( $row['price_html'] ) ) : ?>
+										<span class="lk-loop-item__options-price"><?php echo wp_kses_post( (string) $row['price_html'] ); ?></span>
+									<?php endif; ?>
+									<a
+										class="lk-loop-item__options-cart product_type_variation"
+										href="#"
+										role="button"
+										data-quantity="1"
+										data-product_id="<?php echo esc_attr( (string) ( $row['parent_id'] ? $row['parent_id'] : $post_id ) ); ?>"
+										data-variation_id="<?php echo esc_attr( (string) $row['id'] ); ?>"
+										data-product_sku="<?php echo esc_attr( (string) $row['sku'] ); ?>"
+										data-variation="<?php echo esc_attr( (string) ( wp_json_encode( $row['attributes'] ) ?: '{}' ) ); ?>"
+										aria-label="<?php echo esc_attr( sprintf( /* translators: %s variation label */ __( 'افزودن %s به سبد', 'hello-elementor-child' ), (string) $row['label'] ) ); ?>"
+										rel="nofollow"
+									>
+										<svg class="lk-loop-item__options-cart-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
+											<path d="M18,6A6,6,0,0,0,6,6H0V21a3,3,0,0,0,3,3H14V22H3a1,1,0,0,1-1-1V8H6v2H8V8h8v2h2V8h4v6h2V6ZM8,6a4,4,0,0,1,8,0Z"></path>
+											<polygon points="21 16 19 16 19 19 16 19 16 21 19 21 19 24 21 24 21 21 24 21 24 19 21 19 21 16"></polygon>
+										</svg>
+										<svg class="lk-loop-item__options-cart-spinner" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
+											<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="40 20"/>
+										</svg>
+									</a>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+				<?php endif; ?>
 			</div>
 		</article>
 		<?php

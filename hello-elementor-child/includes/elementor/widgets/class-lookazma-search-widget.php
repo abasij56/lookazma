@@ -79,7 +79,7 @@ class Hello_Elementor_Child_Lookazma_Search_Widget extends \Elementor\Widget_Bas
 			array(
 				'label'   => __( 'Placeholder', 'hello-elementor-child' ),
 				'type'    => \Elementor\Controls_Manager::TEXT,
-				'default' => 'از طریق نام محصول یا Cas No محصول مورد نظر خود را جستجو کنید',
+				'default' => 'از طریق نام محصول یا Cas No یا دسته بندی محصول مورد نظر خود را جستجو کنید',
 			)
 		);
 
@@ -94,10 +94,9 @@ class Hello_Elementor_Child_Lookazma_Search_Widget extends \Elementor\Widget_Bas
 			Hello_Elementor_Child_Lookazma_Search::enqueue_assets();
 		}
 
-		$settings    = $this->get_settings_for_display();
-		$placeholder = isset( $settings['placeholder'] ) && is_string( $settings['placeholder'] )
-			? $settings['placeholder']
-			: 'از طریق نام محصول یا Cas No محصول مورد نظر خود را جستجو کنید';
+		$placeholder = class_exists( 'Hello_Elementor_Child_Lookazma_Search' )
+			? Hello_Elementor_Child_Lookazma_Search::PLACEHOLDER
+			: 'از طریق نام محصول یا Cas No یا دسته بندی محصول مورد نظر خود را جستجو کنید';
 
 		$action = home_url( '/' );
 		?>

@@ -58,12 +58,6 @@ body.lk-archive-product-light {
 
 .lk-archive-product-light .lk-breadcrumb {
   margin-bottom: 1rem;
-  font-size: 0.9rem;
-  color: var(--lk-cat-muted);
-}
-
-.lk-archive-product-light .lk-breadcrumb a {
-  color: var(--lk-cat-accent);
 }
 
 /* Category info card: RTL → image right 20%, info left 80% */
@@ -237,7 +231,7 @@ body.lk-archive-product-light {
 
 .lk-archive-product-light .lk-loop-item:not(.lk-loop-item--shop) .lk-loop-item__media {
   position: relative;
-  background: linear-gradient(180deg, #f3f7fb 0%, #eef3f8 100%);
+  background: #fff;
   padding: 1.1rem 1rem 0.75rem;
 }
 
@@ -295,7 +289,7 @@ body.lk-archive-product-light {
 .lk-archive-product-light .lk-loop-item:not(.lk-loop-item--shop) .lk-loop-item__image {
   display: block;
   margin: 0;
-  background: transparent;
+  background: #fff !important;
 }
 
 .lk-archive-product-light .lk-loop-item:not(.lk-loop-item--shop) .lk-loop-item__image img {

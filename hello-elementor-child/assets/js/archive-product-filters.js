@@ -143,6 +143,7 @@
 		return !!(
 			cfg.nativeTemplate ||
 			(body && body.classList.contains('lk-light-product')) ||
+			(body && body.classList.contains('lk-light-category')) ||
 			(body && body.classList.contains('lk-archive-product-light')) ||
 			qs('#lk-archive-products[data-lk-native-grid]')
 		);
@@ -666,6 +667,160 @@
 		}
 	}
 
+	function closeAllOptionPanels(exceptCard) {
+		qsa('.lk-loop-item--shop.is-options-open').forEach(function (card) {
+			if (exceptCard && card === exceptCard) {
+				return;
+			}
+			card.classList.remove('is-options-open');
+			var trigger = card.querySelector('[data-lk-options-trigger]');
+			var panel = card.querySelector('.lk-loop-item__options');
+			if (trigger) {
+				trigger.setAttribute('aria-expanded', 'false');
+			}
+			if (panel) {
+				panel.hidden = true;
+			}
+		});
+	}
+
+	function openOptionPanel(card) {
+		if (!card) {
+			return;
+		}
+		var trigger = card.querySelector('[data-lk-options-trigger]');
+		var panel = card.querySelector('.lk-loop-item__options');
+		if (!panel) {
+			return;
+		}
+		closeAllOptionPanels(card);
+		card.classList.add('is-options-open');
+		panel.hidden = false;
+		if (trigger) {
+			trigger.setAttribute('aria-expanded', 'true');
+		}
+	}
+
+	function addVariationToCart(btn) {
+		if (!btn || btn.classList.contains('loading')) {
+			return;
+		}
+
+		var parentId = btn.getAttribute('data-product_id') || '';
+		var variationId = btn.getAttribute('data-variation_id') || '';
+		var quantity = btn.getAttribute('data-quantity') || '1';
+		var variation = {};
+		try {
+			variation = JSON.parse(btn.getAttribute('data-variation') || '{}') || {};
+		} catch (err) {
+			variation = {};
+		}
+
+		btn.classList.add('loading');
+		btn.setAttribute('aria-busy', 'true');
+
+		var body = new URLSearchParams();
+		body.set('action', 'lk_add_variation_to_cart');
+		body.set('product_id', parentId);
+		body.set('variation_id', variationId);
+		body.set('quantity', quantity);
+		Object.keys(variation).forEach(function (key) {
+			body.set(key, variation[key]);
+		});
+
+		var ajaxUrl = cfg.ajaxUrl || '/wp-admin/admin-ajax.php';
+
+		fetch(ajaxUrl, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+			},
+			body: body.toString()
+		})
+			.then(function (res) {
+				return res.json().catch(function () {
+					return null;
+				});
+			})
+			.then(function (response) {
+				btn.classList.remove('loading');
+				btn.removeAttribute('aria-busy');
+				if (!response || response.error) {
+					return;
+				}
+
+				var card = btn.closest('.lk-loop-item--shop');
+				closeAllOptionPanels();
+				showViewCartIcon(card);
+
+				if (typeof jQuery !== 'undefined') {
+					jQuery(document.body).trigger('added_to_cart', [
+						response.fragments || {},
+						response.cart_hash || '',
+						jQuery(btn)
+					]);
+				}
+			})
+			.catch(function () {
+				btn.classList.remove('loading');
+				btn.removeAttribute('aria-busy');
+			});
+	}
+
+	function bindShopVariationOptions() {
+		if (window.lkShopVarOptsBound) {
+			return;
+		}
+		window.lkShopVarOptsBound = true;
+
+		document.addEventListener(
+			'click',
+			function (event) {
+				var cartBtn = event.target.closest('.lk-loop-item__options-cart');
+				if (cartBtn) {
+					event.preventDefault();
+					event.stopPropagation();
+					addVariationToCart(cartBtn);
+					return;
+				}
+
+				var trigger = event.target.closest('[data-lk-options-trigger]');
+				if (trigger) {
+					var card = trigger.closest('.lk-loop-item--shop');
+					if (!card || !card.querySelector('.lk-loop-item__options')) {
+						return;
+					}
+					event.preventDefault();
+					event.stopPropagation();
+					if (card.classList.contains('is-options-open')) {
+						closeAllOptionPanels();
+					} else {
+						openOptionPanel(card);
+					}
+					return;
+				}
+
+				if (event.target.closest('.lk-loop-item__options-close')) {
+					event.preventDefault();
+					closeAllOptionPanels();
+					return;
+				}
+
+				if (!event.target.closest('.lk-loop-item--shop.is-options-open')) {
+					closeAllOptionPanels();
+				}
+			},
+			true
+		);
+
+		document.addEventListener('keydown', function (event) {
+			if (event.key === 'Escape') {
+				closeAllOptionPanels();
+			}
+		});
+	}
+
 	function bindShopAddToCartFeedback() {
 		if (!cfg.isShop || window.lkShopAddToCartBound) {
 			return;
@@ -677,7 +832,14 @@
 		}
 
 		jQuery(document.body).on('adding_to_cart', function (event, $button) {
-			if (!$button || !$button.length || !$button.hasClass('lk-loop-item__add-to-cart')) {
+			if (!$button || !$button.length) {
+				return;
+			}
+			if ($button.hasClass('lk-loop-item__options-cart')) {
+				$button.addClass('loading');
+				return;
+			}
+			if (!$button.hasClass('lk-loop-item__add-to-cart')) {
 				return;
 			}
 			var label = $button.find('.lk-loop-item__add-to-cart-label');
@@ -687,19 +849,31 @@
 		});
 
 		jQuery(document.body).on('added_to_cart', function (event, fragments, cartHash, $button) {
-			if (!$button || !$button.length || !$button.hasClass('lk-loop-item__add-to-cart')) {
+			if (!$button || !$button.length) {
+				return;
+			}
+
+			var card = $button.closest('.lk-loop-item--shop').get(0);
+			showViewCartIcon(card);
+			$button.siblings('a.added_to_cart').remove();
+
+			if ($button.hasClass('lk-loop-item__options-cart')) {
+				$button.removeClass('loading').addClass('added');
+				closeAllOptionPanels();
+				showViewCartIcon(card);
+				window.setTimeout(function () {
+					$button.removeClass('added');
+				}, 1800);
+				return;
+			}
+
+			if (!$button.hasClass('lk-loop-item__add-to-cart')) {
 				return;
 			}
 			var label = $button.find('.lk-loop-item__add-to-cart-label');
 			if (label.length) {
 				label.text((cfg.i18n && cfg.i18n.added) || 'افزوده شد');
 			}
-
-			var card = $button.closest('.lk-loop-item--shop').get(0);
-			showViewCartIcon(card);
-
-			// Remove WooCommerce's default "View cart" text link if inserted.
-			$button.siblings('a.added_to_cart').remove();
 
 			window.setTimeout(function () {
 				if (label.length) {
@@ -715,6 +889,7 @@
 		if (root) {
 			bindEvents(root);
 		}
+		bindShopVariationOptions();
 		if (cfg.isShop) {
 			markShopGrid();
 			bindShopAddToCartFeedback();

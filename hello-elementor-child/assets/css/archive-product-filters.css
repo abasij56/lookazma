@@ -256,6 +256,7 @@
 .lk-loop-item__image {
   display: block;
   margin-bottom: 10px;
+  background: #fff !important;
 }
 
 .lk-loop-item__image img {
