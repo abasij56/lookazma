@@ -116,18 +116,21 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		if ( ! is_search() ) {
 			return false;
 		}
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$post_type = isset( $_GET['post_type'] ) ? sanitize_key( (string) wp_unslash( $_GET['post_type'] ) ) : '';
-		if ( 'product' === $post_type ) {
+		if ( '' === $post_type || 'product' === $post_type || 'any' === $post_type ) {
 			return true;
 		}
+
 		$qv = get_query_var( 'post_type' );
-		if ( is_string( $qv ) && 'product' === $qv ) {
+		if ( is_string( $qv ) && ( '' === $qv || 'product' === $qv || 'any' === $qv ) ) {
 			return true;
 		}
 		if ( is_array( $qv ) && in_array( 'product', $qv, true ) ) {
 			return true;
 		}
+
 		return false;
 	}
 
@@ -863,6 +866,9 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			$per_page = Hello_Elementor_Child_Light_Product_Template::get_per_page();
 		}
 
+		$is_search    = self::is_product_search_context();
+		$search_query = $is_search ? trim( (string) get_search_query( false ) ) : '';
+
 		wp_localize_script(
 			'lk-archive-filters',
 			'lkArchiveFilters',
@@ -873,8 +879,8 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 				'termId'         => 0,
 				'taxonomy'       => '',
 				'isShop'         => true,
-				'isSearch'       => false,
-				'searchQuery'    => '',
+				'isSearch'       => $is_search,
+				'searchQuery'    => $search_query,
 				'layout'         => 'shop',
 				'nativeTemplate' => true,
 				'perPage'        => $per_page,
@@ -1892,7 +1898,11 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 					<div class="lk-loop-item__options" id="<?php echo esc_attr( $options_id ); ?>" hidden>
 						<div class="lk-loop-item__options-head">
 							<span><?php esc_html_e( 'مشاهده گزینه‌ها', 'hello-elementor-child' ); ?></span>
-							<button type="button" class="lk-loop-item__options-close" aria-label="<?php esc_attr_e( 'بستن', 'hello-elementor-child' ); ?>">×</button>
+							<button type="button" class="lk-loop-item__options-close" aria-label="<?php esc_attr_e( 'بستن', 'hello-elementor-child' ); ?>">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
+									<path fill="currentColor" d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+								</svg>
+							</button>
 						</div>
 						<ul class="lk-loop-item__options-list">
 							<?php foreach ( $variations as $row ) : ?>
@@ -1971,8 +1981,8 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 					'type'      => 'list',
 					'mid_size'  => 2,
 					'end_size'  => 1,
-					'prev_text' => '&raquo;',
-					'next_text' => '&laquo;',
+					'prev_text' => '&rarr;',
+					'next_text' => '&larr;',
 				)
 			);
 
@@ -2003,8 +2013,8 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 				'type'      => 'list',
 				'mid_size'  => 2,
 				'end_size'  => 1,
-				'prev_text' => '&raquo;',
-				'next_text' => '&laquo;',
+				'prev_text' => '&rarr;',
+				'next_text' => '&larr;',
 			)
 		);
 

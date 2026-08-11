@@ -67,11 +67,9 @@
 		var header = document.querySelector('.lz-site-header');
 		function syncHeaderOffset() {
 			if (!header) return;
-			var admin = document.getElementById('wpadminbar');
-			var offset = admin ? Math.round(admin.getBoundingClientRect().height) : 0;
 			var height = Math.round(header.getBoundingClientRect().height);
 			if (height < 48) return;
-			document.documentElement.style.setProperty('--lz-header-offset', offset + 'px');
+			document.documentElement.style.setProperty('--lz-header-offset', '0px');
 			document.documentElement.style.setProperty('--lz-header-h', height + 'px');
 		}
 		syncHeaderOffset();

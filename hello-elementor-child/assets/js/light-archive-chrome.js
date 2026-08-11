@@ -7,16 +7,20 @@
 
 	function syncHeaderOffset() {
 		var header = qs('.lz-site-header');
-		if (!header || !document.body || !document.body.classList.contains('lk-light-product')) {
+		if (!header || !document.body) {
 			return;
 		}
-		var admin = document.getElementById('wpadminbar');
-		var offset = admin ? Math.round(admin.getBoundingClientRect().height) : 0;
+		if (
+			!document.body.classList.contains('lk-light-product')
+			&& !document.body.classList.contains('lz-chrome')
+		) {
+			return;
+		}
 		var height = Math.round(header.getBoundingClientRect().height);
 		if (height < 48) {
 			return;
 		}
-		document.documentElement.style.setProperty('--lz-header-offset', offset + 'px');
+		document.documentElement.style.setProperty('--lz-header-offset', '0px');
 		document.documentElement.style.setProperty('--lz-header-h', height + 'px');
 	}
 

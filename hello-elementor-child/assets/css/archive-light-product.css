@@ -19,6 +19,13 @@
 	--lz-header-h: 8rem;
 }
 
+html:has(body.lk-light-product) {
+	overflow-x: clip;
+	transform: none !important;
+	filter: none !important;
+	perspective: none !important;
+}
+
 body.lk-light-product {
 	margin: 0;
 	min-height: 100vh;
@@ -31,7 +38,10 @@ body.lk-light-product {
 	line-height: 1.7;
 	direction: rtl;
 	padding-top: var(--lz-header-h);
-	overflow-x: hidden;
+	overflow-x: clip;
+	transform: none !important;
+	filter: none !important;
+	perspective: none !important;
 }
 
 body.lk-light-product button,
@@ -41,15 +51,7 @@ body.lk-light-product textarea {
 	font-family: inherit;
 }
 
-body.admin-bar.lk-light-product {
-	--lz-header-offset: 32px;
-}
-
-@media screen and (max-width: 782px) {
-	body.admin-bar.lk-light-product {
-		--lz-header-offset: 46px;
-	}
-}
+/* WP already pads html for #wpadminbar — do not add another header top offset. */
 
 body.lk-light-product *,
 body.lk-light-product *::before,
@@ -103,6 +105,8 @@ body.lk-light-product .elementor-menu-cart__container,
 body.lk-light-product .elementor-widget-woocommerce-menu-cart,
 body.lk-light-product .elementor-location-header,
 body.lk-light-product .elementor-location-footer,
+body.lk-light-product .elementor-location-archive,
+body.lk-light-product .elementor-location-search,
 body.lk-light-product .elementor-location-popup,
 body.lk-light-product [data-elementor-type="popup"],
 body.lk-light-product .elementor-popup-modal,
@@ -126,16 +130,24 @@ body.lk-light-product .lz-nav a:empty {
 }
 
 /* ——— Header (match live Lookazma chrome) ——— */
+body.lk-light-product > .lz-site-header,
+body.lk-light-product.search .lz-site-header,
+body.lk-light-product.search-results .lz-site-header,
+body.lk-light-product.lk-light-search .lz-site-header,
 .lz-site-header {
-	position: fixed;
-	top: var(--lz-header-offset, 0px);
-	left: 0;
-	right: 0;
-	z-index: 200;
-	width: 100%;
+	position: fixed !important;
+	top: 0 !important;
+	left: 0 !important;
+	right: 0 !important;
+	z-index: 10050 !important;
+	width: 100% !important;
+	max-width: none !important;
+	margin: 0 !important;
 	background: #fff;
 	border-bottom: 1px solid var(--lk-lpt-line);
 	box-shadow: 0 6px 18px rgba(0, 31, 63, 0.06);
+	transform: none !important;
+	filter: none !important;
 }
 
 .lz-site-header__top,
@@ -623,6 +635,7 @@ body.lk-light-product .lk-archive-filters__price-apply:hover {
 
 .lk-lpt-shop__products {
 	min-width: 0;
+	position: relative;
 }
 
 body.lk-light-product #lk-archive-products,

@@ -602,12 +602,15 @@
   font-weight: 700;
 }
 
+/* RTL: next → left (←), prev → right (→) — arrows from paginate_links only */
 :where(body.lk-shop-cards-archive, body.lk-light-product, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.prev,
 :where(body.lk-shop-cards-archive, body.lk-light-product, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.next,
-:where(body.lk-shop-cards-archive, body.lk-light-product, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.prev,
-:where(body.lk-shop-cards-archive, body.lk-light-product, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-shop-pagination a.page-numbers.next {
+:where(body.lk-shop-cards-archive, body.lk-light-product, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-archive-products__pagination a.page-numbers.prev,
+:where(body.lk-shop-cards-archive, body.lk-light-product, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-archive-products__pagination a.page-numbers.next {
   font-size: 1rem;
   line-height: 1;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 /* Hide leftover Elementor / Woo pagination on shop when our nav is present */
@@ -655,15 +658,36 @@
 
 :where(body.lk-shop-cards-archive, body.lk-light-product, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__options-close {
   appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 1.7rem;
   width: 1.7rem;
   height: 1.7rem;
+  margin: 0;
+  padding: 0;
   border: 1px solid rgba(1, 30, 62, 0.12);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.88);
   color: #011e3e;
-  font-size: 1.15rem;
-  line-height: 1;
+  font: inherit;
+  line-height: 0;
   cursor: pointer;
+  box-shadow: none;
+}
+
+:where(body.lk-shop-cards-archive, body.lk-light-product, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__options-close svg {
+  display: block;
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: 0 0 auto;
+}
+
+:where(body.lk-shop-cards-archive, body.lk-light-product, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__options-close:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
 }
 
 :where(body.lk-shop-cards-archive, body.lk-light-product, body.tax-product_cat, body.tax-product_tag, body.woocommerce-shop, body.post-type-archive-product) .lk-loop-item--shop .lk-loop-item__options-list {

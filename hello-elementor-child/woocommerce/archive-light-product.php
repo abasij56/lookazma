@@ -1,6 +1,7 @@
 <?php
 /**
- * Light archive template – product listing for pages that select it.
+ * Light archive template – product listing for pages that select it,
+ * and for site search results.
  *
  * @package HelloElementorChild
  */

@@ -477,6 +477,122 @@ body.lk-light-category .lk-cat-toc {
 	padding-inline-start: 1.2rem;
 }
 
+/* Article tables — navy/teal header + white gradient rows */
+.lk-cat-article__frame table {
+	width: 100%;
+	max-width: 100%;
+	border-collapse: separate;
+	border-spacing: 0 0.55rem;
+	margin: 1rem 0 1.25rem;
+	font-size: 0.92rem;
+	line-height: 1.55;
+	color: #0b1f3a;
+}
+
+.lk-cat-article__frame table thead th,
+.lk-cat-article__frame table > tbody > tr:first-child > th,
+.lk-cat-article__frame table > tr:first-child > th {
+	padding: 0.78rem 0.95rem;
+	border: 0;
+	background: linear-gradient(135deg, #011e3e 0%, #0a4f5a 52%, #0d6e6e 100%);
+	color: #fff;
+	font-weight: 800;
+	text-align: start;
+	vertical-align: middle;
+	box-shadow: 0 4px 14px rgba(1, 30, 62, 0.18);
+}
+
+.lk-cat-article__frame table thead th:first-child,
+.lk-cat-article__frame table > tbody > tr:first-child > th:first-child,
+.lk-cat-article__frame table > tr:first-child > th:first-child {
+	border-start-start-radius: 12px;
+}
+
+.lk-cat-article__frame table thead th:last-child,
+.lk-cat-article__frame table > tbody > tr:first-child > th:last-child,
+.lk-cat-article__frame table > tr:first-child > th:last-child {
+	border-start-end-radius: 12px;
+}
+
+.lk-cat-article__frame table tbody td,
+.lk-cat-article__frame table > tr:not(:first-child) > td,
+.lk-cat-article__frame table > tbody > tr:not(:first-child) > td {
+	padding: 0.72rem 0.95rem;
+	border: 0;
+	background: linear-gradient(180deg, #ffffff 0%, #f4f9fc 55%, #eef4f8 100%);
+	color: #0b1f3a;
+	vertical-align: middle;
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.95),
+		0 1px 0 rgba(1, 30, 62, 0.04);
+}
+
+.lk-cat-article__frame table tbody tr td:first-child,
+.lk-cat-article__frame table > tr:not(:first-child) > td:first-child,
+.lk-cat-article__frame table > tbody > tr:not(:first-child) > td:first-child {
+	border-inline-start: 1px solid #dbe7ef;
+	border-block: 1px solid #dbe7ef;
+	border-start-start-radius: 10px;
+	border-end-start-radius: 10px;
+}
+
+.lk-cat-article__frame table tbody tr td:last-child,
+.lk-cat-article__frame table > tr:not(:first-child) > td:last-child,
+.lk-cat-article__frame table > tbody > tr:not(:first-child) > td:last-child {
+	border-inline-end: 1px solid #dbe7ef;
+	border-block: 1px solid #dbe7ef;
+	border-start-end-radius: 10px;
+	border-end-end-radius: 10px;
+}
+
+.lk-cat-article__frame table tbody tr td:not(:first-child):not(:last-child),
+.lk-cat-article__frame table > tr:not(:first-child) > td:not(:first-child):not(:last-child),
+.lk-cat-article__frame table > tbody > tr:not(:first-child) > td:not(:first-child):not(:last-child) {
+	border-block: 1px solid #dbe7ef;
+}
+
+.lk-cat-article__frame table tbody tr:hover td,
+.lk-cat-article__frame table > tbody > tr:not(:first-child):hover > td,
+.lk-cat-article__frame table > tr:not(:first-child):hover > td {
+	background: linear-gradient(180deg, #ffffff 0%, #eef6f6 100%);
+}
+
+.lk-cat-article__frame table tbody tr:nth-child(even) td,
+.lk-cat-article__frame table > tbody > tr:not(:first-child):nth-child(even) > td,
+.lk-cat-article__frame table > tr:not(:first-child):nth-child(even) > td {
+	background: linear-gradient(180deg, #fbfdff 0%, #f0f6fa 55%, #e9f1f6 100%);
+}
+
+.lk-cat-article__frame table tbody tr:nth-child(even):hover td,
+.lk-cat-article__frame table > tbody > tr:not(:first-child):nth-child(even):hover > td,
+.lk-cat-article__frame table > tr:not(:first-child):nth-child(even):hover > td {
+	background: linear-gradient(180deg, #ffffff 0%, #e8f3f3 100%);
+}
+
+.lk-cat-article__frame table caption {
+	caption-side: bottom;
+	padding: 0.55rem 0.15rem 0;
+	font-size: 0.82rem;
+	color: #5b6b7c;
+	text-align: start;
+}
+
+@media (max-width: 640px) {
+	.lk-cat-article__frame table {
+		font-size: 0.86rem;
+		border-spacing: 0 0.45rem;
+	}
+
+	.lk-cat-article__frame table thead th,
+	.lk-cat-article__frame table > tbody > tr:first-child > th,
+	.lk-cat-article__frame table > tr:first-child > th,
+	.lk-cat-article__frame table tbody td,
+	.lk-cat-article__frame table > tr:not(:first-child) > td,
+	.lk-cat-article__frame table > tbody > tr:not(:first-child) > td {
+		padding: 0.62rem 0.72rem;
+	}
+}
+
 @media (max-width: 1024px) {
 	.lk-cat-hero {
 		grid-template-columns: minmax(110px, 28%) minmax(0, 1fr);

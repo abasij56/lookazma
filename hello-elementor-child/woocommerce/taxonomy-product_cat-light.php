@@ -88,6 +88,7 @@ $spec_defs = array(
 	array( 'key' => 'cas_no-cat', 'label' => 'CAS Number', 'icon' => 'cas' ),
 	array( 'key' => 'شکل_ظاهری_دسته', 'label' => 'شکل ظاهری', 'icon' => 'appearance' ),
 	array( 'key' => 'حلالیت در آب', 'label' => 'حلالیت در آب', 'icon' => 'water' ),
+	array( 'key' => 'حلالیت_دسته', 'label' => 'حلالیت', 'icon' => 'solubility' ),
 	array( 'key' => 'مترادف', 'label' => 'مترادف', 'icon' => 'synonym' ),
 	array( 'key' => 'فرمول_شیمیایی_دسته', 'label' => 'فرمول شیمیایی', 'icon' => 'formula' ),
 	array( 'key' => 'وزن_مولوکول', 'label' => 'وزن مولکولی', 'icon' => 'weight' ),
@@ -97,7 +98,6 @@ $spec_defs = array(
 	array( 'key' => 'چگالی', 'label' => 'چگالی', 'icon' => 'density' ),
 	array( 'key' => 'ویسکوزیته', 'label' => 'ویسکوزیته', 'icon' => 'viscosity' ),
 	array( 'key' => 'فشار_بخار', 'label' => 'فشار بخار', 'icon' => 'vapor' ),
-	array( 'key' => 'حلالیت_دسته', 'label' => 'حلالیت', 'icon' => 'solubility' ),
 );
 
 $specs      = array();
@@ -111,7 +111,7 @@ foreach ( $spec_defs as $def ) {
 		'label' => $def['label'],
 		'value' => $value,
 		'icon'  => $def['icon'],
-		'wide'  => in_array( $def['label'], array( 'مترادف', 'حلالیت در آب' ), true ),
+		'wide'  => in_array( $def['label'], array( 'مترادف', 'حلالیت' ), true ),
 	);
 	if ( $item['wide'] ) {
 		$wide_items[] = $item;

@@ -192,12 +192,16 @@
   grid-column: 1 / -1;
 }
 
+.lk-lpt-shop__products.lk-loop-loading,
+#lk-archive-products.lk-loop-loading,
 .elementor-loop-container.lk-loop-loading {
   position: relative;
   min-height: 120px;
   pointer-events: none;
 }
 
+.lk-lpt-shop__products.lk-loop-loading > :not(.lk-loop-loading-overlay),
+#lk-archive-products.lk-loop-loading > :not(.lk-loop-loading-overlay),
 .elementor-loop-container.lk-loop-loading > :not(.lk-loop-loading-overlay) {
   opacity: 0.45;
 }
@@ -403,6 +407,8 @@ body.tax-product_cat .lk-archive-products__pagination a.page-numbers.prev,
 body.tax-product_cat .lk-archive-products__pagination a.page-numbers.next {
   font-size: 1rem;
   line-height: 1;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 /* Prefer our nav over Elementor / Woo leftovers on category archives */

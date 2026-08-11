@@ -1,9 +1,9 @@
 <?php
 /**
  * Light archive template — native listing for pages that select it
- * under Page → Template.
+ * under Page → Template, and for all product search results.
  *
- * Separate from single-product light and from the opt-in category light archive.
+ * Separate from single-product light and from the category light archive.
  *
  * @package HelloElementorChild
  */
@@ -37,6 +37,7 @@ final class Hello_Elementor_Child_Light_Product_Template {
 
 		add_filter( 'timber/locations', array( __CLASS__, 'add_timber_locations' ) );
 
+		add_action( 'template_redirect', array( __CLASS__, 'unhook_elementor_chrome' ), -5 );
 		add_action( 'template_redirect', array( __CLASS__, 'force_template' ), -1 );
 		add_filter( 'template_include', array( __CLASS__, 'maybe_use_template' ), PHP_INT_MAX );
 		add_filter( 'elementor/theme/need_override_location', array( __CLASS__, 'disable_elementor_locations' ), PHP_INT_MAX, 2 );
@@ -50,6 +51,8 @@ final class Hello_Elementor_Child_Light_Product_Template {
 
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ), 5 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'dequeue_listing_assets' ), 100 );
+		add_action( 'wp_print_styles', array( __CLASS__, 'dequeue_listing_assets' ), 100 );
+		add_action( 'wp_print_scripts', array( __CLASS__, 'dequeue_listing_assets' ), 100 );
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
 		add_filter( 'loop_shop_per_page', array( __CLASS__, 'filter_loop_per_page' ), 30 );
 		add_filter( 'woocommerce_add_to_cart_fragments', array( __CLASS__, 'cart_count_fragment' ) );
@@ -262,6 +265,18 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			return false;
 		}
 
+		if ( class_exists( 'Hello_Elementor_Child_Light_Contact_Template' )
+			&& Hello_Elementor_Child_Light_Contact_Template::is_enabled()
+		) {
+			return false;
+		}
+
+		if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' )
+			&& Hello_Elementor_Child_Archive_Product_Filter::is_product_search_context()
+		) {
+			return true;
+		}
+
 		return self::page_uses_template( self::get_context_page_id() );
 	}
 
@@ -285,6 +300,7 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			return;
 		}
 
+		self::unhook_elementor_chrome();
 		status_header( 200 );
 		include $path;
 		exit;
@@ -313,7 +329,7 @@ final class Hello_Elementor_Child_Light_Product_Template {
 		if ( ! self::is_enabled() ) {
 			return $need_override;
 		}
-		if ( in_array( $location, array( 'header', 'footer', 'archive', 'product_archive', 'product-archive', 'single', 'popup' ), true ) ) {
+		if ( in_array( $location, array( 'header', 'footer', 'archive', 'product_archive', 'product-archive', 'search', 'search-results', 'single', 'popup' ), true ) ) {
 			return false;
 		}
 		return $need_override;
@@ -386,24 +402,56 @@ final class Hello_Elementor_Child_Light_Product_Template {
 	}
 
 	/**
-	 * Unhook Elementor Pro popup print on wp_footer.
+	 * Unhook Elementor Theme Builder chrome so native header stays a body child.
+	 * Search Results templates otherwise wrap wp_body_open and break position:fixed.
 	 */
-	public static function unhook_elementor_popups(): void {
+	public static function unhook_elementor_chrome(): void {
 		if ( ! self::is_enabled() ) {
 			return;
 		}
-		remove_all_actions( 'elementor/theme/before_do_popup' );
-		remove_all_actions( 'elementor/theme/after_do_popup' );
-		if ( class_exists( '\ElementorPro\Modules\ThemeBuilder\Module' ) ) {
-			$module = \ElementorPro\Modules\ThemeBuilder\Module::instance();
-			if ( $module && method_exists( $module, 'get_locations_manager' ) ) {
-				$manager = $module->get_locations_manager();
-				if ( $manager ) {
-					remove_action( 'wp_footer', array( $manager, 'do_location' ) );
-					remove_action( 'wp_footer', array( $manager, 'print_locations' ) );
-				}
-			}
+
+		foreach ( array(
+			'elementor/theme/before_do_header',
+			'elementor/theme/after_do_header',
+			'elementor/theme/before_do_footer',
+			'elementor/theme/after_do_footer',
+			'elementor/theme/before_do_archive',
+			'elementor/theme/after_do_archive',
+			'elementor/theme/before_do_search',
+			'elementor/theme/after_do_search',
+			'elementor/theme/before_do_popup',
+			'elementor/theme/after_do_popup',
+		) as $hook ) {
+			remove_all_actions( $hook );
 		}
+
+		if ( ! class_exists( '\ElementorPro\Modules\ThemeBuilder\Module' ) ) {
+			return;
+		}
+
+		$module = \ElementorPro\Modules\ThemeBuilder\Module::instance();
+		if ( ! $module || ! method_exists( $module, 'get_locations_manager' ) ) {
+			return;
+		}
+
+		$manager = $module->get_locations_manager();
+		if ( ! $manager ) {
+			return;
+		}
+
+		foreach ( array( 'wp_body_open', 'get_header', 'get_footer', 'wp_footer', 'wp_head' ) as $hook ) {
+			remove_action( $hook, array( $manager, 'do_location' ) );
+			remove_action( $hook, array( $manager, 'do_header' ) );
+			remove_action( $hook, array( $manager, 'do_footer' ) );
+			remove_action( $hook, array( $manager, 'print_locations' ) );
+		}
+	}
+
+	/**
+	 * Unhook Elementor Pro popup print on wp_footer.
+	 */
+	public static function unhook_elementor_popups(): void {
+		self::unhook_elementor_chrome();
 	}
 
 	/**
@@ -561,11 +609,38 @@ final class Hello_Elementor_Child_Light_Product_Template {
 	 * @return array<int, string>
 	 */
 	public static function body_class( array $classes ): array {
-		if ( self::is_enabled() ) {
-			$classes[] = 'lk-light-product';
-			$classes[] = 'lk-shop-cards-archive';
-			$classes[] = 'lz-chrome';
+		if ( ! self::is_enabled() ) {
+			return $classes;
 		}
+
+		$classes[] = 'lk-light-product';
+		$classes[] = 'lk-shop-cards-archive';
+		$classes[] = 'lz-chrome';
+		if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' )
+			&& Hello_Elementor_Child_Archive_Product_Filter::is_product_search_context()
+		) {
+			$classes[] = 'lk-light-search';
+		}
+
+		$skip = array(
+			'elementor-default'              => true,
+			'elementor-template-full-width'  => true,
+			'elementor-page'                 => true,
+			'e-lazyload'                     => true,
+		);
+		$classes = array_values(
+			array_filter(
+				$classes,
+				static function ( $class ) use ( $skip ) {
+					$class = (string) $class;
+					if ( isset( $skip[ $class ] ) ) {
+						return false;
+					}
+					return 0 !== strpos( $class, 'elementor-page-' );
+				}
+			)
+		);
+
 		return array_values( array_unique( $classes ) );
 	}
 
