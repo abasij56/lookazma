@@ -34,6 +34,7 @@ final class Hello_Elementor_Child_Theme {
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-product-template.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-contact-template.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-about-template.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-account-template.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-archive-product-filter.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-product-search.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-lookazma-search.php';
@@ -49,6 +50,7 @@ final class Hello_Elementor_Child_Theme {
 		Hello_Elementor_Child_Light_Product_Template::init();
 		Hello_Elementor_Child_Light_Contact_Template::init();
 		Hello_Elementor_Child_Light_About_Template::init();
+		Hello_Elementor_Child_Light_Account_Template::init();
 		Hello_Elementor_Child_Archive_Product_Filter::init();
 		Hello_Elementor_Child_Product_Search::init();
 		Hello_Elementor_Child_Lookazma_Search::init();

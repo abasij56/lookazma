@@ -1,0 +1,41 @@
+{% extends "woo/base-light-product.twig" %}
+
+{% block content %}
+{% if account %}
+<div class="lk-lpt lk-lpt-container lk-account-page{% if not account.logged_in %} lk-account-page--guest{% endif %}">
+	{% if account.breadcrumb_html %}
+		<nav class="lk-lpt-breadcrumb" aria-label="breadcrumb">
+			{{ account.breadcrumb_html|raw }}
+		</nav>
+	{% endif %}
+
+	{% if account.logged_in %}
+	<div class="lk-account-layout">
+		<aside class="lk-account-sidebar" aria-label="{{ account.account_label }}">
+			<div class="lk-account-welcome">
+				<p class="lk-account-welcome__name">{{ account.display_name }}</p>
+				<p class="lk-account-welcome__hello">{{ account.welcome_suffix }}</p>
+			</div>
+			<nav class="lk-account-tabs" aria-label="{{ account.account_label }}">
+				<a class="lk-account-tab{% if account.active_tab == 'account' %} is-active{% endif %}" href="{{ account.account_url }}"{% if account.active_tab == 'account' %} aria-current="page"{% endif %}>{{ account.account_label }}</a>
+				<a class="lk-account-tab{% if account.active_tab == 'orders' %} is-active{% endif %}" href="{{ account.orders_url }}"{% if account.active_tab == 'orders' %} aria-current="page"{% endif %}>{{ account.orders_label }}</a>
+				<a class="lk-account-tab{% if account.active_tab == 'addresses' %} is-active{% endif %}" href="{{ account.address_url }}"{% if account.active_tab == 'addresses' %} aria-current="page"{% endif %}>{{ account.address_label }}</a>
+			</nav>
+			<a class="lk-account-logout" href="{{ account.logout_url }}">{{ account.logout_label }}</a>
+		</aside>
+		<section class="lk-account-panel" aria-live="polite">
+			<div class="woocommerce">
+				{{ account.content_html|raw }}
+			</div>
+		</section>
+	</div>
+	{% else %}
+	<div class="lk-account-guest">
+		<div class="woocommerce">
+			{{ account.content_html|raw }}
+		</div>
+	</div>
+	{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -277,6 +277,12 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			return false;
 		}
 
+		if ( class_exists( 'Hello_Elementor_Child_Light_Account_Template' )
+			&& Hello_Elementor_Child_Light_Account_Template::is_enabled()
+		) {
+			return false;
+		}
+
 		if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' )
 			&& Hello_Elementor_Child_Archive_Product_Filter::is_product_search_context()
 		) {
@@ -747,6 +753,25 @@ final class Hello_Elementor_Child_Light_Product_Template {
 		$cart     = self::get_cart_snapshot();
 		$cart_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/cart/' );
 
+		$account_url = function_exists( 'wc_get_page_permalink' ) ? (string) wc_get_page_permalink( 'myaccount' ) : home_url( '/my-account/' );
+		if ( '' === $account_url ) {
+			$account_url = home_url( '/my-account/' );
+		}
+
+		$redirect_to = home_url( '/' );
+		if ( ! empty( $_SERVER['REQUEST_URI'] ) ) {
+			$redirect_to = home_url( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+		}
+
+		$login_url = add_query_arg(
+			array(
+				'login'       => 'true',
+				'page'        => '1',
+				'redirect_to' => $redirect_to,
+			),
+			home_url( '/' )
+		);
+
 		$search_desktop = '';
 		$search_mobile  = '';
 		if ( class_exists( 'Hello_Elementor_Child_Lookazma_Search' ) ) {
@@ -762,10 +787,13 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			'footer_menu'     => self::render_menu_html( array( 'lk_light_product_footer' ), 'lz-site-footer__links' ),
 			'search_desktop'  => $search_desktop,
 			'search_mobile'   => $search_mobile,
-			'cart_url'        => $cart_url,
-			'cart_count'      => $cart['count'],
-			'cart_total'      => $cart['total'],
-			'columns'         => self::get_columns(),
+			'cart_url'          => $cart_url,
+			'cart_count'        => $cart['count'],
+			'cart_total'        => $cart['total'],
+			'account_logged_in' => is_user_logged_in(),
+			'account_url'       => $account_url,
+			'login_url'         => $login_url,
+			'columns'           => self::get_columns(),
 		);
 	}
 }
