@@ -633,6 +633,10 @@ body.lk-light-product .lk-archive-filters__price-apply:hover {
 	background: #0a3a6b;
 }
 
+.lk-lpt-shop__main {
+	min-width: 0;
+}
+
 .lk-lpt-shop__products {
 	min-width: 0;
 	position: relative;

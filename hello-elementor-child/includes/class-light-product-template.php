@@ -271,6 +271,12 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			return false;
 		}
 
+		if ( class_exists( 'Hello_Elementor_Child_Light_About_Template' )
+			&& Hello_Elementor_Child_Light_About_Template::is_enabled()
+		) {
+			return false;
+		}
+
 		if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' )
 			&& Hello_Elementor_Child_Archive_Product_Filter::is_product_search_context()
 		) {

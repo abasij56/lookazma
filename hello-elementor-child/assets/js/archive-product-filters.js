@@ -268,27 +268,62 @@
 		nav.hidden = !html;
 	}
 
-	function pageFromHref(href) {
-		if (!href) {
-			return 1;
+	function pageFromHref(href, linkEl) {
+		var raw = href ? String(href) : '';
+		var decoded = raw;
+		try {
+			decoded = decodeURIComponent(raw);
+		} catch (e) {
+			decoded = raw;
 		}
-		var match = String(href).match(/\/page\/(\d+)/i);
+
+		var match =
+			decoded.match(/\/page\/(\d+)/i) ||
+			raw.match(/\/page\/(\d+)/i) ||
+			raw.match(/%2Fpage%2F(\d+)/i);
 		if (match && match[1]) {
 			return Math.max(1, parseInt(match[1], 10) || 1);
 		}
+
 		try {
-			var url = new URL(href, window.location.origin);
-			var paged = url.searchParams.get('paged') || url.searchParams.get('page');
-			if (paged) {
+			var url = new URL(raw, window.location.origin);
+			var paged =
+				url.searchParams.get('paged') ||
+				url.searchParams.get('page') ||
+				url.searchParams.get('product-page');
+			if (paged && /^\d+$/.test(paged)) {
 				return Math.max(1, parseInt(paged, 10) || 1);
+			}
+			var pageId = String(url.searchParams.get('page_id') || '');
+			var nested = pageId.match(/(?:\/|%2F)page(?:\/|%2F)(\d+)/i);
+			if (nested && nested[1]) {
+				return Math.max(1, parseInt(nested[1], 10) || 1);
 			}
 		} catch (e) {
 			// ignore
 		}
+
+		if (linkEl) {
+			if (
+				!linkEl.classList.contains('prev') &&
+				!linkEl.classList.contains('next')
+			) {
+				var aria = String(linkEl.getAttribute('aria-label') || '');
+				var ariaMatch = aria.match(/(\d+)/);
+				if (ariaMatch && ariaMatch[1]) {
+					return Math.max(1, parseInt(ariaMatch[1], 10) || 1);
+				}
+				var text = String(linkEl.textContent || '').trim();
+				if (/^\d+$/.test(text)) {
+					return Math.max(1, parseInt(text, 10) || 1);
+				}
+			}
+		}
+
 		return 1;
 	}
 
-	function setLoopLoading(on) {
+	function setLoopLoading(on, mode) {
 		var host = getLoadingContainer();
 		if (!host) {
 			return;
@@ -297,6 +332,7 @@
 
 		var overlay = qs('.lk-loop-loading-overlay', host);
 		if (on) {
+			var spinnerOnly = mode === 'page';
 			if (!overlay) {
 				overlay = document.createElement('div');
 				overlay.className = 'lk-loop-loading-overlay';
@@ -304,16 +340,25 @@
 				overlay.innerHTML =
 					'<span class="lk-loop-loading-label"></span>' +
 					'<span class="lk-loop-loading-icon" aria-hidden="true">' +
-					'<svg viewBox="0 0 24 24" width="20" height="20" focusable="false">' +
+					'<svg viewBox="0 0 24 24" width="28" height="28" focusable="false">' +
 					'<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="46 60"/>' +
 					'</svg>' +
 					'</span>';
 				host.appendChild(overlay);
 			}
+			overlay.classList.toggle('lk-loop-loading-overlay--spinner', spinnerOnly);
 			var label = qs('.lk-loop-loading-label', overlay);
 			if (label) {
-				label.textContent =
-					(cfg.i18n && cfg.i18n.loading) || 'در حال فیلتر…';
+				if (spinnerOnly) {
+					label.textContent = '';
+					label.hidden = true;
+					overlay.setAttribute('aria-label', (cfg.i18n && cfg.i18n.loadingPage) || 'در حال بارگذاری');
+				} else {
+					label.hidden = false;
+					label.textContent =
+						(cfg.i18n && cfg.i18n.loading) || 'در حال فیلتر…';
+					overlay.removeAttribute('aria-label');
+				}
 			}
 		} else if (overlay) {
 			overlay.remove();
@@ -449,7 +494,7 @@
 		return '';
 	}
 
-	function runFilter(root, page) {
+	function runFilter(root, page, mode) {
 		if (!cfg.ajaxUrl || !cfg.action || !cfg.nonce) {
 			return;
 		}
@@ -457,7 +502,7 @@
 		currentPage = Math.max(1, parseInt(page, 10) || 1);
 
 		var myId = ++requestId;
-		setLoopLoading(true);
+		setLoopLoading(true, mode);
 		syncPanelOpenState(root);
 
 		var formData = new FormData();
@@ -531,10 +576,10 @@
 			});
 	}
 
-	function scheduleFilter(root, page) {
+	function scheduleFilter(root, page, mode) {
 		window.clearTimeout(debounceTimer);
 		debounceTimer = window.setTimeout(function () {
-			runFilter(root, typeof page === 'undefined' ? 1 : page);
+			runFilter(root, typeof page === 'undefined' ? 1 : page, mode);
 		}, 250);
 	}
 
@@ -550,21 +595,21 @@
 	}
 
 	function bindPagination(root) {
-		if (!root) {
+		if (!root || window.lkArchivePaginationBound) {
 			return;
 		}
-		var pagination = ensurePaginationContainer() || getPaginationContainer();
-		if (!pagination || pagination.getAttribute('data-lk-bound') === '1') {
-			return;
-		}
-		pagination.setAttribute('data-lk-bound', '1');
-		pagination.addEventListener('click', function (event) {
-			var link = event.target.closest('a.page-numbers');
+		window.lkArchivePaginationBound = true;
+		ensurePaginationContainer();
+		document.addEventListener('click', function (event) {
+			var link = event.target.closest(
+				'#lk-archive-products-pagination a.page-numbers, .lk-shop-pagination a.page-numbers, .lk-archive-products__pagination a.page-numbers'
+			);
 			if (!link) {
 				return;
 			}
 			event.preventDefault();
-			scheduleFilter(root, pageFromHref(link.getAttribute('href')));
+			event.stopPropagation();
+			scheduleFilter(root, pageFromHref(link.getAttribute('href'), link), 'page');
 			var loop = getLoopContainer();
 			if (loop && typeof loop.scrollIntoView === 'function') {
 				loop.scrollIntoView({ behavior: 'smooth', block: 'start' });

@@ -1963,50 +1963,11 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		}
 
 		$search = trim( $search );
-
-		if ( '' !== $search ) {
-			$base_url = add_query_arg(
-				array(
-					's'         => $search,
-					'post_type' => 'product',
-				),
-				home_url( '/' )
-			);
-			$links    = paginate_links(
-				array(
-					'base'      => esc_url_raw( add_query_arg( 'paged', '%#%', $base_url ) ),
-					'format'    => '',
-					'current'   => $current,
-					'total'     => $total,
-					'type'      => 'list',
-					'mid_size'  => 2,
-					'end_size'  => 1,
-					'prev_text' => '&rarr;',
-					'next_text' => '&larr;',
-				)
-			);
-
-			return is_string( $links ) ? $links : '';
-		}
-
-		if ( $term_id > 0 ) {
-			if ( ! in_array( $taxonomy, array( 'product_cat', 'product_tag' ), true ) ) {
-				$taxonomy = 'product_cat';
-			}
-			$base_url = get_term_link( $term_id, $taxonomy );
-		} elseif ( function_exists( 'wc_get_page_permalink' ) ) {
-			$base_url = wc_get_page_permalink( 'shop' );
-		} else {
-			$base_url = home_url( '/' );
-		}
-
-		if ( is_wp_error( $base_url ) || ! is_string( $base_url ) || '' === $base_url ) {
-			$base_url = home_url( '/' );
-		}
+		$base   = self::get_pagination_base( $term_id, $taxonomy, $search );
 
 		$links = paginate_links(
 			array(
-				'base'      => esc_url_raw( trailingslashit( $base_url ) . 'page/%#%/' ),
+				'base'      => $base,
 				'format'    => '',
 				'current'   => $current,
 				'total'     => $total,
@@ -2019,6 +1980,71 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		);
 
 		return is_string( $links ) ? $links : '';
+	}
+
+	/**
+	 * Pagination base that works for pretty permalinks and ?page_id= shop URLs.
+	 *
+	 * @param int    $term_id  Scope term ID.
+	 * @param string $taxonomy Scope taxonomy.
+	 * @param string $search   Product search query.
+	 */
+	private static function get_pagination_base( int $term_id, string $taxonomy, string $search ): string {
+		if ( '' !== $search ) {
+			return add_query_arg(
+				array(
+					's'         => $search,
+					'post_type' => 'product',
+					'paged'     => '%#%',
+				),
+				home_url( '/' )
+			);
+		}
+
+		$url = '';
+		if ( $term_id > 0 ) {
+			if ( ! in_array( $taxonomy, array( 'product_cat', 'product_tag' ), true ) ) {
+				$taxonomy = 'product_cat';
+			}
+			$term_link = get_term_link( $term_id, $taxonomy );
+			if ( ! is_wp_error( $term_link ) && is_string( $term_link ) ) {
+				$url = $term_link;
+			}
+		} elseif ( function_exists( 'wc_get_page_id' ) ) {
+			$shop_id = (int) wc_get_page_id( 'shop' );
+			if ( $shop_id > 0 ) {
+				$permalink = get_permalink( $shop_id );
+				if ( is_string( $permalink ) && '' !== $permalink ) {
+					$url = $permalink;
+				}
+			}
+			if ( '' === $url && function_exists( 'wc_get_page_permalink' ) ) {
+				$shop_url = wc_get_page_permalink( 'shop' );
+				if ( is_string( $shop_url ) && '' !== $shop_url ) {
+					$url = $shop_url;
+				}
+			}
+		}
+
+		if ( '' === $url ) {
+			$url = home_url( '/' );
+		}
+
+		return self::pagination_base_from_url( $url );
+	}
+
+	/**
+	 * @param string $url Archive / shop URL.
+	 */
+	private static function pagination_base_from_url( string $url ): string {
+		$url = strtok( $url, '#' );
+		if ( ! is_string( $url ) || '' === $url ) {
+			return add_query_arg( 'paged', '%#%', home_url( '/' ) );
+		}
+		if ( false !== strpos( $url, '?' ) ) {
+			return add_query_arg( 'paged', '%#%', $url );
+		}
+		return trailingslashit( $url ) . 'page/%#%/';
 	}
 
 	/**

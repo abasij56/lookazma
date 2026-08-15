@@ -16,6 +16,9 @@
 	{% if contact_css_url %}
 		<link rel="stylesheet" href="{{ contact_css_url }}?v={{ contact_css_ver }}">
 	{% endif %}
+	{% if about_css_url %}
+		<link rel="stylesheet" href="{{ about_css_url }}?v={{ about_css_ver }}">
+	{% endif %}
 	{{ function('wp_head') }}
 	<style id="lk-lpt-chrome-fix">
 		html:has(body.lk-light-product){overflow-x:clip;transform:none!important}

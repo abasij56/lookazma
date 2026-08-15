@@ -14,15 +14,17 @@
 			{{ archive.filters_html|raw }}
 		</aside>
 
-		<div class="lk-lpt-shop__products">
-			<div
-				class="lk-archive-products__grid lk-shop-products-grid"
-				id="lk-archive-products"
-				role="list"
-				data-lk-native-grid="1"
-				style="--lk-lpt-cols: 4"
-			>
-				{{ archive.products_html|raw }}
+		<div class="lk-lpt-shop__main">
+			<div class="lk-lpt-shop__products">
+				<div
+					class="lk-archive-products__grid lk-shop-products-grid"
+					id="lk-archive-products"
+					role="list"
+					data-lk-native-grid="1"
+					style="--lk-lpt-cols: 4"
+				>
+					{{ archive.products_html|raw }}
+				</div>
 			</div>
 
 			<nav class="lk-archive-products__pagination lk-shop-pagination" id="lk-archive-products-pagination" aria-label="صفحه‌بندی">
