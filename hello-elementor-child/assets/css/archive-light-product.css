@@ -257,6 +257,72 @@ body.lk-light-product.lk-light-search .lz-site-header,
 	display: inline;
 }
 
+.lz-account-menu {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+}
+
+.lz-account-menu__summary {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	list-style: none;
+	cursor: pointer;
+}
+
+.lz-account-menu__summary::-webkit-details-marker,
+.lz-account-menu__summary::marker {
+	display: none;
+}
+
+.lz-account-menu__name {
+	max-width: 9.5rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: 800;
+	font-size: 0.88rem;
+	color: #001f3f;
+}
+
+.lz-account-menu__panel {
+	position: absolute;
+	top: calc(100% + 0.45rem);
+	inset-inline-start: 0;
+	z-index: 10120;
+	min-width: 11.5rem;
+	padding: 0.4rem;
+	border-radius: 12px;
+	border: 1px solid rgba(1, 30, 62, 0.12);
+	background: #fff;
+	box-shadow: 0 10px 28px rgba(11, 31, 58, 0.14);
+}
+
+.lz-account-menu__link {
+	display: block;
+	padding: 0.55rem 0.75rem;
+	border-radius: 10px;
+	color: #001f3f;
+	font-weight: 700;
+	font-size: 0.88rem;
+	text-decoration: none;
+}
+
+.lz-account-menu__link:hover {
+	background: rgba(13, 110, 110, 0.1);
+	color: #0d6e6e;
+}
+
+.lz-account-menu__link--logout {
+	color: #9b1c1c;
+}
+
+.lz-account-menu__link--logout:hover {
+	background: rgba(180, 35, 24, 0.08);
+	color: #b42318;
+}
+
 body.lk-light-product .lz-menu-toggle {
 	display: none !important;
 	align-items: center;
@@ -956,6 +1022,10 @@ body.lk-light-product .lk-filtered-products__empty {
 	.lz-account-btn--icon {
 		width: 2.75rem;
 		padding: 0.4rem;
+	}
+
+	.lz-account-menu__name {
+		max-width: 5.5rem;
 	}
 
 	.lz-cart-btn__price {

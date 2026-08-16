@@ -1,0 +1,21 @@
+{% extends "woo/base-light-product.twig" %}
+
+{% block content %}
+{% if cart_page %}
+<div class="lk-lpt lk-lpt-container lk-cart-page{% if cart_page.empty %} lk-cart-page--empty{% endif %}">
+	{% if cart_page.breadcrumb_html %}
+		<nav class="lk-lpt-breadcrumb" aria-label="breadcrumb">
+			{{ cart_page.breadcrumb_html|raw }}
+		</nav>
+	{% endif %}
+
+	<h1 class="lk-cart-page__title">{{ cart_page.title }}</h1>
+
+	<div class="lk-cart-panel">
+		<div class="woocommerce">
+			{{ cart_page.content_html|raw }}
+		</div>
+	</div>
+</div>
+{% endif %}
+{% endblock %}

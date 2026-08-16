@@ -22,6 +22,9 @@
 	{% if account_css_url %}
 		<link rel="stylesheet" href="{{ account_css_url }}?v={{ account_css_ver }}">
 	{% endif %}
+	{% if cart_page_css_url %}
+		<link rel="stylesheet" href="{{ cart_page_css_url }}?v={{ cart_page_css_ver }}">
+	{% endif %}
 	{{ function('wp_head') }}
 	<style id="lk-lpt-chrome-fix">
 		html:has(body.lk-light-product){overflow-x:clip;transform:none!important}

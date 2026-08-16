@@ -283,6 +283,12 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			return false;
 		}
 
+		if ( class_exists( 'Hello_Elementor_Child_Light_Cart_Template' )
+			&& Hello_Elementor_Child_Light_Cart_Template::is_enabled()
+		) {
+			return false;
+		}
+
 		if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' )
 			&& Hello_Elementor_Child_Archive_Product_Filter::is_product_search_context()
 		) {
@@ -772,6 +778,18 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			home_url( '/' )
 		);
 
+		$account_display_name = '';
+		$logout_url           = function_exists( 'wc_logout_url' ) ? wc_logout_url() : wp_logout_url( home_url( '/' ) );
+		if ( is_user_logged_in() ) {
+			$user = wp_get_current_user();
+			if ( $user instanceof WP_User ) {
+				$account_display_name = (string) $user->display_name;
+				if ( '' === trim( $account_display_name ) ) {
+					$account_display_name = (string) $user->user_login;
+				}
+			}
+		}
+
 		$search_desktop = '';
 		$search_mobile  = '';
 		if ( class_exists( 'Hello_Elementor_Child_Lookazma_Search' ) ) {
@@ -790,9 +808,11 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			'cart_url'          => $cart_url,
 			'cart_count'        => $cart['count'],
 			'cart_total'        => $cart['total'],
-			'account_logged_in' => is_user_logged_in(),
-			'account_url'       => $account_url,
-			'login_url'         => $login_url,
+			'account_logged_in'    => is_user_logged_in(),
+			'account_url'          => $account_url,
+			'login_url'            => $login_url,
+			'account_display_name' => $account_display_name,
+			'logout_url'           => $logout_url,
 			'columns'           => self::get_columns(),
 		);
 	}
