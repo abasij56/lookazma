@@ -1,0 +1,47 @@
+{% extends "woo/base-light-product.twig" %}
+
+{% block content %}
+{% if article %}
+<div class="lk-lpt lk-lpt-container lk-article-page">
+	{% if article.breadcrumb_html %}
+		<nav class="lk-lpt-breadcrumb" aria-label="breadcrumb">
+			{{ article.breadcrumb_html|raw }}
+		</nav>
+	{% endif %}
+
+	<div class="lk-article-layout">
+		<aside class="lk-article-sidebar" aria-label="{{ article.latest_title }}">
+			<section class="lk-article-side">
+				<h2 class="lk-article-side__title">{{ article.carousel_title }}</h2>
+				<div class="lk-article-carousel">
+					<div class="lk-article-carousel__viewport">
+						<div class="lk-article-carousel__track">
+							{{ article.carousel_html|raw }}
+						</div>
+					</div>
+					<div class="lk-article-carousel__dots" role="tablist" aria-label="{{ article.carousel_title }}"></div>
+				</div>
+			</section>
+
+			<section class="lk-article-side">
+				<h2 class="lk-article-side__title">{{ article.latest_title }}</h2>
+				<div class="lk-article-latest">
+					{{ article.latest_html|raw }}
+				</div>
+			</section>
+		</aside>
+
+		<div class="lk-article-main">
+			<h1 class="lk-article-page__title">{{ article.posts_title }}</h1>
+			<div class="lk-article-grid" id="lk-article-grid" role="list">
+				{% include 'pages/partials/light-article-cards.twig' %}
+			</div>
+
+			<nav class="lk-archive-products__pagination lk-shop-pagination lk-article-pagination" id="lk-article-pagination" aria-label="صفحه‌بندی"{% if not article.pagination_html %} hidden{% endif %}>
+				{{ article.pagination_html|raw }}
+			</nav>
+		</div>
+	</div>
+</div>
+{% endif %}
+{% endblock %}

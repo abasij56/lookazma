@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HELLO_ELEMENTOR_CHILD_VERSION', '1.14.1' );
+define( 'HELLO_ELEMENTOR_CHILD_VERSION', '1.15.0' );
 define( 'HELLO_ELEMENTOR_CHILD_PATH', get_stylesheet_directory() . '/' );
 define( 'HELLO_ELEMENTOR_CHILD_URI', get_stylesheet_directory_uri() . '/' );
 
@@ -109,6 +109,12 @@ function hello_elementor_child_enqueue_styles() {
 
 	if ( class_exists( 'Hello_Elementor_Child_Light_Cart_Template' )
 		&& Hello_Elementor_Child_Light_Cart_Template::is_enabled()
+	) {
+		return;
+	}
+
+	if ( class_exists( 'Hello_Elementor_Child_Light_Article_Template' )
+		&& Hello_Elementor_Child_Light_Article_Template::is_enabled()
 	) {
 		return;
 	}

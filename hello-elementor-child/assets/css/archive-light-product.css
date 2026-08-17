@@ -984,7 +984,7 @@ body.lk-light-product .lk-filtered-products__empty {
 @media (max-width: 899px) {
 	.lz-site-header__top {
 		position: relative;
-		z-index: 220;
+		z-index: 240;
 		grid-template-columns: minmax(0, 1fr) auto;
 		gap: 0.65rem;
 		background: #fff;
@@ -1001,6 +1001,15 @@ body.lk-light-product .lk-filtered-products__empty {
 		z-index: 220;
 		background: #fff;
 		padding-bottom: 0.75rem;
+	}
+
+	.lz-account-menu[open] {
+		z-index: 3;
+	}
+
+	.lz-account-menu__panel {
+		inset-inline-start: auto;
+		inset-inline-end: 0;
 	}
 
 	body.lk-light-product .lz-menu-toggle {

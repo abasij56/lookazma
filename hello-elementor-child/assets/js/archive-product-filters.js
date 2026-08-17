@@ -604,7 +604,7 @@
 			var link = event.target.closest(
 				'#lk-archive-products-pagination a.page-numbers, .lk-shop-pagination a.page-numbers, .lk-archive-products__pagination a.page-numbers'
 			);
-			if (!link) {
+			if (!link || link.closest('#lk-article-pagination')) {
 				return;
 			}
 			event.preventDefault();
