@@ -34,20 +34,36 @@ if ( ! $product ) {
  * @return string
  */
 $lk_field = static function ( int $post_id, string $key ): string {
-	$value = function_exists( 'get_field' ) ? get_field( $key, $post_id ) : get_post_meta( $post_id, $key, true );
+	$value = function_exists( 'get_field' ) ? get_field( $key, $post_id ) : null;
+	if ( null === $value || false === $value || '' === $value ) {
+		$value = get_post_meta( $post_id, $key, true );
+	}
 
 	if ( is_array( $value ) ) {
-		if ( isset( $value['url'] ) ) {
+		if ( isset( $value['url'] ) && '' !== (string) $value['url'] ) {
 			return (string) $value['url'];
 		}
+		$id = 0;
 		if ( isset( $value['ID'] ) ) {
-			$url = wp_get_attachment_url( (int) $value['ID'] );
+			$id = (int) $value['ID'];
+		} elseif ( isset( $value['id'] ) ) {
+			$id = (int) $value['id'];
+		}
+		if ( $id > 0 ) {
+			$url = wp_get_attachment_url( $id );
 			return $url ? (string) $url : '';
 		}
 		return '';
 	}
 
-	return is_scalar( $value ) ? (string) $value : '';
+	if ( is_numeric( $value ) && (int) $value > 0 ) {
+		$url = wp_get_attachment_url( (int) $value );
+		if ( $url ) {
+			return (string) $url;
+		}
+	}
+
+	return is_scalar( $value ) ? trim( (string) $value ) : '';
 };
 
 /**
@@ -83,19 +99,230 @@ $lk_attr = static function ( array $attr_map, array $aliases ): string {
 	return '';
 };
 
-$context         = \Timber\Timber::context();
+/**
+ * Resolve ACF/meta file values to a URL.
+ *
+ * @param mixed $value Raw field value.
+ */
+$lk_media_url = static function ( $value ) use ( $lk_is_url ): string {
+	if ( null === $value || false === $value || '' === $value ) {
+		return '';
+	}
+
+	if ( is_array( $value ) ) {
+		if ( isset( $value['url'] ) && '' !== (string) $value['url'] ) {
+			return (string) $value['url'];
+		}
+
+		$id = 0;
+		if ( isset( $value['ID'] ) ) {
+			$id = (int) $value['ID'];
+		} elseif ( isset( $value['id'] ) ) {
+			$id = (int) $value['id'];
+		}
+
+		if ( $id > 0 ) {
+			$url = wp_get_attachment_url( $id );
+			return $url ? (string) $url : '';
+		}
+
+		return '';
+	}
+
+	if ( is_numeric( $value ) && (int) $value > 0 ) {
+		$url = wp_get_attachment_url( (int) $value );
+		return $url ? (string) $url : '';
+	}
+
+	if ( ! is_scalar( $value ) ) {
+		return '';
+	}
+
+	$candidate = trim( (string) $value );
+	if ( '' === $candidate ) {
+		return '';
+	}
+
+	if ( $lk_is_url( $candidate ) ) {
+		return $candidate;
+	}
+
+	if ( str_starts_with( $candidate, '/' ) ) {
+		return home_url( $candidate );
+	}
+
+	return '';
+};
+
+/**
+ * Whether an ACF field is the technical datasheet («برگه مشخصات فنی»).
+ *
+ * @param string $name  Field name.
+ * @param string $label Field label.
+ * @param string $type  Field type.
+ */
+$lk_is_datasheet_field = static function ( string $name, string $label, string $type ): bool {
+	$label = trim( $label );
+	$name  = trim( $name );
+
+	if ( in_array( $label, array( 'COA', 'coa', 'برگه مشخصات فنی', 'دانلود برگه مشخصات فنی', 'برگه مشخصات' ), true ) ) {
+		return true;
+	}
+
+	if ( '' !== $label && false !== mb_stripos( $label, 'مشخصات فنی' ) ) {
+		if ( false !== mb_stripos( $label, 'ایمنی' ) || false !== mb_stripos( $label, 'msds' ) ) {
+			return false;
+		}
+		return true;
+	}
+
+	if ( '' !== $label && false !== mb_stripos( $label, 'برگه مشخصات' ) ) {
+		return true;
+	}
+
+	if ( '' !== $label && preg_match( '/\bcoa\b/i', $label ) ) {
+		return true;
+	}
+
+	$known_names = array(
+		'coa',
+		'COA',
+		'coa_file',
+		'datasheet',
+		'data_sheet',
+		'tds',
+		'tds_file',
+		'pdf',
+		'technical_datasheet',
+		'datasheet_file',
+		'برگه_مشخصات',
+		'برگه_مشخصات_فنی',
+		'برگه مشخصات',
+		'برگه مشخصات فنی',
+		'دانلود_برگه_مشخصات_فنی',
+		'دانلود برگه مشخصات فنی',
+		'فایل_مشخصات',
+	);
+
+	if ( in_array( $name, $known_names, true ) ) {
+		return true;
+	}
+
+	if ( preg_match( '/^(coa|coa_file)$/i', $name ) || preg_match( '/datasheet|data_sheet|tds/i', $name ) ) {
+		return true;
+	}
+
+	if ( preg_match( '/برگه.*مشخصات/u', $name ) ) {
+		return true;
+	}
+
+	return in_array( $type, array( 'file', 'url', 'image', 'link' ), true )
+		&& '' !== $label
+		&& false !== mb_stripos( $label, 'برگه' );
+};
+
+/**
+ * Find product technical datasheet URL (empty when not set).
+ *
+ * @param int $post_id Product ID.
+ */
+$lk_resolve_datasheet = static function ( int $post_id ) use ( $lk_field, $lk_media_url, $lk_is_datasheet_field, $lk_is_url ): string {
+	foreach ( array(
+		'coa',
+		'COA',
+		'coa_file',
+		'برگه مشخصات فنی',
+		'برگه_مشخصات_فنی',
+		'برگه مشخصات',
+		'برگه_مشخصات',
+		'دانلود برگه مشخصات فنی',
+		'دانلود_برگه_مشخصات_فنی',
+		'datasheet',
+		'data_sheet',
+		'tds',
+		'tds_file',
+		'pdf',
+		'technical_datasheet',
+		'فایل_مشخصات',
+		'datasheet_file',
+	) as $sheet_key ) {
+		$raw = function_exists( 'get_field' ) ? get_field( $sheet_key, $post_id, false ) : get_post_meta( $post_id, $sheet_key, true );
+		if ( null === $raw || false === $raw || '' === $raw ) {
+			$raw = get_post_meta( $post_id, $sheet_key, true );
+		}
+
+		$url = $lk_media_url( $raw );
+		if ( '' !== $url && $lk_is_url( $url ) ) {
+			return esc_url_raw( $url );
+		}
+	}
+
+	if ( function_exists( 'acf_get_field_objects' ) ) {
+		$fields = acf_get_field_objects( $post_id, false );
+		if ( is_array( $fields ) ) {
+			foreach ( $fields as $field ) {
+				if ( ! is_array( $field ) ) {
+					continue;
+				}
+
+				$name  = isset( $field['name'] ) ? (string) $field['name'] : '';
+				$label = isset( $field['label'] ) ? (string) $field['label'] : '';
+				$type  = isset( $field['type'] ) ? (string) $field['type'] : '';
+
+				if ( ! $lk_is_datasheet_field( $name, $label, $type ) ) {
+					continue;
+				}
+
+				$url = $lk_media_url( $field['value'] ?? null );
+				if ( '' !== $url && $lk_is_url( $url ) ) {
+					return esc_url_raw( $url );
+				}
+			}
+		}
+	}
+
+	foreach ( array_keys( (array) get_post_meta( $post_id ) ) as $meta_key ) {
+		$meta_key = (string) $meta_key;
+		if ( str_starts_with( $meta_key, '_' ) ) {
+			continue;
+		}
+
+		if (
+			! preg_match( '/^(coa|coa_file)$/i', $meta_key )
+			&& ! preg_match( '/datasheet|data_sheet|tds|برگه/u', $meta_key )
+		) {
+			continue;
+		}
+
+		$url = $lk_media_url( get_post_meta( $post_id, $meta_key, true ) );
+		if ( '' !== $url && $lk_is_url( $url ) ) {
+			return esc_url_raw( $url );
+		}
+	}
+
+	return '';
+};
+
+$context = array_merge(
+	\Timber\Timber::context(),
+	class_exists( 'Hello_Elementor_Child_Light_Product_Template' )
+		? Hello_Elementor_Child_Light_Product_Template::get_chrome_context()
+		: array()
+);
 $context['post'] = \Timber\Timber::get_post( $post_id );
 
 ob_start();
 language_attributes();
 $context['html_language_attributes'] = trim( ob_get_clean() );
-$context['body_class']               = implode( ' ', get_body_class( 'lk-single-product-light' ) );
+$context['body_class']               = implode( ' ', get_body_class( 'lk-single-product-light lk-light-product lz-chrome' ) );
 
-// Guarantee styles even if enqueue/CDN/cache strip the stylesheet link.
-$css_file = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/single-product-light.css';
-$context['light_css_inline'] = file_exists( $css_file ) ? (string) file_get_contents( $css_file ) : '';
-$context['light_css_url']    = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/single-product-light.css';
-$context['light_css_ver']    = file_exists( $css_file ) ? (string) filemtime( $css_file ) : HELLO_ELEMENTOR_CHILD_VERSION;
+$chrome_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-light-product.css';
+$context['light_css_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-light-product.css';
+$context['light_css_ver'] = file_exists( $chrome_css ) ? (string) filemtime( $chrome_css ) : HELLO_ELEMENTOR_CHILD_VERSION;
+
+$spl_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/single-product-light.css';
+$context['spl_css_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/single-product-light.css';
+$context['spl_css_ver'] = file_exists( $spl_css ) ? (string) filemtime( $spl_css ) : HELLO_ELEMENTOR_CHILD_VERSION;
 
 // —— Single product image (no gallery) ——
 $image = null;
@@ -138,18 +365,19 @@ if ( '' === $cas_no ) {
 	$cas_no = $lk_attr( $attr_map, array( 'CAS', 'Cas No', 'CAS Number' ) );
 }
 
-$english_name = $lk_field( $post_id, 'english_name' );
+$english_name = '';
+foreach ( array( 'en-name', 'en_name', 'english_name', 'نام_انگلیسی', 'english' ) as $en_key ) {
+	$english_name = $lk_field( $post_id, $en_key );
+	if ( '' !== $english_name && ! $lk_is_url( $english_name ) ) {
+		break;
+	}
+	$english_name = '';
+}
 if ( '' === $english_name ) {
-	$english_name = $lk_field( $post_id, 'نام_انگلیسی' );
+	$english_name = $lk_attr( $attr_map, array( 'نام انگلیسی', 'English Name', 'English', 'EN Name' ) );
 }
 
-$datasheet = $lk_field( $post_id, 'datasheet' );
-if ( '' === $datasheet ) {
-	$datasheet = $lk_field( $post_id, 'برگه_مشخصات' );
-}
-if ( '' === $datasheet ) {
-	$datasheet = $lk_field( $post_id, 'data_sheet' );
-}
+$datasheet = $lk_resolve_datasheet( $post_id );
 
 // Brand: tag first, then attribute / ACF.
 $brand_name  = '';
@@ -176,21 +404,22 @@ if ( $tags && ! is_wp_error( $tags ) ) {
 
 $brand_acf = $lk_field( $post_id, 'آدرس_برند' );
 if ( '' !== $brand_acf ) {
-	if ( $lk_is_url( $brand_acf ) ) {
-		if ( '' === $brand_image ) {
-			$brand_image = $brand_acf;
-		}
-	} elseif ( '' === $brand_name ) {
+	if ( ! $lk_is_url( $brand_acf ) && '' === $brand_name ) {
 		$brand_name = $brand_acf;
 	}
 }
 
-foreach ( array( 'brand_logo', 'لوگو_برند', 'brand_image' ) as $logo_key ) {
+// Product-level company logo (ACF «لوگو شرکت») — same keys as shop cards.
+foreach ( array( 'لوگو_شرکت', 'لوگو شرکت', 'brand_logo', 'لوگو_برند', 'brand_image' ) as $logo_key ) {
 	$logo = $lk_field( $post_id, $logo_key );
 	if ( '' !== $logo && $lk_is_url( $logo ) ) {
 		$brand_image = $logo;
 		break;
 	}
+}
+
+if ( '' === $brand_image && '' !== $brand_acf && $lk_is_url( $brand_acf ) ) {
+	$brand_image = $brand_acf;
 }
 
 if ( '' === $brand_name ) {
@@ -201,18 +430,22 @@ if ( '' === $brand_name ) {
 $highlight_defs = array(
 	array(
 		'label'   => 'گرید',
+		'icon'    => 'grade',
 		'aliases' => array( 'گرید', 'Grade' ),
 	),
 	array(
 		'label'   => 'درصد خلوص',
+		'icon'    => 'purity',
 		'aliases' => array( 'درصد خلوص', 'خلوص', 'Purity' ),
 	),
 	array(
 		'label'   => 'کشور تولید کننده',
+		'icon'    => 'country',
 		'aliases' => array( 'کشور تولید کننده', 'کشور سازنده', 'کشور', 'Country' ),
 	),
 	array(
 		'label'   => 'بسته بندی',
+		'icon'    => 'packaging',
 		'aliases' => array( 'بسته بندی', 'بسته‌بندی', 'Packaging', 'Pack size' ),
 	),
 );
@@ -226,6 +459,7 @@ foreach ( $highlight_defs as $def ) {
 	$highlights[] = array(
 		'label' => $def['label'],
 		'value' => $value,
+		'icon'  => $def['icon'],
 	);
 }
 
@@ -323,7 +557,6 @@ $context['product_data'] = array(
 	'related'          => $related_items,
 	'shipping_url'     => home_url( '/sending-goods/' ),
 	'whatsapp_url'     => 'https://wa.me/989122114322',
-	'phone'            => '02182802125',
 	'price_notice'     => 'به علت نوسانات قیمت لطفا قبل از اقدام به خرید از طریق تماس تلفنی استعلام قیمت بگیرید',
 );
 

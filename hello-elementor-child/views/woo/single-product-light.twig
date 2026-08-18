@@ -1,4 +1,4 @@
-{% extends "base.twig" %}
+{% extends "woo/base-light-product.twig" %}
 
 {% block content %}
 {% if product_data %}
@@ -12,20 +12,34 @@
 
 <article class="lk-product lk-container" data-product-id="{{ product_data.id }}" data-product-type="{{ product_data.is_variable ? 'variable' : 'simple' }}">
 	{# RTL: [قیمت | مشخصات | عکس] — کارت محصول راست، کارت قیمت چپ #}
+	<div class="lk-product__hero">
 	<div class="lk-product__row">
+		{% if product_data.brand_image or product_data.brand_name %}
+			{% if product_data.brand_link %}
+				<a
+					class="lk-product__brand-badge{% if product_data.brand_image %} lk-product__brand-badge--logo{% else %} lk-product__brand-badge--text{% endif %}"
+					href="{{ product_data.brand_link }}"
+					aria-label="{{ product_data.brand_name|default('برند') }}"
+				>
+					{% if product_data.brand_image %}
+						<img src="{{ product_data.brand_image }}" alt="{{ product_data.brand_name|default('برند') }}" width="48" height="48">
+					{% else %}
+						<span>{{ product_data.brand_name }}</span>
+					{% endif %}
+				</a>
+			{% else %}
+				<span class="lk-product__brand-badge{% if product_data.brand_image %} lk-product__brand-badge--logo{% else %} lk-product__brand-badge--text{% endif %}">
+					{% if product_data.brand_image %}
+						<img src="{{ product_data.brand_image }}" alt="{{ product_data.brand_name|default('برند') }}" width="48" height="48">
+					{% else %}
+						<span>{{ product_data.brand_name }}</span>
+					{% endif %}
+				</span>
+			{% endif %}
+		{% endif %}
 		<section class="lk-info-card" aria-label="اطلاعات محصول">
 			<div class="lk-info-card__inner">
 				<div class="lk-info-card__media">
-					{% if product_data.brand_image %}
-						{% if product_data.brand_link %}
-							<a href="{{ product_data.brand_link }}">
-								<img class="lk-info-card__brand-icon" src="{{ product_data.brand_image }}" alt="{{ product_data.brand_name|default('برند') }}" width="72" height="72">
-							</a>
-						{% else %}
-							<img class="lk-info-card__brand-icon" src="{{ product_data.brand_image }}" alt="{{ product_data.brand_name|default('برند') }}" width="72" height="72">
-						{% endif %}
-					{% endif %}
-
 					<figure class="lk-info-card__photo">
 						{% if product_data.image %}
 							<img src="{{ product_data.image.url }}" alt="{{ product_data.image.alt|default(product_data.name) }}" width="800" height="576">
@@ -46,11 +60,12 @@
 						</p>
 					{% endif %}
 
-					<h1 class="lk-info-card__title">{{ product_data.name }}</h1>
-
-					{% if product_data.english_name %}
-						<p class="lk-info-card__english">{{ product_data.english_name }}</p>
-					{% endif %}
+					<h1 class="lk-info-card__title">
+						<span class="lk-info-card__name">{{ product_data.name }}</span>
+						{% if product_data.english_name %}
+							<span class="lk-info-card__english">{{ product_data.english_name }}</span>
+						{% endif %}
+					</h1>
 
 					<hr class="lk-info-card__divider">
 
@@ -60,16 +75,29 @@
 								<h2>مشخصات محصول</h2>
 								<ul class="lk-specs-grid">
 									{% for item in product_data.highlights %}
-										<li>
+										<li{% if item.icon %} data-lk-fact="{{ item.icon }}"{% endif %}>
 											<span>{{ item.label }}</span>
 											<strong>{{ item.value }}</strong>
 										</li>
 									{% endfor %}
+									{% if product_data.datasheet %}
+										<li class="lk-specs-grid__full">
+											<a class="lk-datasheet" href="{{ product_data.datasheet }}" target="_blank" rel="noopener noreferrer">
+												<svg class="lk-datasheet__icon" aria-hidden="true" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M369.9 97.9L286 14C277 5 264.8-.1 252.1-.1H48C21.5 0 0 21.5 0 48v416c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V131.9c0-12.7-5.1-25-14.1-34zM332.1 128H256V51.9l76.1 76.1zM48 464V48h160v104c0 13.3 10.7 24 24 24h104v288H48zm250.2-143.7c-12.2-12-47-8.7-64.4-6.5-17.2-10.5-28.7-25-36.8-46.3 3.9-16.1 10.1-40.6 5.4-56-4.2-26.2-37.8-23.6-42.6-5.9-4.4 16.1-.4 38.5 7 67.1-10 23.9-24.9 56-35.4 74.4-20 10.3-47 26.2-51 46.2-3.3 15.8 26 55.2 76.1-31.2 22.4-7.4 46.8-16.5 68.4-20.1 18.9 10.2 41 17 55.8 17 25.5 0 28-28.2 17.5-38.7zm-198.1 77.8c5.1-13.7 24.5-29.5 30.4-35-19 30.3-30.4 35.7-30.4 35zm81.6-190.6c7.4 0 6.7 32.1 1.8 40.8-4.4-13.9-4.3-40.8-1.8-40.8zm-24.4 136.6c9.7-16.9 18-37 24.7-54.7 8.3 15.1 18.9 27.2 30.1 35.5-20.8 4.3-38.9 13.1-54.8 19.2zm131.6-5s-5 6-37.3-7.8c35.1-2.6 40.9 5.4 37.3 7.8z"/></svg>
+												دانلود برگه مشخصات فنی
+											</a>
+										</li>
+									{% endif %}
 								</ul>
-							{% endif %}
-
-							{% if product_data.datasheet %}
-								<a class="lk-datasheet" href="{{ product_data.datasheet }}" target="_blank" rel="noopener noreferrer">دانلود برگه مشخصات فنی</a>
+							{% elseif product_data.datasheet %}
+								<ul class="lk-specs-grid">
+									<li class="lk-specs-grid__full">
+										<a class="lk-datasheet" href="{{ product_data.datasheet }}" target="_blank" rel="noopener noreferrer">
+											<svg class="lk-datasheet__icon" aria-hidden="true" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M369.9 97.9L286 14C277 5 264.8-.1 252.1-.1H48C21.5 0 0 21.5 0 48v416c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V131.9c0-12.7-5.1-25-14.1-34zM332.1 128H256V51.9l76.1 76.1zM48 464V48h160v104c0 13.3 10.7 24 24 24h104v288H48zm250.2-143.7c-12.2-12-47-8.7-64.4-6.5-17.2-10.5-28.7-25-36.8-46.3 3.9-16.1 10.1-40.6 5.4-56-4.2-26.2-37.8-23.6-42.6-5.9-4.4 16.1-.4 38.5 7 67.1-10 23.9-24.9 56-35.4 74.4-20 10.3-47 26.2-51 46.2-3.3 15.8 26 55.2 76.1-31.2 22.4-7.4 46.8-16.5 68.4-20.1 18.9 10.2 41 17 55.8 17 25.5 0 28-28.2 17.5-38.7zm-198.1 77.8c5.1-13.7 24.5-29.5 30.4-35-19 30.3-30.4 35.7-30.4 35zm81.6-190.6c7.4 0 6.7 32.1 1.8 40.8-4.4-13.9-4.3-40.8-1.8-40.8zm-24.4 136.6c9.7-16.9 18-37 24.7-54.7 8.3 15.1 18.9 27.2 30.1 35.5-20.8 4.3-38.9 13.1-54.8 19.2zm131.6-5s-5 6-37.3-7.8c35.1-2.6 40.9 5.4 37.3 7.8z"/></svg>
+											دانلود برگه مشخصات فنی
+										</a>
+									</li>
+								</ul>
 							{% endif %}
 						</div>
 					{% endif %}
@@ -97,16 +125,16 @@
 
 			<div class="lk-price-card__actions">
 				{% if product_data.shipping_url %}
-					<a href="{{ product_data.shipping_url }}">روش و هزینه ارسال کالا</a>
+					<a class="lk-price-card__shipping" href="{{ product_data.shipping_url }}">روش و هزینه ارسال کالا</a>
 				{% endif %}
 				{% if product_data.whatsapp_url %}
-					<a href="{{ product_data.whatsapp_url }}" target="_blank" rel="noopener noreferrer">واتساپ</a>
-				{% endif %}
-				{% if product_data.phone %}
-					<a href="tel:{{ product_data.phone }}">{{ product_data.phone }}</a>
+					<a class="lk-price-card__whatsapp" href="{{ product_data.whatsapp_url }}" target="_blank" rel="noopener noreferrer" aria-label="واتساپ">
+						<svg aria-hidden="true" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+					</a>
 				{% endif %}
 			</div>
 		</aside>
+	</div>
 	</div>
 
 	<ul class="lk-badges" aria-label="مزایای خرید">

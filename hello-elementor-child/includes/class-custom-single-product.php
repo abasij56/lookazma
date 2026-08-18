@@ -31,10 +31,15 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 
 		add_filter( 'timber/locations', array( __CLASS__, 'add_timber_locations' ) );
 
+		add_action( 'template_redirect', array( __CLASS__, 'unhook_elementor_chrome' ), -6 );
 		// Beat JetWooBuilder / JetThemeCore / Elementor (they often use very high priorities).
 		add_action( 'template_redirect', array( __CLASS__, 'force_light_template' ), 1 );
 		add_filter( 'template_include', array( __CLASS__, 'maybe_use_custom_template' ), PHP_INT_MAX );
-		add_filter( 'elementor/theme/need_override_location', array( __CLASS__, 'disable_elementor_single_override' ), PHP_INT_MAX, 2 );
+		add_filter( 'elementor/theme/need_override_location', array( __CLASS__, 'disable_elementor_locations' ), PHP_INT_MAX, 2 );
+		add_filter( 'elementor/theme/get_location_templates', array( __CLASS__, 'remove_popup_templates' ), PHP_INT_MAX, 2 );
+		add_filter( 'elementor/theme/get_location_templates/popup', array( __CLASS__, 'deny_popup_templates' ), PHP_INT_MAX );
+		add_filter( 'elementor/frontend/builder_content_data', array( __CLASS__, 'empty_popup_builder_data' ), PHP_INT_MAX, 2 );
+		add_action( 'wp_footer', array( __CLASS__, 'unhook_elementor_popups' ), 0 );
 		add_filter( 'jet-woo-builder/custom-single-template', array( __CLASS__, 'disable_jet_single_template' ), PHP_INT_MAX );
 		add_filter( 'jet-theme-core/template-include', array( __CLASS__, 'disable_jet_theme_core_template' ), PHP_INT_MAX );
 
@@ -146,11 +151,33 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 	 * @return array<int, string>
 	 */
 	public static function body_class( array $classes ): array {
-		if ( self::is_enabled() && ! in_array( 'lk-single-product-light', $classes, true ) ) {
-			$classes[] = 'lk-single-product-light';
+		if ( ! self::is_enabled() ) {
+			return $classes;
 		}
 
-		return $classes;
+		$classes[] = 'lk-single-product-light';
+		$classes[] = 'lk-light-product';
+		$classes[] = 'lz-chrome';
+
+		$skip = array(
+			'elementor-default'             => true,
+			'elementor-template-full-width' => true,
+			'elementor-page'                => true,
+		);
+		$classes = array_values(
+			array_filter(
+				$classes,
+				static function ( $class ) use ( $skip ) {
+					$class = (string) $class;
+					if ( isset( $skip[ $class ] ) ) {
+						return false;
+					}
+					return 0 !== strpos( $class, 'elementor-page-' );
+				}
+			)
+		);
+
+		return array_values( array_unique( $classes ) );
 	}
 
 	/**
@@ -162,27 +189,49 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 		}
 
 		wp_enqueue_style(
+			'lk-light-product',
+			HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-light-product.css',
+			array( HELLO_ELEMENTOR_CHILD_VAZIRMATN_HANDLE ),
+			file_exists( HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-light-product.css' )
+				? (string) filemtime( HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-light-product.css' )
+				: HELLO_ELEMENTOR_CHILD_VERSION
+		);
+
+		wp_enqueue_style(
 			'lk-spl-css',
 			HELLO_ELEMENTOR_CHILD_URI . 'assets/css/single-product-light.css',
-			array( HELLO_ELEMENTOR_CHILD_VAZIRMATN_HANDLE ),
+			array( 'lk-light-product' ),
 			(string) filemtime( HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/single-product-light.css' )
 		);
 
-		wp_enqueue_script(
-			'lk-elementor-menu-cart',
-			HELLO_ELEMENTOR_CHILD_URI . 'assets/js/lk-elementor-menu-cart.js',
-			array(),
-			(string) filemtime( HELLO_ELEMENTOR_CHILD_PATH . 'assets/js/lk-elementor-menu-cart.js' ),
-			true
-		);
+		$intro_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/product-intro-typography.css';
+		if ( file_exists( $intro_css ) ) {
+			wp_enqueue_style(
+				'hello-elementor-child-product-intro-typography',
+				HELLO_ELEMENTOR_CHILD_URI . 'assets/css/product-intro-typography.css',
+				array( 'lk-spl-css' ),
+				(string) filemtime( $intro_css )
+			);
+		}
 
 		wp_enqueue_script(
 			'lk-spl-js',
 			HELLO_ELEMENTOR_CHILD_URI . 'assets/js/single-product-light.js',
-			array( 'lk-elementor-menu-cart' ),
+			array(),
 			(string) filemtime( HELLO_ELEMENTOR_CHILD_PATH . 'assets/js/single-product-light.js' ),
 			true
 		);
+
+		$chrome_js = HELLO_ELEMENTOR_CHILD_PATH . 'assets/js/light-archive-chrome.js';
+		if ( file_exists( $chrome_js ) ) {
+			wp_enqueue_script(
+				'lk-light-archive-chrome',
+				HELLO_ELEMENTOR_CHILD_URI . 'assets/js/light-archive-chrome.js',
+				array(),
+				(string) filemtime( $chrome_js ),
+				true
+			);
+		}
 
 		wp_enqueue_script( 'jquery' );
 		wp_enqueue_script( 'wc-add-to-cart' );
@@ -308,6 +357,7 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 			return;
 		}
 
+		self::unhook_elementor_chrome();
 		status_header( 200 );
 		include $custom;
 		exit;
@@ -332,22 +382,117 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 	}
 
 	/**
-	 * Stop Elementor Theme Builder from owning the product "single" location only.
-	 * Header / footer locations stay active for the hybrid chrome.
-	 *
 	 * @param bool   $need_override Whether Elementor wants override.
 	 * @param string $location      Location name.
 	 */
-	public static function disable_elementor_single_override( bool $need_override, string $location ): bool {
+	public static function disable_elementor_locations( bool $need_override, string $location ): bool {
 		if ( ! self::is_enabled() ) {
 			return $need_override;
 		}
 
-		if ( in_array( $location, array( 'single', 'single-product' ), true ) ) {
+		if ( in_array( $location, array( 'header', 'footer', 'single', 'single-product', 'archive', 'popup' ), true ) ) {
 			return false;
 		}
 
 		return $need_override;
+	}
+
+	/**
+	 * @param mixed $templates Location templates.
+	 * @param mixed $arg       Location slug or args.
+	 * @return mixed
+	 */
+	public static function remove_popup_templates( $templates, $arg = null ) {
+		if ( ! self::is_enabled() ) {
+			return $templates;
+		}
+		$location = '';
+		if ( is_string( $arg ) ) {
+			$location = $arg;
+		} elseif ( is_array( $arg ) && isset( $arg['location'] ) ) {
+			$location = (string) $arg['location'];
+		}
+		if ( 'popup' === $location ) {
+			return array();
+		}
+		return $templates;
+	}
+
+	/**
+	 * @param mixed $templates Templates.
+	 * @return mixed
+	 */
+	public static function deny_popup_templates( $templates ) {
+		return self::is_enabled() ? array() : $templates;
+	}
+
+	/**
+	 * @param mixed $data    Builder data.
+	 * @param mixed $post_id Document id.
+	 * @return mixed
+	 */
+	public static function empty_popup_builder_data( $data, $post_id = 0 ) {
+		if ( ! self::is_enabled() ) {
+			return $data;
+		}
+		if ( 17307 === (int) $post_id ) {
+			return array();
+		}
+		return $data;
+	}
+
+	/**
+	 * Unhook Elementor Theme Builder chrome.
+	 */
+	public static function unhook_elementor_chrome(): void {
+		if ( ! self::is_enabled() ) {
+			return;
+		}
+		foreach ( array(
+			'elementor/theme/before_do_header',
+			'elementor/theme/after_do_header',
+			'elementor/theme/before_do_footer',
+			'elementor/theme/after_do_footer',
+			'elementor/theme/before_do_single',
+			'elementor/theme/after_do_single',
+			'elementor/theme/before_do_popup',
+			'elementor/theme/after_do_popup',
+		) as $hook ) {
+			remove_all_actions( $hook );
+		}
+		if ( ! class_exists( '\ElementorPro\Modules\ThemeBuilder\Module' ) ) {
+			return;
+		}
+		$module = \ElementorPro\Modules\ThemeBuilder\Module::instance();
+		if ( ! $module || ! method_exists( $module, 'get_locations_manager' ) ) {
+			return;
+		}
+		$manager = $module->get_locations_manager();
+		if ( ! $manager ) {
+			return;
+		}
+		foreach ( array( 'wp_body_open', 'get_header', 'get_footer', 'wp_footer', 'wp_head' ) as $hook ) {
+			remove_action( $hook, array( $manager, 'do_location' ) );
+			remove_action( $hook, array( $manager, 'do_header' ) );
+			remove_action( $hook, array( $manager, 'do_footer' ) );
+			remove_action( $hook, array( $manager, 'print_locations' ) );
+		}
+	}
+
+	/**
+	 * Unhook Elementor Pro popup print on wp_footer.
+	 */
+	public static function unhook_elementor_popups(): void {
+		self::unhook_elementor_chrome();
+	}
+
+	/**
+	 * @deprecated Kept for backwards compatibility.
+	 * @param bool   $need_override Whether Elementor wants override.
+	 * @param string $location      Location name.
+	 */
+	public static function disable_elementor_single_override( bool $need_override, string $location ): bool {
+		return self::disable_elementor_locations( $need_override, $location );
 	}
 
 	/**
@@ -413,7 +558,7 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 	}
 
 	/**
-	 * Strip Jet Woo Builder assets only — keep Elementor for real header/footer.
+	 * Strip Elementor / Jet product-builder assets on light single product pages.
 	 */
 	public static function dequeue_conflicting_assets(): void {
 		if ( ! self::is_enabled() ) {
@@ -421,6 +566,12 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 		}
 
 		$style_handles = array(
+			'elementor-frontend',
+			'elementor-icons',
+			'elementor-animations',
+			'e-animations',
+			'hello-elementor-theme-style',
+			'hello-elementor',
 			'jet-woo-builder',
 			'jet-woo-builder-frontend-font',
 			'woocommerce-layout',
@@ -428,6 +579,9 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 		);
 
 		$script_handles = array(
+			'elementor-frontend',
+			'elementor-pro-frontend',
+			'elementor-pro',
 			'jet-woo-builder',
 		);
 
@@ -445,54 +599,35 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 
 		if ( $wp_styles instanceof WP_Styles ) {
 			foreach ( (array) $wp_styles->queue as $handle ) {
-				if ( self::is_conflicting_style_handle( $handle ) ) {
+				$h = strtolower( (string) $handle );
+				if ( str_starts_with( $h, 'lk-spl-' ) || 'woocommerce-general' === $h ) {
+					continue;
+				}
+				if (
+					false !== strpos( $h, 'elementor' )
+					|| false !== strpos( $h, 'jet-woo' )
+					|| false !== strpos( $h, 'menu-cart' )
+				) {
 					wp_dequeue_style( $handle );
-					wp_deregister_style( $handle );
 				}
 			}
 		}
 
 		if ( $wp_scripts instanceof WP_Scripts ) {
 			foreach ( (array) $wp_scripts->queue as $handle ) {
-				if ( self::is_conflicting_script_handle( $handle ) ) {
+				$h = strtolower( (string) $handle );
+				if ( str_starts_with( $h, 'lk-spl-' ) ) {
+					continue;
+				}
+				if (
+					false !== strpos( $h, 'elementor' )
+					|| false !== strpos( $h, 'jet-woo' )
+					|| false !== strpos( $h, 'menu-cart' )
+				) {
 					wp_dequeue_script( $handle );
-					wp_deregister_script( $handle );
 				}
 			}
 		}
-	}
-
-	/**
-	 * @param string $handle Asset handle.
-	 */
-	private static function is_conflicting_style_handle( string $handle ): bool {
-		$handle = strtolower( $handle );
-
-		if ( str_starts_with( $handle, 'lk-spl-' ) ) {
-			return false;
-		}
-
-		if ( 'woocommerce-general' === $handle ) {
-			return false;
-		}
-
-		// Only Jet Woo product-builder CSS — Elementor must stay for header/footer.
-		return str_starts_with( $handle, 'jet-woo' )
-			|| false !== strpos( $handle, 'jet-woo' );
-	}
-
-	/**
-	 * @param string $handle Asset handle.
-	 */
-	private static function is_conflicting_script_handle( string $handle ): bool {
-		$handle = strtolower( $handle );
-
-		if ( str_starts_with( $handle, 'lk-spl-' ) ) {
-			return false;
-		}
-
-		return str_starts_with( $handle, 'jet-woo' )
-			|| false !== strpos( $handle, 'jet-woo' );
 	}
 }
 

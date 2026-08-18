@@ -28,6 +28,9 @@
 	{% if article_css_url %}
 		<link rel="stylesheet" href="{{ article_css_url }}?v={{ article_css_ver }}">
 	{% endif %}
+	{% if spl_css_url %}
+		<link rel="stylesheet" href="{{ spl_css_url }}?v={{ spl_css_ver }}">
+	{% endif %}
 	{{ function('wp_head') }}
 	<style id="lk-lpt-chrome-fix">
 		html:has(body.lk-light-product){overflow-x:clip;transform:none!important}
