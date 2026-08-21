@@ -1,0 +1,27 @@
+{% extends "woo/base-light-product.twig" %}
+
+{% block content %}
+{% if checkout_page %}
+<div class="lk-lpt lk-lpt-container lk-checkout-page">
+	{% if checkout_page.breadcrumb_html %}
+		<nav class="lk-lpt-breadcrumb" aria-label="breadcrumb">
+			{{ checkout_page.breadcrumb_html|raw }}
+		</nav>
+	{% endif %}
+
+	<h1 class="lk-checkout-page__title">{{ checkout_page.title }}</h1>
+
+	{% if checkout_page.notices_html %}
+		{{ checkout_page.notices_html|raw }}
+	{% else %}
+		<div class="woocommerce-notices-wrapper lk-checkout-notices"></div>
+	{% endif %}
+
+	<div class="lk-checkout-panel">
+		<div class="woocommerce">
+			{{ checkout_page.content_html|raw }}
+		</div>
+	</div>
+</div>
+{% endif %}
+{% endblock %}

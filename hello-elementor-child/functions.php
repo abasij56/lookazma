@@ -113,6 +113,12 @@ function hello_elementor_child_enqueue_styles() {
 		return;
 	}
 
+	if ( class_exists( 'Hello_Elementor_Child_Light_Checkout_Template' )
+		&& Hello_Elementor_Child_Light_Checkout_Template::is_enabled()
+	) {
+		return;
+	}
+
 	if ( class_exists( 'Hello_Elementor_Child_Light_Article_Template' )
 		&& Hello_Elementor_Child_Light_Article_Template::is_enabled()
 	) {
