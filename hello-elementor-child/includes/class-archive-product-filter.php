@@ -792,6 +792,9 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 					) || (
 						class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
 						&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled()
+					) || (
+						class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' )
+						&& Hello_Elementor_Child_Custom_Tag_Archive::is_enabled()
 					),
 				'perPage'        => (
 					class_exists( 'Hello_Elementor_Child_Light_Product_Template' )
@@ -803,11 +806,16 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 						&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled()
 					)
 						? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
-						: ( ( $use_shop_ui && 'product_cat' !== $taxonomy )
-							? 12
-							: ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
-								? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
-								: 12 ) ) ),
+						: ( (
+							class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' )
+							&& Hello_Elementor_Child_Custom_Tag_Archive::is_enabled()
+						)
+							? Hello_Elementor_Child_Custom_Tag_Archive::get_per_page()
+							: ( ( $use_shop_ui && 'product_cat' !== $taxonomy )
+								? 12
+								: ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+									? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
+									: 12 ) ) ) ),
 				'i18n'           => array(
 					'empty'      => __( 'محصولی با این فیلترها پیدا نشد.', 'hello-elementor-child' ),
 					'error'      => __( 'خطا در فیلتر محصولات.', 'hello-elementor-child' ),
@@ -964,6 +972,11 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		}
 		if ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
 			&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled()
+		) {
+			return;
+		}
+		if ( class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' )
+			&& Hello_Elementor_Child_Custom_Tag_Archive::is_enabled()
 		) {
 			return;
 		}
@@ -1195,6 +1208,11 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled( $term_id > 0 ? $term_id : null )
 		) {
 			$per_page = Hello_Elementor_Child_Custom_Category_Archive::get_per_page();
+		} elseif ( class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' )
+			&& 'product_tag' === $taxonomy
+			&& Hello_Elementor_Child_Custom_Tag_Archive::is_enabled( $term_id > 0 ? $term_id : null )
+		) {
+			$per_page = Hello_Elementor_Child_Custom_Tag_Archive::get_per_page();
 		} elseif ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' ) ) {
 			$per_page = Hello_Elementor_Child_Custom_Category_Archive::get_per_page();
 		}
@@ -1431,11 +1449,20 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			if ( is_wp_error( $brand_link ) ) {
 				$brand_link = '';
 			}
-			$thumb_id = (int) get_term_meta( $tag->term_id, 'thumbnail_id', true );
-			if ( $thumb_id > 0 ) {
-				$url = wp_get_attachment_image_url( $thumb_id, 'medium' );
-				if ( $url ) {
+			$thumb_id = 0;
+			if ( class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' ) ) {
+				$thumb_id = Hello_Elementor_Child_Custom_Tag_Archive::resolve_thumbnail_id( (int) $tag->term_id );
+				$url      = Hello_Elementor_Child_Custom_Tag_Archive::resolve_image_url( (int) $tag->term_id, 'medium' );
+				if ( '' !== $url ) {
 					$brand_image = $url;
+				}
+			} else {
+				$thumb_id = (int) get_term_meta( $tag->term_id, 'thumbnail_id', true );
+				if ( $thumb_id > 0 ) {
+					$url = wp_get_attachment_image_url( $thumb_id, 'medium' );
+					if ( $url ) {
+						$brand_image = $url;
+					}
 				}
 			}
 		}

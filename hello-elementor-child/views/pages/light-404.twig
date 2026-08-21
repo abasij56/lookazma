@@ -1,0 +1,40 @@
+{% extends "woo/base-light-product.twig" %}
+
+{% block content %}
+{% if error404 %}
+<section class="lk-lpt lk-lpt-container lk-404" aria-labelledby="lk-404-title">
+	<div class="lk-404__stage">
+		<div class="lk-404__visual" aria-hidden="true">
+			<svg class="lk-404__flask" viewBox="0 0 160 200" role="img">
+				<title>404</title>
+				<defs>
+					<clipPath id="lk-404-flask-clip">
+						<path d="M70 16h20v56l48 93c4 10-8 21-58 21s-62-11-58-21L70 72V16z"/>
+					</clipPath>
+				</defs>
+				<path class="lk-404__flask-body" d="M70 16h20v56l48 93c4 10-8 21-58 21s-62-11-58-21L70 72V16z"/>
+				<path class="lk-404__flask-neck" d="M70 16h20"/>
+				<g clip-path="url(#lk-404-flask-clip)">
+					<path class="lk-404__flask-liquid" d="M18 142h124v50H18z"/>
+					<circle class="lk-404__bubble lk-404__bubble--a" cx="58" cy="158" r="5"/>
+					<circle class="lk-404__bubble lk-404__bubble--b" cx="82" cy="152" r="3.5"/>
+					<circle class="lk-404__bubble lk-404__bubble--c" cx="104" cy="164" r="4"/>
+				</g>
+			</svg>
+			<p class="lk-404__code">{{ error404.code }}</p>
+			<p class="lk-404__formula">{{ error404.formula }}</p>
+		</div>
+
+		<div class="lk-404__copy">
+			<h1 class="lk-404__title" id="lk-404-title">{{ error404.headline }}</h1>
+			<p class="lk-404__lead">{{ error404.lead }}</p>
+			<div class="lk-404__actions">
+				<a class="lk-404__btn lk-404__btn--primary" href="{{ error404.home_url }}">{{ error404.home_label }}</a>
+				<a class="lk-404__btn lk-404__btn--ghost" href="{{ error404.shop_url }}">{{ error404.shop_label }}</a>
+			</div>
+			<p class="lk-404__hint">{{ error404.hint }}</p>
+		</div>
+	</div>
+</section>
+{% endif %}
+{% endblock %}

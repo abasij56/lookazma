@@ -265,6 +265,7 @@ body.lk-light-homepage .lk-categories {
 	background: #dcedee;
 	border-radius: 24px;
 	padding-block: 0.85rem;
+	padding-inline: 0.35rem;
 	min-width: 0;
 }
 
@@ -273,36 +274,15 @@ body.lk-light-homepage .lk-categories {
 	width: 100%;
 	max-width: 100%;
 	min-width: 0;
-	overflow-x: auto;
-	overflow-y: hidden;
-	-webkit-overflow-scrolling: touch;
-	overscroll-behavior-x: contain;
-	touch-action: none;
-	cursor: grab;
-	user-select: none;
-	scrollbar-width: none;
-	direction: ltr;
-}
-
-.lk-categories__viewport::-webkit-scrollbar {
-	display: none;
-}
-
-.lk-categories__viewport.is-dragging {
-	cursor: grabbing;
-}
-
-.lk-categories__viewport.is-dragging .lk-category {
-	pointer-events: none;
+	overflow: visible;
 }
 
 .lk-categories__track {
-	display: flex;
-	flex-flow: row nowrap;
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
 	align-items: stretch;
-	gap: 0.85rem;
-	width: max-content;
-	padding-inline: 0.15rem;
+	gap: 0.75rem;
+	width: 100%;
 	direction: rtl;
 }
 
@@ -310,14 +290,12 @@ body.lk-light-homepage .lk-categories {
 	position: relative;
 	overflow: hidden;
 	display: flex;
-	flex: 0 0 16rem;
-	width: 16rem;
-	max-width: none;
-	flex-shrink: 0;
+	width: 100%;
+	min-width: 0;
 	align-items: end;
-	min-height: 168px;
-	padding: 1rem;
-	border-radius: 24px;
+	min-height: 148px;
+	padding: 0.85rem;
+	border-radius: 20px;
 	background:
 		linear-gradient(180deg, rgba(0, 31, 63, 0.12), rgba(0, 31, 63, 0.64)),
 		var(--lk-bg-image) center / cover no-repeat;
@@ -333,16 +311,18 @@ body.lk-light-homepage .lk-categories {
 
 .lk-category__body strong {
 	display: block;
-	font-size: 1.02rem;
-	margin-bottom: 0.2rem;
+	font-size: 0.95rem;
+	margin-bottom: 0.15rem;
 	color: rgba(255, 255, 255, 0.95);
 	font-weight: 700;
+	line-height: 1.35;
 }
 
 .lk-category__body span {
 	display: block;
-	font-size: 0.84rem;
+	font-size: 0.78rem;
 	color: rgba(255, 255, 255, 0.85);
+	line-height: 1.35;
 }
 
 .lk-products-wrap {
@@ -562,6 +542,10 @@ body.lk-light-homepage .lk-categories {
 		grid-template-columns: 1fr;
 	}
 
+	.lk-categories__track {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+
 	.lk-product-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
@@ -579,6 +563,10 @@ body.lk-light-homepage .lk-categories {
 @media (max-width: 720px) {
 	.lk-brand-strip__track {
 		grid-template-columns: 1fr 1fr;
+	}
+
+	.lk-categories__track {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.lk-product-grid,

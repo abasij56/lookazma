@@ -28,7 +28,10 @@ $context['html_language_attributes'] = trim( ob_get_clean() );
 $context['body_class']               = implode(
 	' ',
 	Hello_Elementor_Child_Light_Checkout_Template::sanitize_body_classes(
-		get_body_class( 'lk-light-product lk-light-checkout lz-chrome' )
+		get_body_class(
+			'lk-light-product lk-light-checkout lz-chrome'
+			. ( Hello_Elementor_Child_Light_Checkout_Template::is_thankyou() ? ' lk-light-thankyou woocommerce-order-received' : '' )
+		)
 	)
 );
 
@@ -42,6 +45,8 @@ $context['checkout_page_css_ver'] = file_exists( $checkout_css ) ? (string) file
 
 $context['checkout_page'] = Hello_Elementor_Child_Light_Checkout_Template::get_page_content();
 
-echo '<!-- LK-LIGHT-CHECKOUT-TEMPLATE-ACTIVE -->' . "\n";
+echo '<!-- LK-LIGHT-CHECKOUT-TEMPLATE-ACTIVE'
+	. ( Hello_Elementor_Child_Light_Checkout_Template::is_thankyou() ? ' thankyou' : '' )
+	. ' -->' . "\n";
 
 \Timber\Timber::render( 'pages/light-checkout.twig', $context );

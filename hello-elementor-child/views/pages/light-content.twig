@@ -1,0 +1,151 @@
+{% extends "woo/base-light-product.twig" %}
+
+{% block content %}
+{% if content_page %}
+<div class="lk-lpt lk-content-page{% if content_page.layout == 'shipping' %} lk-content-page--shipping{% endif %}">
+	{% if content_page.breadcrumb_html %}
+		<nav class="lk-lpt lk-lpt-container lk-lpt-breadcrumb" aria-label="breadcrumb">
+			{{ content_page.breadcrumb_html|raw }}
+		</nav>
+	{% endif %}
+
+	{% if content_page.layout == 'shipping' %}
+		<section
+			class="lk-ship-hero"
+			{% if content_page.hero_image %}style="--lk-ship-hero-image: url('{{ content_page.hero_image }}');"{% endif %}
+			aria-labelledby="lk-ship-title"
+		>
+			<h1 class="lk-ship-hero__title" id="lk-ship-title">{{ content_page.title }}</h1>
+		</section>
+
+		<div class="lk-ship-wrap">
+			{% if content_page.cost %}
+				<section class="lk-ship-split lk-ship-cost" aria-labelledby="lk-ship-cost-title">
+					<div class="lk-ship-split__copy">
+						<h2 class="lk-ship-split__title" id="lk-ship-cost-title">{{ content_page.cost.title }}</h2>
+						{% for paragraph in content_page.cost.paragraphs %}
+							<p>{{ paragraph }}</p>
+						{% endfor %}
+					</div>
+					{% if content_page.cost.image %}
+						<figure class="lk-ship-split__media">
+							<img src="{{ content_page.cost.image }}" alt="{{ content_page.cost.image_alt }}" width="480" height="360" loading="eager" decoding="async">
+						</figure>
+					{% endif %}
+				</section>
+			{% endif %}
+
+			{% if content_page.howto %}
+				<section class="lk-ship-howto" aria-labelledby="lk-ship-howto-title">
+					<h2 class="lk-ship-split__title" id="lk-ship-howto-title">{{ content_page.howto.title }}</h2>
+					{% for paragraph in content_page.howto.paragraphs %}
+						<p>{{ paragraph }}</p>
+					{% endfor %}
+				</section>
+			{% endif %}
+
+			{% if content_page.methods %}
+				<div class="lk-ship-methods">
+					{% for method in content_page.methods %}
+						<section class="lk-ship-split lk-ship-method">
+							<div class="lk-ship-split__copy">
+								<h3 class="lk-ship-split__subtitle">{{ method.title }}</h3>
+								<p>{{ method.text }}</p>
+							</div>
+							{% if method.image %}
+								<figure class="lk-ship-split__media">
+									<img src="{{ method.image }}" alt="{{ method.image_alt }}" width="420" height="280" loading="lazy" decoding="async">
+								</figure>
+							{% endif %}
+						</section>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if content_page.details %}
+				<section class="lk-ship-details">
+					{% for block in content_page.details.blocks %}
+						<div class="lk-ship-details__block">
+							<h3 class="lk-ship-split__subtitle">{{ block.title }}</h3>
+							{% for paragraph in block.paragraphs %}
+								<p>{{ paragraph }}</p>
+							{% endfor %}
+						</div>
+					{% endfor %}
+
+					{% if content_page.details.image %}
+						<figure class="lk-ship-details__media">
+							<img src="{{ content_page.details.image }}" alt="{{ content_page.details.image_alt }}" width="700" height="400" loading="lazy" decoding="async">
+						</figure>
+					{% endif %}
+
+					{% if content_page.details.after %}
+						{% for block in content_page.details.after %}
+							<div class="lk-ship-details__block">
+								<h3 class="lk-ship-split__subtitle">{{ block.title }}</h3>
+								{% for paragraph in block.paragraphs %}
+									<p>{{ paragraph }}</p>
+								{% endfor %}
+							</div>
+						{% endfor %}
+					{% endif %}
+				</section>
+			{% endif %}
+		</div>
+
+		{% if content_page.bestsellers and content_page.bestsellers.cards_html %}
+			<section class="lk-ship-bestsellers" aria-labelledby="lk-ship-best-title">
+				<h2 class="lk-ship-bestsellers__title" id="lk-ship-best-title">{{ content_page.bestsellers.title }}</h2>
+				<div class="lk-ship-bestsellers__grid lk-product-grid">
+					{{ content_page.bestsellers.cards_html|raw }}
+				</div>
+			</section>
+		{% endif %}
+
+	{% else %}
+		<div class="lk-lpt-container">
+			<article class="lk-content-panel">
+				<header class="lk-content-panel__head">
+					<h1 class="lk-content-panel__title">{{ content_page.title }}</h1>
+					{% if content_page.intro %}
+						<p class="lk-content-panel__intro">{{ content_page.intro }}</p>
+					{% endif %}
+				</header>
+
+				{% if content_page.sections %}
+					<div class="lk-content-sections">
+						{% for section in content_page.sections %}
+							<section class="lk-content-section">
+								{% if section.level == 'h3' %}
+									<h3 class="lk-content-section__title">{{ section.heading }}</h3>
+								{% else %}
+									<h2 class="lk-content-section__title">{{ section.heading }}</h2>
+								{% endif %}
+
+								{% if section.paragraphs %}
+									{% for paragraph in section.paragraphs %}
+										<p class="lk-content-section__text">{{ paragraph }}</p>
+									{% endfor %}
+								{% endif %}
+
+								{% if section.items %}
+									<ul class="lk-content-section__list">
+										{% for item in section.items %}
+											<li>{{ item }}</li>
+										{% endfor %}
+									</ul>
+								{% endif %}
+							</section>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if content_page.footer_note %}
+					<p class="lk-content-panel__note">{{ content_page.footer_note }}</p>
+				{% endif %}
+			</article>
+		</div>
+	{% endif %}
+</div>
+{% endif %}
+{% endblock %}

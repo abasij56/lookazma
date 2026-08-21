@@ -282,13 +282,20 @@ final class Hello_Elementor_Child_Lookazma_Search {
 	}
 
 	/**
-	 * WooCommerce / WP term thumbnail URL.
+	 * WooCommerce / WP / ACF term thumbnail URL.
 	 *
 	 * @param int $term_id Term ID.
 	 */
 	private static function term_thumbnail_url( int $term_id ): string {
 		if ( $term_id <= 0 ) {
 			return '';
+		}
+
+		if ( class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' ) ) {
+			$url = Hello_Elementor_Child_Custom_Tag_Archive::resolve_image_url( $term_id, 'thumbnail' );
+			if ( '' !== $url ) {
+				return $url;
+			}
 		}
 
 		$thumb_id = (int) get_term_meta( $term_id, 'thumbnail_id', true );

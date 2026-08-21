@@ -91,6 +91,7 @@
 			body.set('action', cfg.action || 'lk_article_load_posts');
 			body.set('nonce', cfg.nonce || '');
 			body.set('page_id', String(cfg.pageId || ''));
+			body.set('cat_id', String(cfg.catId || ''));
 			body.set('paged', String(paged));
 
 			fetch(cfg.ajaxUrl, {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Opt-in light single product template (per product checkbox).
+ * Global light single product template (opt-out per product).
  *
  * @package HelloElementorChild
  */
@@ -10,20 +10,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Switches selected products to a child-theme template and strips Elementor assets.
+ * Switches all products to a child-theme template and strips Elementor assets
+ * unless a product explicitly opts out.
  */
 final class Hello_Elementor_Child_Custom_Single_Product {
 
 	public const META_KEY = '_lk_use_light_single';
 
+	private const MIGRATE_OPTION = 'lk_light_single_global_v1';
+
 	/**
 	 * Register hooks.
 	 */
 	public static function init(): void {
+		add_action( 'init', array( __CLASS__, 'migrate_legacy_opt_in_meta' ), 5 );
+
 		add_action( 'woocommerce_product_options_general_product_data', array( __CLASS__, 'render_checkbox' ) );
 		add_action( 'woocommerce_process_product_meta', array( __CLASS__, 'save_checkbox' ) );
 
-		// Temporary: show light-template flag in products list.
+		// Admin: light-template flag in products list.
 		add_filter( 'manage_edit-product_columns', array( __CLASS__, 'add_products_list_column' ), 20 );
 		add_action( 'manage_product_posts_custom_column', array( __CLASS__, 'render_products_list_column' ), 10, 2 );
 		add_action( 'restrict_manage_posts', array( __CLASS__, 'render_products_list_filter' ) );
@@ -51,7 +56,7 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 	}
 
 	/**
-	 * Temporary admin column: light template enabled?
+	 * Admin column: light template enabled?
 	 *
 	 * @param array<string, string> $columns Existing columns.
 	 * @return array<string, string>
@@ -62,7 +67,7 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 	}
 
 	/**
-	 * Render temporary admin column value.
+	 * Render admin column value.
 	 *
 	 * @param string $column  Column key.
 	 * @param int    $post_id Product ID.
@@ -72,15 +77,15 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 			return;
 		}
 
-		if ( 'yes' === get_post_meta( $post_id, self::META_KEY, true ) ) {
-			echo '<span style="color:#007017;font-weight:700;" title="تمپلیت سبک فعال">✓</span>';
+		if ( self::is_enabled( $post_id ) ) {
+			echo '<span style="color:#007017;font-weight:700;" title="تمپلیت سبک (پیش‌فرض)">✓</span>';
 		} else {
-			echo '<span style="color:#bbb;">—</span>';
+			echo '<span style="color:#b32d2e;font-weight:700;" title="خروج از تمپلیت سبک">✕</span>';
 		}
 	}
 
 	/**
-	 * Temporary dropdown filter on products list.
+	 * Dropdown filter on products list.
 	 */
 	public static function render_products_list_filter(): void {
 		global $typenow;
@@ -94,13 +99,13 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 		<select name="lk_light_single">
 			<option value=""><?php esc_html_e( 'تمپلیت سبک: همه', 'hello-elementor-child' ); ?></option>
 			<option value="yes" <?php selected( $current, 'yes' ); ?>><?php esc_html_e( 'فقط سبک (✓)', 'hello-elementor-child' ); ?></option>
-			<option value="no" <?php selected( $current, 'no' ); ?>><?php esc_html_e( 'بدون سبک', 'hello-elementor-child' ); ?></option>
+			<option value="no" <?php selected( $current, 'no' ); ?>><?php esc_html_e( 'فقط خارج‌شده (✕)', 'hello-elementor-child' ); ?></option>
 		</select>
 		<?php
 	}
 
 	/**
-	 * Apply temporary products-list filter.
+	 * Apply products-list filter.
 	 *
 	 * @param \WP_Query $query Query.
 	 */
@@ -121,12 +126,14 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 
 		$meta_query = (array) $query->get( 'meta_query' );
 
-		if ( 'yes' === $value ) {
+		if ( 'no' === $value ) {
+			// Explicit opt-out only.
 			$meta_query[] = array(
 				'key'   => self::META_KEY,
-				'value' => 'yes',
+				'value' => 'no',
 			);
 		} else {
+			// Default light: missing meta, empty, or yes — anything except no.
 			$meta_query[] = array(
 				'relation' => 'OR',
 				array(
@@ -135,7 +142,7 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 				),
 				array(
 					'key'     => self::META_KEY,
-					'value'   => 'yes',
+					'value'   => 'no',
 					'compare' => '!=',
 				),
 			);
@@ -295,11 +302,16 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 
 	/**
 	 * Whether the current request (or given product) uses the light template.
+	 * Default is on for every product; set meta to `no` to opt out.
 	 *
 	 * @param int|null $product_id Optional product ID.
 	 */
 	public static function is_enabled( ?int $product_id = null ): bool {
 		if ( null === $product_id ) {
+			// Never hijack archives/search/home — only real single product requests.
+			if ( ! function_exists( 'is_product' ) || ! is_product() ) {
+				return false;
+			}
 			$product_id = self::get_current_product_id();
 		}
 
@@ -307,19 +319,51 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 			return false;
 		}
 
-		return 'yes' === get_post_meta( $product_id, self::META_KEY, true );
+		return 'no' !== get_post_meta( $product_id, self::META_KEY, true );
 	}
 
 	/**
-	 * Checkbox in WooCommerce General product tab.
+	 * One-time: clear legacy `no` values from the old opt-in era.
+	 * Those meant “not opted in”, not “keep Elementor”.
+	 */
+	public static function migrate_legacy_opt_in_meta(): void {
+		if ( get_option( self::MIGRATE_OPTION ) ) {
+			return;
+		}
+
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s",
+				self::META_KEY,
+				'no'
+			)
+		);
+
+		update_option( self::MIGRATE_OPTION, '1', true );
+	}
+
+	/**
+	 * Checkbox in WooCommerce General product tab (checked = light; uncheck to opt out).
 	 */
 	public static function render_checkbox(): void {
+		global $post;
+
+		$product_id = $post instanceof \WP_Post ? (int) $post->ID : 0;
+		$meta       = $product_id > 0 ? (string) get_post_meta( $product_id, self::META_KEY, true ) : '';
+		// Empty / yes / anything except no → light (global default).
+		$value = ( 'no' === $meta ) ? 'no' : 'yes';
+
 		echo '<div class="options_group">';
 		woocommerce_wp_checkbox(
 			array(
 				'id'          => self::META_KEY,
+				'value'       => $value,
+				'cbvalue'     => 'yes',
 				'label'       => __( 'تمپلیت سبک (بدون Elementor)', 'hello-elementor-child' ),
-				'description' => __( 'اگر فعال باشد، صفحهٔ این محصول با تمپلیت Timber در child theme نمایش داده می‌شود و CSS/JS المنتور لود نمی‌شود.', 'hello-elementor-child' ),
+				'description' => __( 'به‌صورت پیش‌فرض برای همهٔ محصولات فعال است. برای برگشت به تمپلیت Elementor، تیک را بردارید.', 'hello-elementor-child' ),
 				'desc_tip'    => true,
 			)
 		);
@@ -327,13 +371,18 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 	}
 
 	/**
-	 * Persist checkbox value.
+	 * Persist checkbox: checked → default light (clear meta); unchecked → opt out (`no`).
 	 *
 	 * @param int $product_id Product ID.
 	 */
 	public static function save_checkbox( int $product_id ): void {
-		$value = isset( $_POST[ self::META_KEY ] ) ? 'yes' : 'no'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		update_post_meta( $product_id, self::META_KEY, $value );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST[ self::META_KEY ] ) ) {
+			delete_post_meta( $product_id, self::META_KEY );
+			return;
+		}
+
+		update_post_meta( $product_id, self::META_KEY, 'no' );
 	}
 
 	/**

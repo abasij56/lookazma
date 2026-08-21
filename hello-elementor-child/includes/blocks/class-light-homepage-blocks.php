@@ -133,7 +133,7 @@ final class Hello_Elementor_Child_Light_Homepage_Blocks {
 					'title'       => array( 'type' => 'string', 'default' => 'برترین برندها' ),
 					'description' => array( 'type' => 'string', 'default' => 'محصولات برترین تولید کنندگان مواد شیمیایی یکجا' ),
 					'ctaText'     => array( 'type' => 'string', 'default' => 'مشاهده همه برندها' ),
-					'ctaUrl'      => array( 'type' => 'string', 'default' => '/shop/' ),
+					'ctaUrl'      => array( 'type' => 'string', 'default' => '/فروشگاه/' ),
 					'brands'      => array(
 						'type'    => 'array',
 						'default' => self::default_brands(),
@@ -163,7 +163,7 @@ final class Hello_Elementor_Child_Light_Homepage_Blocks {
 					'title'       => array( 'type' => 'string', 'default' => 'محصولات مواد شیمیایی' ),
 					'description' => array( 'type' => 'string', 'default' => '' ),
 					'ctaText'     => array( 'type' => 'string', 'default' => 'فروشگاه لوک آزما' ),
-					'ctaUrl'      => array( 'type' => 'string', 'default' => '/shop/' ),
+					'ctaUrl'      => array( 'type' => 'string', 'default' => '/فروشگاه/' ),
 					'productIds'  => array(
 						'type'    => 'array',
 						'default' => array(),
@@ -337,9 +337,9 @@ HTML;
 			array( 'image' => 'https://lookazma.com/wp-content/uploads/2024/07/Merck_Logo.webp', 'alt' => 'مرک', 'link' => '/product-tag/merck/' ),
 			array( 'image' => 'https://lookazma.com/wp-content/uploads/2023/12/Untitled.png', 'alt' => 'ویستاکم', 'link' => '/product-tag/vistachem/' ),
 			array( 'image' => 'https://lookazma.com/wp-content/uploads/2024/07/Tat-chem-Logo-Exp.png', 'alt' => 'امرتات', 'link' => '/product-tag/ameretat/' ),
-			array( 'image' => 'https://lookazma.com/wp-content/uploads/2025/11/armansina-logo-1.png-e1765191395192.webp', 'alt' => 'آرمان سینا', 'link' => '' ),
+			array( 'image' => 'https://lookazma.com/wp-content/uploads/2025/11/armansina-logo-1.png-e1765191395192.webp', 'alt' => 'آرمان سینا', 'link' => '/product-tag/شرکت-آرمان-سینا/' ),
 			array( 'image' => 'https://lookazma.com/wp-content/uploads/2025/12/logo.png', 'alt' => 'سینا', 'link' => '/product-tag/sina/' ),
-			array( 'image' => 'https://lookazma.com/wp-content/uploads/2026/05/قطران-شیمی-تجهیز-23506-e1783410412564.png', 'alt' => 'قطران شیمی', 'link' => '' ),
+			array( 'image' => 'https://lookazma.com/wp-content/uploads/2026/05/قطران-شیمی-تجهیز-23506-e1783410412564.png', 'alt' => 'قطران شیمی', 'link' => '/product-tag/قطران-شیمی/' ),
 		);
 	}
 
@@ -368,23 +368,116 @@ HTML;
 				'label' => 'ویژه فروشگاه',
 				'title' => 'سفارش مواد شیمیایی برای آزمایشگاه‌های تحقیقاتی',
 				'text'  => 'ارائه مسیر ورود سریع به محصولات تخصصی.',
-				'link'  => '/shop/',
+				'link'  => '/product-tag/dr-mojallai/',
 			),
 			array(
 				'image' => 'https://lookazma.com/wp-content/uploads/2025/12/banner-013.webp',
 				'label' => 'دسته‌بندی‌ها',
 				'title' => 'مرتب‌سازی بهتر برای خرید بر اساس نوع ماده',
 				'text'  => 'نمایش شفاف گروه‌ها برای تجربه‌ای حرفه‌ای.',
-				'link'  => '/product-category/chemicals/',
+				'link'  => '/product-tag/merck/',
 			),
 			array(
 				'image' => 'https://lookazma.com/wp-content/uploads/2025/12/banner-043.webp',
 				'label' => 'مجله لوک آزما',
 				'title' => 'ترکیب فروش و محتوای علمی',
 				'text'  => 'مقالات آموزشی برای تصمیم‌گیری بهتر.',
-				'link'  => '/article/',
+				'link'  => '/product-tag/neutron/',
 			),
 		);
+	}
+
+	/**
+	 * Map legacy /shop/ paths to the Persian shop slug.
+	 *
+	 * @param string $url URL or path.
+	 */
+	private static function prefer_shop_path( string $url ): string {
+		$url = trim( $url );
+		if ( '' === $url ) {
+			return '';
+		}
+		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+		if ( '' === $path ) {
+			$path = $url;
+		}
+		$path = untrailingslashit( $path );
+		if ( '/shop' === $path || 'shop' === ltrim( $path, '/' ) ) {
+			return '/فروشگاه/';
+		}
+		return $url;
+	}
+
+	/**
+	 * Merge saved brands with defaults so missing brand links are filled.
+	 *
+	 * @param array<string, mixed> $attributes Block attributes.
+	 * @return array<int, array<string, string>>
+	 */
+	private static function resolve_brands( array $attributes ): array {
+		$saved = isset( $attributes['brands'] ) && is_array( $attributes['brands'] ) ? $attributes['brands'] : array();
+		if ( empty( $saved ) ) {
+			return self::default_brands();
+		}
+
+		$defaults_by_alt = array();
+		foreach ( self::default_brands() as $brand ) {
+			if ( ! empty( $brand['alt'] ) ) {
+				$defaults_by_alt[ (string) $brand['alt'] ] = $brand;
+			}
+		}
+
+		$merged = array();
+		foreach ( $saved as $brand ) {
+			if ( ! is_array( $brand ) ) {
+				continue;
+			}
+			$alt = isset( $brand['alt'] ) ? (string) $brand['alt'] : '';
+			if ( '' !== $alt && isset( $defaults_by_alt[ $alt ] ) ) {
+				$default = $defaults_by_alt[ $alt ];
+				$link    = isset( $brand['link'] ) ? trim( (string) $brand['link'] ) : '';
+				if ( '' === $link && ! empty( $default['link'] ) ) {
+					$brand['link'] = $default['link'];
+				}
+			}
+			$merged[] = $brand;
+		}
+
+		return $merged;
+	}
+
+	/**
+	 * Prefer default banner destination links for known homepage banners.
+	 *
+	 * @param array<string, mixed> $attributes Block attributes.
+	 * @return array<int, array<string, string>>
+	 */
+	private static function resolve_banners( array $attributes ): array {
+		$saved = isset( $attributes['banners'] ) && is_array( $attributes['banners'] ) ? $attributes['banners'] : array();
+		if ( empty( $saved ) ) {
+			return self::default_banners();
+		}
+
+		$defaults_by_image = array();
+		foreach ( self::default_banners() as $banner ) {
+			if ( ! empty( $banner['image'] ) ) {
+				$defaults_by_image[ (string) $banner['image'] ] = $banner;
+			}
+		}
+
+		$merged = array();
+		foreach ( $saved as $banner ) {
+			if ( ! is_array( $banner ) ) {
+				continue;
+			}
+			$image = isset( $banner['image'] ) ? trim( (string) $banner['image'] ) : '';
+			if ( '' !== $image && isset( $defaults_by_image[ $image ] ) ) {
+				$banner['link'] = $defaults_by_image[ $image ]['link'];
+			}
+			$merged[] = $banner;
+		}
+
+		return $merged;
 	}
 
 	/**
@@ -496,8 +589,8 @@ HTML;
 		$title       = isset( $attributes['title'] ) ? (string) $attributes['title'] : '';
 		$description = isset( $attributes['description'] ) ? (string) $attributes['description'] : '';
 		$cta_text    = isset( $attributes['ctaText'] ) ? (string) $attributes['ctaText'] : '';
-		$cta_url     = isset( $attributes['ctaUrl'] ) ? self::normalize_url( (string) $attributes['ctaUrl'] ) : '';
-		$brands      = isset( $attributes['brands'] ) && is_array( $attributes['brands'] ) ? $attributes['brands'] : self::default_brands();
+		$cta_url     = isset( $attributes['ctaUrl'] ) ? self::normalize_url( self::prefer_shop_path( (string) $attributes['ctaUrl'] ) ) : '';
+		$brands      = self::resolve_brands( $attributes );
 		$brand_html  = '';
 
 		foreach ( $brands as $brand ) {
@@ -560,7 +653,7 @@ HTML;
 		}
 
 		return sprintf(
-			'<section class="lk-section lk-categories lk-homepage-block container" aria-label="%s"><div class="lk-categories__viewport" data-lk-category-scroll><div class="lk-categories__track">%s</div></div></section>',
+			'<section class="lk-section lk-categories lk-homepage-block container" aria-label="%s"><div class="lk-categories__viewport"><div class="lk-categories__track">%s</div></div></section>',
 			esc_attr__( 'دسته بندی ها', 'hello-elementor-child' ),
 			$grid_html
 		);
@@ -649,7 +742,7 @@ HTML;
 		$title       = isset( $attributes['title'] ) ? (string) $attributes['title'] : '';
 		$description = isset( $attributes['description'] ) ? (string) $attributes['description'] : '';
 		$cta_text    = isset( $attributes['ctaText'] ) ? (string) $attributes['ctaText'] : '';
-		$cta_url     = isset( $attributes['ctaUrl'] ) ? self::normalize_url( (string) $attributes['ctaUrl'] ) : '';
+		$cta_url     = isset( $attributes['ctaUrl'] ) ? self::normalize_url( self::prefer_shop_path( (string) $attributes['ctaUrl'] ) ) : '';
 		$limit       = isset( $attributes['limit'] ) ? max( 1, min( 12, (int) $attributes['limit'] ) ) : 5;
 		$product_ids = isset( $attributes['productIds'] ) && is_array( $attributes['productIds'] ) ? array_map( 'intval', $attributes['productIds'] ) : array();
 		$product_ids = array_values( array_filter( $product_ids ) );
@@ -705,7 +798,7 @@ HTML;
 	 * @return string
 	 */
 	public static function render_banner_row( array $attributes ): string {
-		$banners = isset( $attributes['banners'] ) && is_array( $attributes['banners'] ) ? $attributes['banners'] : self::default_banners();
+		$banners = self::resolve_banners( $attributes );
 		$html    = '';
 
 		foreach ( $banners as $banner ) {

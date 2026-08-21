@@ -126,7 +126,13 @@ final class Hello_Elementor_Child_Light_Checkout_Template {
 			return false;
 		}
 
+		// Plain checkout form.
 		if ( is_checkout() && ! is_wc_endpoint_url() ) {
+			return true;
+		}
+
+		// Order received (thank-you) + order-pay (same checkout page endpoints).
+		if ( is_checkout() && self::is_thankyou_or_pay_endpoint() ) {
 			return true;
 		}
 
@@ -136,6 +142,26 @@ final class Hello_Elementor_Child_Light_Checkout_Template {
 		}
 
 		return is_page( $checkout_id );
+	}
+
+	/**
+	 * Thank-you or pay-for-order endpoint on the checkout page.
+	 */
+	public static function is_thankyou_or_pay_endpoint(): bool {
+		if ( ! function_exists( 'is_wc_endpoint_url' ) ) {
+			return false;
+		}
+		return is_wc_endpoint_url( 'order-received' ) || is_wc_endpoint_url( 'order-pay' );
+	}
+
+	/**
+	 * Whether the current view is the order-received thank-you page.
+	 */
+	public static function is_thankyou(): bool {
+		if ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) {
+			return true;
+		}
+		return function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'order-received' );
 	}
 
 	/**
@@ -370,7 +396,12 @@ final class Hello_Elementor_Child_Light_Checkout_Template {
 			return $template_id;
 		}
 		$type = strtolower( (string) $type );
-		if ( '' === $type || false !== strpos( $type, 'checkout' ) ) {
+		if (
+			'' === $type
+			|| false !== strpos( $type, 'checkout' )
+			|| false !== strpos( $type, 'thankyou' )
+			|| false !== strpos( $type, 'thank' )
+		) {
 			return false;
 		}
 		return $template_id;
@@ -388,26 +419,22 @@ final class Hello_Elementor_Child_Light_Checkout_Template {
 	}
 
 	/**
-	 * Absolute path to a WooCommerce plugin checkout template, or empty.
+	 * Absolute path to a WooCommerce plugin checkout/order template, or empty.
 	 *
 	 * @param string $template_name Relative template name.
 	 */
 	private static function get_core_checkout_template_path( string $template_name ): string {
-		$names = array(
-			'checkout/form-checkout.php'  => true,
-			'checkout/form-billing.php'   => true,
-			'checkout/form-shipping.php'  => true,
-			'checkout/form-login.php'     => true,
-			'checkout/form-coupon.php'    => true,
-			'checkout/form-pay.php'       => true,
-			'checkout/payment.php'        => true,
-			'checkout/payment-method.php' => true,
-			'checkout/review-order.php'   => true,
-			'checkout/terms.php'          => true,
-			'cart/cart-empty.php'         => true,
-		);
+		if ( ! function_exists( 'WC' ) || '' === $template_name ) {
+			return '';
+		}
 
-		if ( ! isset( $names[ $template_name ] ) || ! function_exists( 'WC' ) ) {
+		// Allow all checkout + order templates (thank-you pulls order-details*).
+		$ok = (
+			0 === strpos( $template_name, 'checkout/' )
+			|| 0 === strpos( $template_name, 'order/' )
+			|| 'cart/cart-empty.php' === $template_name
+		);
+		if ( ! $ok ) {
 			return '';
 		}
 
@@ -561,6 +588,10 @@ final class Hello_Elementor_Child_Light_Checkout_Template {
 		$classes[] = 'lk-light-product';
 		$classes[] = 'lk-light-checkout';
 		$classes[] = 'lz-chrome';
+		if ( self::is_thankyou() ) {
+			$classes[] = 'lk-light-thankyou';
+			$classes[] = 'woocommerce-order-received';
+		}
 
 		return self::sanitize_body_classes( $classes );
 	}
@@ -660,13 +691,20 @@ final class Hello_Elementor_Child_Light_Checkout_Template {
 	 */
 	public static function get_page_content(): array {
 		$page_id = self::get_checkout_page_id();
-		$title   = $page_id > 0 ? get_the_title( $page_id ) : __( 'تسویه حساب', 'hello-elementor-child' );
-		if ( ! is_string( $title ) || '' === trim( $title ) ) {
-			$title = __( 'تسویه حساب', 'hello-elementor-child' );
+		$is_ty   = self::is_thankyou();
+
+		if ( $is_ty ) {
+			$title = __( 'سفارش دریافت شد', 'hello-elementor-child' );
+		} else {
+			$title = $page_id > 0 ? get_the_title( $page_id ) : __( 'تسویه حساب', 'hello-elementor-child' );
+			if ( ! is_string( $title ) || '' === trim( $title ) ) {
+				$title = __( 'تسویه حساب', 'hello-elementor-child' );
+			}
 		}
 
 		return array(
 			'title'           => $title,
+			'is_thankyou'     => $is_ty,
 			'breadcrumb_html' => function_exists( 'hello_elementor_child_get_breadcrumb_html' )
 				? hello_elementor_child_get_breadcrumb_html()
 				: '',
@@ -691,10 +729,10 @@ final class Hello_Elementor_Child_Light_Checkout_Template {
 	}
 
 	/**
-	 * Render native WooCommerce checkout (core templates only).
+	 * Render native WooCommerce checkout / thank-you / pay (core templates only).
 	 */
 	private static function get_checkout_html(): string {
-		if ( ! function_exists( 'WC' ) || ! WC()->checkout() ) {
+		if ( ! function_exists( 'WC' ) ) {
 			return '<p class="woocommerce-info">' . esc_html__( 'ووکامرس در دسترس نیست.', 'hello-elementor-child' ) . '</p>';
 		}
 
@@ -708,24 +746,33 @@ final class Hello_Elementor_Child_Light_Checkout_Template {
 
 		ob_start();
 
-		$cart = WC()->cart;
-		if ( ! $cart || $cart->is_empty() ) {
-			$empty = self::get_core_checkout_template_path( 'cart/cart-empty.php' );
-			if ( $empty ) {
-				include $empty;
+		// Thank-you / pay-for-order: let Woo shortcode resolve order + template.
+		if ( self::is_thankyou_or_pay_endpoint() ) {
+			if ( class_exists( 'WC_Shortcode_Checkout' ) ) {
+				WC_Shortcode_Checkout::output( array() );
 			} else {
-				echo '<p class="cart-empty woocommerce-info">' . esc_html__( 'سبد خرید شما خالی است.', 'hello-elementor-child' ) . '</p>';
-				if ( function_exists( 'wc_get_page_permalink' ) ) {
-					echo '<p class="return-to-shop"><a class="button wc-backward" href="' . esc_url( wc_get_page_permalink( 'shop' ) ) . '">' . esc_html__( 'بازگشت به فروشگاه', 'hello-elementor-child' ) . '</a></p>';
-				}
+				echo '<p class="woocommerce-info">' . esc_html__( 'صفحه تأیید سفارش در دسترس نیست.', 'hello-elementor-child' ) . '</p>';
 			}
 		} else {
-			$form = self::get_core_checkout_template_path( 'checkout/form-checkout.php' );
-			if ( $form ) {
-				$checkout = WC()->checkout();
-				include $form;
-			} elseif ( class_exists( 'WC_Shortcode_Checkout' ) ) {
-				WC_Shortcode_Checkout::output( array() );
+			$cart = WC()->cart;
+			if ( ! $cart || $cart->is_empty() ) {
+				$empty = self::get_core_checkout_template_path( 'cart/cart-empty.php' );
+				if ( $empty ) {
+					include $empty;
+				} else {
+					echo '<p class="cart-empty woocommerce-info">' . esc_html__( 'سبد خرید شما خالی است.', 'hello-elementor-child' ) . '</p>';
+					if ( function_exists( 'wc_get_page_permalink' ) ) {
+						echo '<p class="return-to-shop"><a class="button wc-backward" href="' . esc_url( wc_get_page_permalink( 'shop' ) ) . '">' . esc_html__( 'بازگشت به فروشگاه', 'hello-elementor-child' ) . '</a></p>';
+					}
+				}
+			} else {
+				$form = self::get_core_checkout_template_path( 'checkout/form-checkout.php' );
+				if ( $form ) {
+					$checkout = WC()->checkout();
+					include $form;
+				} elseif ( class_exists( 'WC_Shortcode_Checkout' ) ) {
+					WC_Shortcode_Checkout::output( array() );
+				}
 			}
 		}
 
@@ -733,6 +780,9 @@ final class Hello_Elementor_Child_Light_Checkout_Template {
 		self::$forcing_core_templates = false;
 
 		if ( '' === trim( wp_strip_all_tags( $html ) ) ) {
+			if ( self::is_thankyou() ) {
+				return '<p class="woocommerce-info">' . esc_html__( 'جزئیات سفارش بارگذاری نشد. لینک را بررسی کنید یا از حساب کاربری سفارش را ببینید.', 'hello-elementor-child' ) . '</p>';
+			}
 			return '<p class="woocommerce-info">' . esc_html__( 'فرم تسویه حساب بارگذاری نشد. اگر سبد خرید خالی نیست، کش را پاک کنید و دوباره تلاش کنید.', 'hello-elementor-child' ) . '</p>';
 		}
 

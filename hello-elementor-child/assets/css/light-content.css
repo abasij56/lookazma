@@ -1,0 +1,338 @@
+/**
+ * Light content template — privacy (panel) + shipping (Elementor layout).
+ */
+
+body.lk-light-content .lk-lpt-main {
+	background:
+		radial-gradient(900px 320px at 100% -5%, rgba(13, 110, 110, 0.08), transparent 58%),
+		radial-gradient(700px 280px at 0% 0%, rgba(1, 30, 62, 0.06), transparent 55%),
+		var(--lk-lpt-bg, #f5f9fb);
+}
+
+.lk-content-page {
+	padding-bottom: 2.5rem;
+	color: var(--lk-lpt-ink, #0b1f3a);
+}
+
+.lk-content-page--shipping {
+	padding-bottom: 0;
+}
+
+/* ——— Privacy panel ——— */
+.lk-content-panel {
+	position: relative;
+	isolation: isolate;
+	border-radius: var(--lk-lpt-radius, 16px);
+	border: 1px solid rgba(255, 255, 255, 0.55);
+	background:
+		linear-gradient(165deg, rgba(255, 255, 255, 0.78) 0%, rgba(245, 249, 251, 0.58) 100%);
+	box-shadow:
+		0 10px 30px rgba(11, 31, 58, 0.08),
+		inset 0 1px 0 rgba(255, 255, 255, 0.7);
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
+	padding: clamp(1.15rem, 2.4vw, 1.85rem);
+}
+
+.lk-content-panel__head {
+	margin-bottom: 1.35rem;
+	padding-bottom: 1.1rem;
+	border-bottom: 1px solid rgba(1, 30, 62, 0.08);
+}
+
+.lk-content-panel__title {
+	margin: 0 0 0.85rem;
+	font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+	font-weight: 900;
+	line-height: 1.4;
+	color: #001f3f;
+}
+
+.lk-content-panel__intro {
+	margin: 0;
+	font-size: 1.02rem;
+	font-weight: 700;
+	line-height: 1.9;
+	color: #001f3f;
+}
+
+.lk-content-sections {
+	display: flex;
+	flex-direction: column;
+	gap: 1.35rem;
+}
+
+.lk-content-section__title {
+	margin: 0 0 0.65rem;
+	font-weight: 800;
+	color: #001f3f;
+	line-height: 1.5;
+}
+
+.lk-content-section h2.lk-content-section__title {
+	font-size: 1.12rem;
+}
+
+.lk-content-section h3.lk-content-section__title {
+	font-size: 1.02rem;
+	color: #0d6e6e;
+}
+
+.lk-content-section__text {
+	margin: 0 0 0.65rem;
+	font-size: 0.96rem;
+	line-height: 1.95;
+	color: var(--lk-lpt-muted, #5b6b7c);
+}
+
+.lk-content-section__list {
+	margin: 0.35rem 0 0;
+	padding: 0 1.15rem 0 0;
+	list-style: none;
+}
+
+.lk-content-section__list li {
+	position: relative;
+	margin: 0 0 0.45rem;
+	padding-right: 1rem;
+	font-size: 0.95rem;
+	line-height: 1.9;
+	color: var(--lk-lpt-muted, #5b6b7c);
+}
+
+.lk-content-section__list li::before {
+	content: "";
+	position: absolute;
+	top: 0.75em;
+	right: 0;
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: linear-gradient(135deg, #001f3f 0%, #0d6e6e 100%);
+}
+
+.lk-content-panel__note {
+	margin: 1.5rem 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid rgba(1, 30, 62, 0.08);
+	font-size: 0.88rem;
+	line-height: 1.8;
+	color: #7d90a1;
+}
+
+/* ——— Shipping (Elementor mirror) ——— */
+.lk-content-page--shipping > .lk-lpt-breadcrumb {
+	margin-bottom: 0.85rem;
+}
+
+.lk-ship-hero {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 300px;
+	width: 100%;
+	margin: 0 0 0.5rem;
+	padding: 2rem 1.25rem;
+	background-color: #001f3f;
+	background-image: var(--lk-ship-hero-image);
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+	overflow: hidden;
+}
+
+.lk-ship-hero::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 31, 63, 0.5);
+	pointer-events: none;
+}
+
+.lk-ship-hero__title {
+	position: relative;
+	z-index: 1;
+	margin: 0;
+	max-width: 900px;
+	text-align: center;
+	font-size: clamp(1.6rem, 3.4vw, 2.5rem);
+	font-weight: 900;
+	line-height: 1.35;
+	color: #fff;
+}
+
+.lk-ship-wrap {
+	width: min(900px, calc(100% - 2rem));
+	margin: 0 auto;
+	padding: 1.5rem 0 2rem;
+}
+
+.lk-ship-split {
+	display: grid;
+	grid-template-columns: minmax(0, 1.15fr) minmax(200px, 0.85fr);
+	gap: clamp(1rem, 3vw, 2rem);
+	align-items: center;
+	margin: 0 0 1.75rem;
+	padding: 1.5rem;
+}
+
+.lk-ship-split__copy p {
+	margin: 0 0 0.75rem;
+	font-size: 0.98rem;
+	line-height: 1.95;
+	text-align: justify;
+	color: var(--lk-lpt-muted, #5b6b7c);
+}
+
+.lk-ship-split__copy p:last-child {
+	margin-bottom: 0;
+}
+
+.lk-ship-split__title {
+	margin: 0 0 0.85rem;
+	font-size: clamp(1.2rem, 2vw, 1.55rem);
+	font-weight: 900;
+	color: #001f3f;
+}
+
+.lk-ship-split__subtitle {
+	margin: 0 0 0.7rem;
+	font-size: 1.12rem;
+	font-weight: 800;
+	color: #001f3f;
+}
+
+.lk-ship-split__media {
+	margin: 0;
+	min-height: 200px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.lk-ship-split__media img {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	height: auto;
+	max-height: 280px;
+	object-fit: contain;
+}
+
+.lk-ship-howto {
+	margin: 0 0 1.5rem;
+	padding: 0 1.5rem;
+}
+
+.lk-ship-howto p {
+	margin: 0 0 0.75rem;
+	font-size: 0.98rem;
+	line-height: 1.95;
+	text-align: justify;
+	color: var(--lk-lpt-muted, #5b6b7c);
+}
+
+.lk-ship-methods {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.lk-ship-details {
+	margin-top: 1rem;
+	padding: 1.5rem;
+}
+
+.lk-ship-details__block {
+	margin: 0 0 1.35rem;
+}
+
+.lk-ship-details__block p {
+	margin: 0 0 0.65rem;
+	font-size: 0.98rem;
+	line-height: 1.95;
+	text-align: justify;
+	color: var(--lk-lpt-muted, #5b6b7c);
+}
+
+.lk-ship-details__media {
+	margin: 1.25rem auto 1.75rem;
+	text-align: center;
+}
+
+.lk-ship-details__media img {
+	display: inline-block;
+	width: min(100%, 700px);
+	height: auto;
+	border-radius: 12px;
+}
+
+.lk-ship-bestsellers {
+	width: min(1200px, calc(100% - 2rem));
+	margin: 0 auto 2.5rem;
+	padding: 1.5rem 0 0;
+}
+
+.lk-ship-bestsellers__title {
+	margin: 0 0 1.15rem;
+	font-size: clamp(1.15rem, 2vw, 1.45rem);
+	font-weight: 900;
+	color: #0d6e6e;
+}
+
+.lk-ship-bestsellers__grid {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap: 0.85rem;
+}
+
+@media (max-width: 1024px) {
+	.lk-ship-bestsellers__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 767px) {
+	.lk-ship-hero {
+		min-height: 220px;
+		padding: 1.5rem 1rem;
+	}
+
+	.lk-ship-hero__title {
+		font-size: 1.45rem;
+		text-align: center;
+	}
+
+	.lk-ship-wrap {
+		width: calc(100% - 1.25rem);
+		padding-top: 1rem;
+	}
+
+	.lk-ship-split,
+	.lk-ship-howto,
+	.lk-ship-details {
+		padding-left: 0.75rem;
+		padding-right: 0.75rem;
+	}
+
+	.lk-ship-split {
+		grid-template-columns: 1fr;
+		gap: 1rem;
+		margin-bottom: 1.25rem;
+	}
+
+	.lk-ship-split__media {
+		order: -1;
+		min-height: 160px;
+	}
+
+	.lk-ship-bestsellers__grid {
+		grid-template-columns: 1fr;
+		gap: 0.75rem;
+	}
+
+	.lk-content-panel {
+		padding: 1rem;
+	}
+}

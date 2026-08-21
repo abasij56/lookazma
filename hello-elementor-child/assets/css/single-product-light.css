@@ -405,6 +405,7 @@ body.lk-single-product-light .lk-main img {
 	justify-content: center;
 	gap: 0.45rem;
 	padding: 0.55rem 1rem;
+	border: 0;
 	border-radius: 10px;
 	background: var(--lk-accent);
 	color: #fff !important;
@@ -412,6 +413,8 @@ body.lk-single-product-light .lk-main img {
 	font-weight: 700;
 	line-height: 1.3;
 	text-decoration: none;
+	cursor: pointer;
+	font-family: inherit;
 }
 
 .lk-datasheet__icon {
@@ -419,6 +422,201 @@ body.lk-single-product-light .lk-main img {
 	height: 1.05rem;
 	flex: 0 0 auto;
 	display: block;
+}
+
+/* —— Datasheet fullscreen viewer —— */
+.lk-ds-viewer {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: stretch;
+	justify-content: stretch;
+}
+
+.lk-ds-viewer[hidden] {
+	display: none !important;
+}
+
+.lk-ds-viewer__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(6, 16, 32, 0.72);
+	backdrop-filter: blur(4px);
+}
+
+.lk-ds-viewer__dialog {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+	background: #0b1f3a;
+	color: #fff;
+}
+
+.lk-ds-viewer__toolbar {
+	position: absolute;
+	top: 0.75rem;
+	left: 0.75rem;
+	z-index: 3;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.35rem;
+	border-radius: 12px;
+	background: rgba(255, 255, 255, 0.12);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	backdrop-filter: blur(10px);
+}
+
+.lk-ds-viewer__btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.35rem;
+	height: 2.35rem;
+	padding: 0;
+	border: 0;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.12);
+	color: #fff;
+	cursor: pointer;
+	text-decoration: none;
+	transition: background 0.15s ease;
+}
+
+.lk-ds-viewer__btn:hover,
+.lk-ds-viewer__btn:focus-visible {
+	background: rgba(255, 255, 255, 0.24);
+	outline: none;
+	color: #fff;
+}
+
+.lk-ds-viewer__btn svg {
+	width: 1.15rem;
+	height: 1.15rem;
+	display: block;
+}
+
+.lk-ds-viewer__share {
+	position: relative;
+}
+
+.lk-ds-viewer__share-menu {
+	position: absolute;
+	top: calc(100% + 0.4rem);
+	left: 0;
+	min-width: 12.5rem;
+	padding: 0.35rem;
+	border-radius: 12px;
+	background: #fff;
+	color: #0b1f3a;
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+	z-index: 4;
+}
+
+.lk-ds-viewer__share-menu[hidden] {
+	display: none !important;
+}
+
+.lk-ds-viewer__share-item {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	padding: 0.55rem 0.65rem;
+	border-radius: 8px;
+	color: #0b1f3a;
+	text-decoration: none;
+	font-size: 0.88rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.lk-ds-viewer__share-item:hover {
+	background: rgba(13, 110, 110, 0.1);
+	color: #001f3f;
+}
+
+.lk-ds-viewer__share-item svg {
+	width: 1.15rem;
+	height: 1.15rem;
+	flex: 0 0 auto;
+}
+
+.lk-ds-viewer__stage {
+	position: relative;
+	flex: 1 1 auto;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 3.5rem 0.75rem 0.75rem;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+
+.lk-ds-viewer__frame,
+.lk-ds-viewer__img {
+	width: 100%;
+	height: 100%;
+	max-width: 100%;
+	max-height: 100%;
+	border: 0;
+	border-radius: 8px;
+	background: #111;
+}
+
+.lk-ds-viewer__img {
+	object-fit: contain;
+	background: #0b1f3a;
+}
+
+/* Zoomed sheet (in-viewer “fullscreen”): fill stage + scroll */
+.lk-ds-viewer.is-zoomed .lk-ds-viewer__stage {
+	overflow: auto;
+	align-items: stretch;
+	-webkit-overflow-scrolling: touch;
+}
+
+.lk-ds-viewer.is-zoomed .lk-ds-viewer__frame {
+	width: 100%;
+	height: 100%;
+	min-height: 100%;
+	max-height: none;
+}
+
+.lk-ds-viewer.is-zoomed .lk-ds-viewer__img {
+	width: 100%;
+	height: auto;
+	max-height: none;
+	object-fit: contain;
+	align-self: flex-start;
+}
+
+.lk-ds-viewer__empty {
+	margin: 0;
+	padding: 1rem 1.25rem;
+	border-radius: 12px;
+	background: rgba(255, 255, 255, 0.1);
+	color: #fff;
+	font-weight: 700;
+}
+
+body.lk-ds-viewer-open {
+	overflow: hidden;
+}
+
+.lk-ds-viewer.is-zoomed .lk-ds-viewer__icon-fs {
+	display: none;
+}
+
+.lk-ds-viewer.is-zoomed .lk-ds-viewer__icon-fs-exit {
+	display: block !important;
 }
 
 .lk-price-card__notice {

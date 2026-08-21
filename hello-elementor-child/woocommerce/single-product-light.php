@@ -1,6 +1,6 @@
 <?php
 /**
- * Light single product – Timber entry (opt-in via product checkbox).
+ * Light single product – Timber entry (global default; opt out via product checkbox).
  *
  * Layout based on ai/static-hml/full-with-chrome.html
  *
@@ -324,6 +324,10 @@ $spl_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/single-product-light.css';
 $context['spl_css_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/single-product-light.css';
 $context['spl_css_ver'] = file_exists( $spl_css ) ? (string) filemtime( $spl_css ) : HELLO_ELEMENTOR_CHILD_VERSION;
 
+$spl_js = HELLO_ELEMENTOR_CHILD_PATH . 'assets/js/single-product-light.js';
+$context['spl_js_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/js/single-product-light.js';
+$context['spl_js_ver'] = file_exists( $spl_js ) ? (string) filemtime( $spl_js ) : HELLO_ELEMENTOR_CHILD_VERSION;
+
 // —— Single product image (no gallery) ——
 $image = null;
 $main_id = $product->get_image_id();
@@ -377,7 +381,19 @@ if ( '' === $english_name ) {
 	$english_name = $lk_attr( $attr_map, array( 'نام انگلیسی', 'English Name', 'English', 'EN Name' ) );
 }
 
-$datasheet = $lk_resolve_datasheet( $post_id );
+$datasheet_pack = class_exists( 'Hello_Elementor_Child_Light_Datasheet' )
+	? Hello_Elementor_Child_Light_Datasheet::get_product_datasheet( $post_id )
+	: array(
+		'url'           => '',
+		'view_url'      => '',
+		'download_url'  => '',
+		'mime'          => '',
+		'attachment_id' => 0,
+	);
+$datasheet = isset( $datasheet_pack['url'] ) ? (string) $datasheet_pack['url'] : '';
+if ( '' === $datasheet && isset( $datasheet_pack['view_url'] ) ) {
+	$datasheet = (string) $datasheet_pack['view_url'];
+}
 
 // Brand: tag first, then attribute / ACF.
 $brand_name  = '';
@@ -393,11 +409,17 @@ if ( $tags && ! is_wp_error( $tags ) ) {
 		$brand_link = '';
 	}
 
-	$term_thumb = (int) get_term_meta( $first_tag->term_id, 'thumbnail_id', true );
-	if ( $term_thumb ) {
-		$url = wp_get_attachment_image_url( $term_thumb, 'thumbnail' );
-		if ( $url ) {
-			$brand_image = $url;
+	$term_thumb = 0;
+	if ( class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' ) ) {
+		$term_thumb  = Hello_Elementor_Child_Custom_Tag_Archive::resolve_thumbnail_id( (int) $first_tag->term_id );
+		$brand_image = Hello_Elementor_Child_Custom_Tag_Archive::resolve_image_url( (int) $first_tag->term_id, 'thumbnail' );
+	} else {
+		$term_thumb = (int) get_term_meta( $first_tag->term_id, 'thumbnail_id', true );
+		if ( $term_thumb ) {
+			$url = wp_get_attachment_image_url( $term_thumb, 'thumbnail' );
+			if ( $url ) {
+				$brand_image = $url;
+			}
 		}
 	}
 }
@@ -546,7 +568,10 @@ $context['product_data'] = array(
 	'brand_name'       => $brand_name,
 	'brand_link'       => $brand_link,
 	'brand_image'      => $brand_image,
-	'datasheet'        => $datasheet,
+	'datasheet'           => $datasheet,
+	'datasheet_view_url'  => isset( $datasheet_pack['view_url'] ) ? (string) $datasheet_pack['view_url'] : '',
+	'datasheet_download_url' => isset( $datasheet_pack['download_url'] ) ? (string) $datasheet_pack['download_url'] : '',
+	'datasheet_mime'      => isset( $datasheet_pack['mime'] ) ? (string) $datasheet_pack['mime'] : '',
 	'image'            => $image,
 	'attributes'       => $table_attrs,
 	'highlights'       => $highlights,
@@ -562,5 +587,10 @@ $context['product_data'] = array(
 
 // Debug marker: if this appears in View Source, light PHP template ran.
 echo '<!-- LK-LIGHT-TEMPLATE-ACTIVE product_id=' . (int) $post_id . ' -->' . "\n";
+
+// Ensure assets are queued even when this template is forced before the normal enqueue pass.
+if ( class_exists( 'Hello_Elementor_Child_Custom_Single_Product' ) ) {
+	Hello_Elementor_Child_Custom_Single_Product::enqueue_light_assets();
+}
 
 \Timber\Timber::render( 'woo/single-product-light.twig', $context );

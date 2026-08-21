@@ -265,6 +265,18 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			return false;
 		}
 
+		if ( class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' )
+			&& Hello_Elementor_Child_Custom_Tag_Archive::is_enabled()
+		) {
+			return false;
+		}
+
+		if ( class_exists( 'Hello_Elementor_Child_Custom_Post_Category_Archive' )
+			&& Hello_Elementor_Child_Custom_Post_Category_Archive::is_enabled()
+		) {
+			return false;
+		}
+
 		if ( class_exists( 'Hello_Elementor_Child_Light_Contact_Template' )
 			&& Hello_Elementor_Child_Light_Contact_Template::is_enabled()
 		) {
@@ -273,6 +285,12 @@ final class Hello_Elementor_Child_Light_Product_Template {
 
 		if ( class_exists( 'Hello_Elementor_Child_Light_About_Template' )
 			&& Hello_Elementor_Child_Light_About_Template::is_enabled()
+		) {
+			return false;
+		}
+
+		if ( class_exists( 'Hello_Elementor_Child_Light_Content_Template' )
+			&& Hello_Elementor_Child_Light_Content_Template::is_enabled()
 		) {
 			return false;
 		}
@@ -301,8 +319,20 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			return false;
 		}
 
+		if ( class_exists( 'Hello_Elementor_Child_Custom_Single_Post' )
+			&& Hello_Elementor_Child_Custom_Single_Post::is_enabled()
+		) {
+			return false;
+		}
+
 		if ( class_exists( 'Hello_Elementor_Child_Light_Homepage_Template' )
 			&& Hello_Elementor_Child_Light_Homepage_Template::is_enabled()
+		) {
+			return false;
+		}
+
+		if ( class_exists( 'Hello_Elementor_Child_Light_404_Template' )
+			&& Hello_Elementor_Child_Light_404_Template::is_enabled()
 		) {
 			return false;
 		}

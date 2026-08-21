@@ -89,6 +89,12 @@ function hello_elementor_child_enqueue_styles() {
 		return;
 	}
 
+	if ( class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' )
+		&& Hello_Elementor_Child_Custom_Tag_Archive::is_enabled()
+	) {
+		return;
+	}
+
 	if ( class_exists( 'Hello_Elementor_Child_Light_Contact_Template' )
 		&& Hello_Elementor_Child_Light_Contact_Template::is_enabled()
 	) {
@@ -119,14 +125,32 @@ function hello_elementor_child_enqueue_styles() {
 		return;
 	}
 
+	if ( class_exists( 'Hello_Elementor_Child_Light_Content_Template' )
+		&& Hello_Elementor_Child_Light_Content_Template::is_enabled()
+	) {
+		return;
+	}
+
 	if ( class_exists( 'Hello_Elementor_Child_Light_Article_Template' )
 		&& Hello_Elementor_Child_Light_Article_Template::is_enabled()
 	) {
 		return;
 	}
 
+	if ( class_exists( 'Hello_Elementor_Child_Custom_Single_Post' )
+		&& Hello_Elementor_Child_Custom_Single_Post::is_enabled()
+	) {
+		return;
+	}
+
 	if ( class_exists( 'Hello_Elementor_Child_Light_Homepage_Template' )
 		&& Hello_Elementor_Child_Light_Homepage_Template::is_enabled()
+	) {
+		return;
+	}
+
+	if ( class_exists( 'Hello_Elementor_Child_Light_404_Template' )
+		&& Hello_Elementor_Child_Light_404_Template::is_enabled()
 	) {
 		return;
 	}
@@ -339,3 +363,21 @@ function hello_elementor_child_enqueue_breadcrumb_style(): void {
 	);
 }
 add_action( 'wp_enqueue_scripts', 'hello_elementor_child_enqueue_breadcrumb_style', 1000 );
+
+/**
+ * Canonical shop archive URL (Persian slug). WC shop page ID can resolve to ?page_id= / __trashed.
+ */
+function hello_elementor_child_get_shop_url(): string {
+	return home_url( user_trailingslashit( 'فروشگاه' ) );
+}
+
+/**
+ * Force WooCommerce shop permalinks / "browse products" / empty-cart buttons to /فروشگاه/.
+ *
+ * @param string $url Permalink from WooCommerce.
+ */
+function hello_elementor_child_force_shop_permalink( $url ): string {
+	return hello_elementor_child_get_shop_url();
+}
+add_filter( 'woocommerce_get_shop_page_permalink', 'hello_elementor_child_force_shop_permalink', 99 );
+add_filter( 'woocommerce_return_to_shop_redirect', 'hello_elementor_child_force_shop_permalink', 99 );

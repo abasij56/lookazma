@@ -13,6 +13,9 @@
 	{% if cat_css_url %}
 		<link rel="stylesheet" href="{{ cat_css_url }}?v={{ cat_css_ver }}">
 	{% endif %}
+	{% if tag_css_url %}
+		<link rel="stylesheet" href="{{ tag_css_url }}?v={{ tag_css_ver }}">
+	{% endif %}
 	{% if contact_css_url %}
 		<link rel="stylesheet" href="{{ contact_css_url }}?v={{ contact_css_ver }}">
 	{% endif %}
@@ -28,11 +31,20 @@
 	{% if checkout_page_css_url %}
 		<link rel="stylesheet" href="{{ checkout_page_css_url }}?v={{ checkout_page_css_ver }}">
 	{% endif %}
+	{% if content_page_css_url %}
+		<link rel="stylesheet" href="{{ content_page_css_url }}?v={{ content_page_css_ver }}">
+	{% endif %}
 	{% if article_css_url %}
 		<link rel="stylesheet" href="{{ article_css_url }}?v={{ article_css_ver }}">
 	{% endif %}
+	{% if single_post_css_url %}
+		<link rel="stylesheet" href="{{ single_post_css_url }}?v={{ single_post_css_ver }}">
+	{% endif %}
 	{% if homepage_css_url %}
 		<link rel="stylesheet" href="{{ homepage_css_url }}?v={{ homepage_css_ver }}">
+	{% endif %}
+	{% if error404_css_url %}
+		<link rel="stylesheet" href="{{ error404_css_url }}?v={{ error404_css_ver }}">
 	{% endif %}
 	{% if spl_css_url %}
 		<link rel="stylesheet" href="{{ spl_css_url }}?v={{ spl_css_ver }}">
@@ -63,6 +75,12 @@
 
 {% include 'partials/light-product-footer.twig' %}
 
+{% if spl_js_url %}
+	<script src="{{ spl_js_url }}?v={{ spl_js_ver }}" defer></script>
+{% endif %}
+{% if single_post_js_url %}
+	<script src="{{ single_post_js_url }}?v={{ single_post_js_ver }}" defer></script>
+{% endif %}
 {{ function('wp_footer') }}
 </body>
 </html>

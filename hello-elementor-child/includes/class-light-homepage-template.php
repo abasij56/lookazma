@@ -506,6 +506,7 @@ final class Hello_Elementor_Child_Light_Homepage_Template {
 
 		wp_enqueue_script( 'jquery' );
 		wp_enqueue_script( 'wc-cart-fragments' );
+		wp_enqueue_script( 'wc-add-to-cart' );
 
 		$chrome_js = HELLO_ELEMENTOR_CHILD_PATH . 'assets/js/light-archive-chrome.js';
 		if ( file_exists( $chrome_js ) ) {
@@ -515,6 +516,46 @@ final class Hello_Elementor_Child_Light_Homepage_Template {
 				array(),
 				(string) filemtime( $chrome_js ),
 				true
+			);
+		}
+
+		$filters_js = HELLO_ELEMENTOR_CHILD_PATH . 'assets/js/archive-product-filters.js';
+		if ( file_exists( $filters_js ) ) {
+			wp_enqueue_script(
+				'lk-archive-filters',
+				HELLO_ELEMENTOR_CHILD_URI . 'assets/js/archive-product-filters.js',
+				array( 'jquery', 'wc-add-to-cart' ),
+				(string) filemtime( $filters_js ),
+				true
+			);
+			wp_localize_script(
+				'lk-archive-filters',
+				'lkArchiveFilters',
+				array(
+					'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+					'action'         => 'lk_archive_filter_products',
+					'nonce'          => wp_create_nonce( 'lk_archive_filter' ),
+					'termId'         => 0,
+					'taxonomy'       => '',
+					'isShop'         => true,
+					'isSearch'       => false,
+					'searchQuery'    => '',
+					'layout'         => 'shop',
+					'nativeTemplate' => true,
+					'perPage'        => 12,
+					'i18n'           => array(
+						'empty'      => __( 'محصولی با این فیلترها پیدا نشد.', 'hello-elementor-child' ),
+						'error'      => __( 'خطا در فیلتر محصولات.', 'hello-elementor-child' ),
+						'search'     => __( 'جستجو…', 'hello-elementor-child' ),
+						'loading'    => __( 'در حال فیلتر…', 'hello-elementor-child' ),
+						'addToCart'  => __( 'افزودن به سبد', 'hello-elementor-child' ),
+						'added'      => __( 'افزوده شد', 'hello-elementor-child' ),
+						'adding'     => __( 'در حال افزودن…', 'hello-elementor-child' ),
+						'viewCart'   => __( 'مشاهده سبد خرید', 'hello-elementor-child' ),
+						'pagination' => __( 'صفحه‌بندی محصولات', 'hello-elementor-child' ),
+					),
+					'cartUrl'        => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/cart/' ),
+				)
 			);
 		}
 

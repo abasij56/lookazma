@@ -1,0 +1,67 @@
+{% extends "woo/base-light-product.twig" %}
+
+{% block content %}
+{% if tag_data %}
+<div class="lk-lpt lk-lpt-container lk-tag-page">
+	{% if tag_data.breadcrumb_html %}
+		<nav class="lk-lpt-breadcrumb" aria-label="breadcrumb">
+			{{ tag_data.breadcrumb_html|raw }}
+		</nav>
+	{% endif %}
+
+	<section class="lk-tag-hero" aria-label="{{ tag_data.name }}">
+		<div class="lk-tag-hero__media">
+			{% if tag_data.image %}
+				<figure class="lk-tag-hero__photo">
+					<img
+						src="{{ tag_data.image.url }}"
+						alt="{{ tag_data.image.alt|default(tag_data.name) }}"
+						width="360"
+						height="360"
+						loading="eager"
+					>
+				</figure>
+			{% else %}
+				<div class="lk-tag-hero__placeholder" aria-hidden="true"></div>
+			{% endif %}
+		</div>
+		<div class="lk-tag-hero__body">
+			<p class="lk-tag-hero__eyebrow">برند</p>
+			<h1 class="lk-tag-hero__title">
+				<span class="lk-tag-hero__name">{{ tag_data.name }}</span>
+				{% if tag_data.english_name %}
+					<span class="lk-tag-hero__english">{{ tag_data.english_name }}</span>
+				{% endif %}
+			</h1>
+			{% if tag_data.description %}
+				<div class="lk-tag-hero__desc">{{ tag_data.description|raw }}</div>
+			{% endif %}
+		</div>
+	</section>
+
+	<section class="lk-tag-shell" aria-label="محصولات برند">
+		<div class="lk-lpt-shop">
+			<aside class="lk-lpt-shop__filters" aria-label="فیلترها">
+				{{ tag_data.filters_html|raw }}
+			</aside>
+			<div class="lk-lpt-shop__main">
+				<div class="lk-lpt-shop__products">
+					<div
+						class="lk-archive-products__grid lk-shop-products-grid"
+						id="lk-archive-products"
+						role="list"
+						data-lk-native-grid="1"
+						style="--lk-lpt-cols: 4"
+					>
+						{{ tag_data.products_html|raw }}
+					</div>
+				</div>
+				<nav class="lk-archive-products__pagination lk-shop-pagination" id="lk-archive-products-pagination" aria-label="صفحه‌بندی">
+					{{ tag_data.pagination_html|raw }}
+				</nav>
+			</div>
+		</div>
+	</section>
+</div>
+{% endif %}
+{% endblock %}

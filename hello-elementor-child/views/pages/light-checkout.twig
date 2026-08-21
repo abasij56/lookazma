@@ -2,7 +2,7 @@
 
 {% block content %}
 {% if checkout_page %}
-<div class="lk-lpt lk-lpt-container lk-checkout-page">
+<div class="lk-lpt lk-lpt-container lk-checkout-page{% if checkout_page.is_thankyou %} lk-checkout-page--thankyou{% endif %}">
 	{% if checkout_page.breadcrumb_html %}
 		<nav class="lk-lpt-breadcrumb" aria-label="breadcrumb">
 			{{ checkout_page.breadcrumb_html|raw }}
@@ -17,7 +17,7 @@
 		<div class="woocommerce-notices-wrapper lk-checkout-notices"></div>
 	{% endif %}
 
-	<div class="lk-checkout-panel">
+	<div class="lk-checkout-panel{% if checkout_page.is_thankyou %} lk-checkout-panel--thankyou{% endif %}">
 		<div class="woocommerce">
 			{{ checkout_page.content_html|raw }}
 		</div>
