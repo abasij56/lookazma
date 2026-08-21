@@ -119,6 +119,12 @@ function hello_elementor_child_enqueue_styles() {
 		return;
 	}
 
+	if ( class_exists( 'Hello_Elementor_Child_Light_Homepage_Template' )
+		&& Hello_Elementor_Child_Light_Homepage_Template::is_enabled()
+	) {
+		return;
+	}
+
 	wp_enqueue_style(
 		'hello-elementor-child-style',
 		get_stylesheet_directory_uri() . '/style.css',

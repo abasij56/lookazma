@@ -1,0 +1,47 @@
+/**
+ * Block editor preview styles for Light homepage blocks.
+ */
+
+.editor-styles-wrapper .lk-homepage-block.lk-section {
+	margin-bottom: 1.25rem;
+}
+
+.editor-styles-wrapper .lk-hero-carousel {
+	border: 1px dashed #b8c9d6;
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+.editor-styles-wrapper .lk-hero-carousel__viewport {
+	min-height: 381px;
+	height: 381px;
+}
+
+.editor-styles-wrapper .lk-hero-carousel__slide {
+	opacity: 1;
+	position: relative;
+	inset: auto;
+}
+
+.editor-styles-wrapper .lk-hero-carousel__slide:not(.is-active) {
+	display: none;
+}
+
+.editor-styles-wrapper .lk-lk-editor-panel {
+	padding: 0.75rem;
+	border: 1px solid #dbe7ef;
+	border-radius: 12px;
+	background: #f8fbfd;
+	margin-bottom: 0.75rem;
+}
+
+.editor-styles-wrapper .lk-lk-editor-panel h4 {
+	margin: 0 0 0.5rem;
+	font-size: 0.9rem;
+}
+
+.editor-styles-wrapper .lk-lk-editor-row {
+	display: grid;
+	gap: 0.5rem;
+	margin-bottom: 0.65rem;
+}

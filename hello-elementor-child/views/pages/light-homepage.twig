@@ -1,0 +1,12 @@
+{% extends "woo/base-light-product.twig" %}
+
+{% block content %}
+{% if homepage %}
+<div class="lk-light-homepage-body">
+	{% if homepage.title %}
+		<h1 class="screen-reader-text">{{ homepage.title }}</h1>
+	{% endif %}
+	{{ homepage.content|raw }}
+</div>
+{% endif %}
+{% endblock %}
