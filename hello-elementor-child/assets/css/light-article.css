@@ -373,15 +373,15 @@ body.lk-light-article .lk-lpt-main {
 	}
 
 	.lk-article-card-wrap {
-		width: 260px;
-		padding: 0 10px;
+		width: min(100%, 320px);
+		padding: 0 8px;
 	}
 
 	.lk-article-card {
-		width: 240px;
+		width: 100%;
 	}
 
 	.lk-article-card__media img {
-		max-width: 240px;
+		max-width: 100%;
 	}
 }

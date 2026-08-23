@@ -48,6 +48,7 @@ final class Hello_Elementor_Child_Theme {
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-archive-product-filter.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-product-search.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-lookazma-search.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-site-snippets.php';
 	}
 
 	/**
@@ -74,5 +75,6 @@ final class Hello_Elementor_Child_Theme {
 		Hello_Elementor_Child_Archive_Product_Filter::init();
 		Hello_Elementor_Child_Product_Search::init();
 		Hello_Elementor_Child_Lookazma_Search::init();
+		Hello_Elementor_Child_Site_Snippets::init();
 	}
 }
