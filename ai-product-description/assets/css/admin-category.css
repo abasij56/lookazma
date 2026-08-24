@@ -37,6 +37,16 @@ body.taxonomy-product_cat #edittag {
 	box-sizing: border-box;
 }
 
+#ai-cat-desc-card .ai-cat-tools__stage1 {
+	margin: 0 0 16px;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+#ai-cat-desc-card .ai-cat-tools__stage1 .description {
+	margin: 6px 0 10px;
+}
+
 .ai-cat-tools__card h3 {
 	margin-top: 0;
 }

@@ -1,37 +1,46 @@
 /**
- * Highlight the active AI provider section on the settings page.
- * All provider fields stay visible so credentials can be filled for any provider.
+ * Highlight the active AI provider section + connection test on settings page.
  */
-document.addEventListener('DOMContentLoaded', function () {
-	const select = document.getElementById('ai-product-desc-active-provider');
-	const page = document.querySelector('.ai-product-desc-settings');
+(function () {
+	'use strict';
 
-	if (!select || !page) {
-		return;
+	function ready(fn) {
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', fn);
+			return;
+		}
+		fn();
 	}
 
-	const syncActiveHighlight = function () {
-		const active = select.value;
+	ready(function () {
+		const select = document.getElementById('ai-product-desc-active-provider');
+		const page = document.querySelector('.ai-product-desc-settings');
 
-		page.querySelectorAll('h2').forEach(function (heading) {
-			const next = heading.nextElementSibling;
-			if (!next || !next.classList.contains('ai-product-desc-provider-panel')) {
-				heading.classList.remove('ai-provider-active');
-				return;
-			}
+		if (select && page) {
+			const syncActiveHighlight = function () {
+				const active = select.value;
 
-			const provider = next.getAttribute('data-provider');
-			const isActive = provider === active;
-			heading.classList.toggle('ai-provider-active', isActive);
-			next.classList.toggle('ai-provider-active', isActive);
+				page.querySelectorAll('h2').forEach(function (heading) {
+					const next = heading.nextElementSibling;
+					if (!next || !next.classList.contains('ai-product-desc-provider-panel')) {
+						heading.classList.remove('ai-provider-active');
+						return;
+					}
 
-			const table = next.nextElementSibling;
-			if (table && table.classList.contains('form-table')) {
-				table.classList.toggle('ai-provider-active', isActive);
-			}
-		});
-	};
+					const provider = next.getAttribute('data-provider');
+					const isActive = provider === active;
+					heading.classList.toggle('ai-provider-active', isActive);
+					next.classList.toggle('ai-provider-active', isActive);
 
-	select.addEventListener('change', syncActiveHighlight);
-	syncActiveHighlight();
-});
+					const table = next.nextElementSibling;
+					if (table && table.classList.contains('form-table')) {
+						table.classList.toggle('ai-provider-active', isActive);
+					}
+				});
+			};
+
+			select.addEventListener('change', syncActiveHighlight);
+			syncActiveHighlight();
+		}
+	});
+})();

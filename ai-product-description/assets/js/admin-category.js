@@ -12,6 +12,7 @@
 	var previewSpecs = null;
 	var EDITOR_CURRENT = 'ai_cat_current_desc';
 	var EDITOR_PREVIEW = 'ai_cat_preview_desc';
+	var EDITOR_STAGE1 = 'ai_cat_stage1_desc';
 
 	function looksLikeVisibleHtmlSource(html) {
 		var tmp = document.createElement('div');
@@ -364,7 +365,7 @@
 			}
 
 			setStatus(status, '');
-			setLoading(btn, true, cfg.i18n.loading);
+			setLoading(btn, true, cfg.i18n.loadingDesc || cfg.i18n.loading);
 			if (saveBtn) {
 				saveBtn.disabled = true;
 			}
@@ -384,7 +385,9 @@
 
 					var data = result.payload.data || {};
 					var html = plainToHtml(data.description || '');
+					var stage1 = plainToHtml(data.stage1_html || '');
 					setEditorContent(EDITOR_PREVIEW, html);
+					setEditorContent(EDITOR_STAGE1, stage1);
 
 					if (saveBtn) {
 						saveBtn.disabled = !hasMeaningfulContent(html);

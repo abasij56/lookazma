@@ -25,6 +25,7 @@ final class AI_Product_Desc_Ajax {
 	public const CAT_SPECS_SAVE     = 'ai_product_desc_cat_specs_save';
 	public const AUTO_BRAND_PRODUCTS = 'ai_product_desc_auto_brand_products';
 	public const AUTO_PROCESS_ONE    = 'ai_product_desc_auto_process_one';
+	public const TEST_CONNECTION     = 'ai_product_desc_test_connection';
 	public const NONCE_ACTION       = 'ai_product_desc_generate';
 	public const CAPABILITY         = 'manage_options';
 
@@ -43,6 +44,7 @@ final class AI_Product_Desc_Ajax {
 		add_action( 'wp_ajax_' . self::CAT_SPECS_SAVE, array( __CLASS__, 'category_specs_save' ) );
 		add_action( 'wp_ajax_' . self::AUTO_BRAND_PRODUCTS, array( __CLASS__, 'auto_brand_products' ) );
 		add_action( 'wp_ajax_' . self::AUTO_PROCESS_ONE, array( __CLASS__, 'auto_process_one' ) );
+		add_action( 'wp_ajax_' . self::TEST_CONNECTION, array( __CLASS__, 'test_provider_connection' ) );
 	}
 
 	/**
@@ -424,10 +426,20 @@ final class AI_Product_Desc_Ajax {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
 		}
 
+		$description = '';
+		$stage1_html = '';
+		if ( is_array( $result ) ) {
+			$description = isset( $result['description'] ) ? (string) $result['description'] : '';
+			$stage1_html = isset( $result['stage1_html'] ) ? (string) $result['stage1_html'] : '';
+		} elseif ( is_string( $result ) ) {
+			$description = $result;
+		}
+
 		wp_send_json_success(
 			array(
 				'term_id'     => (int) $term->term_id,
-				'description' => $result,
+				'description' => $description,
+				'stage1_html' => $stage1_html,
 				'current'     => array(
 					'html'     => '' === trim( wp_strip_all_tags( $term->description ) ) ? '' : wp_kses_post( wpautop( $term->description ) ),
 					'is_empty' => '' === trim( wp_strip_all_tags( $term->description ) ),
@@ -616,6 +628,84 @@ final class AI_Product_Desc_Ajax {
 		return array(
 			'html'     => $is_empty ? '' : wp_kses_post( $html ),
 			'is_empty' => $is_empty,
+		);
+	}
+
+	/**
+	 * Test active (or posted) AI provider connection.
+	 */
+	public static function test_provider_connection(): void {
+		self::guard_request();
+
+		$config = AI_Product_Desc_Settings::resolve_provider_config_from_request();
+		if ( is_wp_error( $config ) ) {
+			$code    = $config->get_error_code();
+			$message = $config->get_error_message();
+			wp_send_json_error(
+				array(
+					'message'     => AI_Product_Desc_Settings::get_connection_result_title( false ),
+					'explanation' => AI_Product_Desc_Settings::get_connection_error_explanation( $code, $message ),
+					'detail'      => AI_Product_Desc_Settings::get_connection_error_detail( $code, $message ),
+					'report'      => '',
+				),
+				400
+			);
+		}
+
+		$ts     = time();
+		$result = AI_Product_Desc_Client::test_connection( $config );
+
+		if ( is_wp_error( $result ) ) {
+			$code    = $result->get_error_code();
+			$message = $result->get_error_message();
+			$extra   = array(
+				'ts'   => $ts,
+				'code' => $code,
+			);
+			$data    = $result->get_error_data();
+			$http    = null;
+			if ( is_array( $data ) && isset( $data['status'] ) ) {
+				$extra['http'] = $data['status'];
+				$http          = (int) $data['status'];
+			}
+
+			$report = AI_Product_Desc_Settings::build_connection_test_report(
+				$config,
+				false,
+				$message,
+				$extra
+			);
+
+			wp_send_json_error(
+				array(
+					'message'     => AI_Product_Desc_Settings::get_connection_result_title( false ),
+					'explanation' => AI_Product_Desc_Settings::get_connection_error_explanation( $code, $message, $http ),
+					'detail'      => AI_Product_Desc_Settings::get_connection_error_detail( $code, $message ),
+					'report'      => $report,
+				),
+				500
+			);
+		}
+
+		$reply   = isset( $result['reply'] ) ? (string) $result['reply'] : '';
+		$message = AI_Product_Desc_Settings::get_connection_result_title( true );
+		$report  = AI_Product_Desc_Settings::build_connection_test_report(
+			$config,
+			true,
+			$message,
+			array(
+				'ts'    => $ts,
+				'reply' => $reply,
+			)
+		);
+
+		wp_send_json_success(
+			array(
+				'message'     => $message,
+				'explanation' => AI_Product_Desc_Settings::get_connection_success_explanation(),
+				'report'      => $report,
+				'reply'       => $reply,
+			)
 		);
 	}
 

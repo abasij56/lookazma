@@ -66,7 +66,6 @@ final class AI_Product_Desc_Admin_Menu {
 	 */
 	public static function enqueue_assets( string $hook ): void {
 		$products_hook = 'toplevel_page_' . self::PARENT_SLUG;
-		$settings_hook = self::PARENT_SLUG . '_page_' . self::SETTINGS_SLUG;
 
 		if ( $hook === $products_hook ) {
 			ai_product_desc_register_assets();
@@ -76,7 +75,7 @@ final class AI_Product_Desc_Admin_Menu {
 			return;
 		}
 
-		if ( $hook === $settings_hook ) {
+		if ( self::is_settings_admin_page( $hook ) ) {
 			wp_enqueue_style(
 				'ai-product-desc-admin',
 				AI_PRODUCT_DESC_URL . 'assets/css/admin-settings.css',
@@ -91,7 +90,41 @@ final class AI_Product_Desc_Admin_Menu {
 				AI_PRODUCT_DESC_VERSION,
 				true
 			);
+
+			wp_localize_script(
+				'ai-product-desc-admin',
+				'aiProductDescSettings',
+				array(
+					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+					'nonce'   => wp_create_nonce( AI_Product_Desc_Ajax::NONCE_ACTION ),
+					'action'  => AI_Product_Desc_Ajax::TEST_CONNECTION,
+					'i18n'    => array(
+						'testing'    => __( 'در حال تست اتصال…', 'ai-product-description' ),
+						'testButton' => __( 'تست اتصال AI', 'ai-product-description' ),
+						'error'      => __( 'خطا در تست اتصال.', 'ai-product-description' ),
+						'copied'     => __( 'گزارش کپی شد.', 'ai-product-description' ),
+						'copyFail'   => __( 'کپی گزارش انجام نشد.', 'ai-product-description' ),
+					),
+				)
+			);
 		}
+	}
+
+	/**
+	 * Whether the current admin screen is plugin settings.
+	 *
+	 * @param string $hook Current admin page hook.
+	 */
+	private static function is_settings_admin_page( string $hook ): bool {
+		$settings_hook = self::PARENT_SLUG . '_page_' . self::SETTINGS_SLUG;
+		if ( $hook === $settings_hook ) {
+			return true;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( (string) $_GET['page'] ) ) : '';
+
+		return self::SETTINGS_SLUG === $page;
 	}
 
 	/**

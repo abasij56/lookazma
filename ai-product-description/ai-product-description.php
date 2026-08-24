@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'AI_PRODUCT_DESC_VERSION', '1.4.4' );
+define( 'AI_PRODUCT_DESC_VERSION', '1.5.6' );
 define( 'AI_PRODUCT_DESC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AI_PRODUCT_DESC_URL', plugin_dir_url( __FILE__ ) );
 

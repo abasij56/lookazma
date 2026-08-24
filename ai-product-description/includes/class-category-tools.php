@@ -80,7 +80,8 @@ final class AI_Product_Desc_Category_Tools {
 				),
 				'i18n'         => array(
 					'notConfigured'  => __( 'تنظیمات AI کامل نیست. از منوی «توضیحات محصول AI ← تنظیمات» پر کنید.', 'ai-product-description' ),
-					'loading'        => __( 'در حال تولید...', 'ai-product-description' ),
+					'loading'        => __( 'در حال تولید دو مرحله‌ای (ممکن است ۱–۳ دقیقه طول بکشد)...', 'ai-product-description' ),
+					'loadingDesc'    => __( 'مرحله ۱: سوال‌وجواب تخصصی… سپس ساخت مقاله…', 'ai-product-description' ),
 					'saving'         => __( 'در حال ذخیره...', 'ai-product-description' ),
 					'error'          => __( 'خطا در ارتباط با هوش مصنوعی.', 'ai-product-description' ),
 					'saveError'      => __( 'ذخیره انجام نشد.', 'ai-product-description' ),
@@ -133,7 +134,7 @@ final class AI_Product_Desc_Category_Tools {
 			<hr>
 			<h2><?php esc_html_e( 'ابزار هوش مصنوعی دسته', 'ai-product-description' ); ?></h2>
 			<p class="description">
-				<?php esc_html_e( 'مقدار فعلی را ببینید، با AI پیشنهاد بگیرید و پس از مقایسه ثبت کنید. توضیح دسته به‌صورت HTML ساختاریافته (معرفی، کاربردها، گرید، ایمنی، FAQ و دعوت به خرید) تولید می‌شود؛ اگر مقدار فعلی خالی باشد از صفر ساخته می‌شود.', 'ai-product-description' ); ?>
+				<?php esc_html_e( 'مقدار فعلی را ببینید، با AI پیشنهاد بگیرید و پس از مقایسه ثبت کنید. توضیح دسته در دو مرحله ساخته می‌شود: ابتدا ۵۰ سوال‌وجواب تخصصی کوتاه، سپس مقاله HTML ساختاریافته (معرفی، کاربردها، گرید، ایمنی، FAQ و دعوت به خرید).', 'ai-product-description' ); ?>
 			</p>
 
 			<div class="ai-cat-tools__card" id="ai-cat-seo-card">
@@ -213,6 +214,20 @@ final class AI_Product_Desc_Category_Tools {
 						);
 						?>
 					</div>
+				</div>
+
+				<div class="ai-cat-tools__col ai-cat-tools__col--editor ai-cat-tools__stage1">
+					<strong><?php esc_html_e( 'پیش‌نمایش مرحله اول AI', 'ai-product-description' ); ?></strong>
+					<p class="description">
+						<?php esc_html_e( 'خروجی خام سوال و جواب تخصصی (مرحله اول). فقط برای بررسی است و با «ثبت توضیحات دسته» ذخیره نمی‌شود.', 'ai-product-description' ); ?>
+					</p>
+					<?php
+					self::render_html_editor(
+						'ai_cat_stage1_desc',
+						'',
+						__( 'پیش‌نمایش مرحله اول AI', 'ai-product-description' )
+					);
+					?>
 				</div>
 
 				<p class="ai-cat-tools__actions">

@@ -90,19 +90,103 @@ final class AI_Product_Desc_Client {
 	}
 
 	/**
-	 * Generate / rewrite category description text.
+	 * Generate / rewrite category description via two API calls (Q&A then article).
 	 *
 	 * @param array{name: string, slug: string, description: string, parent_name: string} $data Category data.
-	 * @return string|WP_Error
+	 * @return array{description: string, stage1_html: string}|WP_Error
 	 */
 	public static function generate_category_description( array $data ) {
-		$content = self::chat( self::build_category_description_messages( $data ), 120 );
-
-		if ( is_wp_error( $content ) ) {
-			return $content;
+		if ( function_exists( 'set_time_limit' ) ) {
+			@set_time_limit( 300 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 		}
 
-		return self::extract_description_text( $content );
+		$qa_raw = self::chat( self::build_category_qa_messages( $data ), 180 );
+		if ( is_wp_error( $qa_raw ) ) {
+			return $qa_raw;
+		}
+
+		$qa_parsed = self::extract_json_object( $qa_raw );
+		if ( ! is_array( $qa_parsed ) ) {
+			return new WP_Error(
+				'invalid_qa_json',
+				__( 'پاسخ مرحله اول (سوال و جواب) معتبر نبود.', 'ai-product-description' )
+			);
+		}
+
+		$qa_items = self::normalize_category_qa_items( $qa_parsed );
+		if ( count( $qa_items ) < 10 ) {
+			return new WP_Error(
+				'insufficient_qa_items',
+				__( 'تعداد سوال و جواب‌های مرحله اول کافی نبود.', 'ai-product-description' )
+			);
+		}
+
+		$qa_payload = wp_json_encode(
+			array(
+				'material' => (string) ( $data['name'] ?? '' ),
+				'items'    => $qa_items,
+			),
+			JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+		);
+
+		if ( ! is_string( $qa_payload ) || '' === $qa_payload ) {
+			return new WP_Error(
+				'qa_encode_failed',
+				__( 'آماده‌سازی داده سوال و جواب برای مرحله دوم انجام نشد.', 'ai-product-description' )
+			);
+		}
+
+		$article = self::chat( self::build_category_article_from_qa_messages( $data, $qa_payload ), 180 );
+		if ( is_wp_error( $article ) ) {
+			return $article;
+		}
+
+		return array(
+			'description' => self::extract_description_text( $article ),
+			'stage1_html' => self::format_category_qa_html( $qa_items, (string) ( $data['name'] ?? '' ) ),
+		);
+	}
+
+	/**
+	 * Build readable HTML preview for Call 1 Q&A items.
+	 *
+	 * @param array<int, array{q: string, a: string}> $items   Q&A rows.
+	 * @param string                                  $material Category / material name.
+	 */
+	public static function format_category_qa_html( array $items, string $material = '' ): string {
+		$parts = array();
+
+		if ( '' !== trim( $material ) ) {
+			$parts[] = '<h2>' . esc_html(
+				sprintf(
+					/* translators: %s: category name */
+					__( 'سوال و جواب تخصصی: %s', 'ai-product-description' ),
+					$material
+				)
+			) . '</h2>';
+		}
+
+		$parts[] = '<ol class="ai-cat-stage1-list">';
+
+		foreach ( $items as $item ) {
+			$q = isset( $item['q'] ) ? trim( (string) $item['q'] ) : '';
+			$a = isset( $item['a'] ) ? trim( (string) $item['a'] ) : '';
+			if ( '' === $q && '' === $a ) {
+				continue;
+			}
+			$parts[] = '<li>';
+			if ( '' !== $q ) {
+				$parts[] = '<p><strong>' . esc_html( $q ) . '</strong></p>';
+			}
+			if ( '' !== $a ) {
+				$parts[] = '<p>' . esc_html( $a ) . '</p>';
+			}
+			$parts[] = '</li>';
+		}
+
+		$parts[] = '</ol>';
+
+		return implode( '', $parts );
 	}
 
 	/**
@@ -158,9 +242,44 @@ final class AI_Product_Desc_Client {
 	 * @return string|WP_Error
 	 */
 	public static function chat( array $messages, int $timeout = 90 ) {
-		$config = AI_Product_Desc_Settings::get_active_provider_config();
+		return self::chat_request( $messages, AI_Product_Desc_Settings::get_active_provider_config(), $timeout );
+	}
 
-		if ( '' === $config['api_key'] ) {
+	/**
+	 * Send a minimal request to verify provider credentials.
+	 *
+	 * @param array{id: string, label: string, api_key: string, base_url: string, model: string} $config Provider connection.
+	 * @return array{reply: string}|WP_Error
+	 */
+	public static function test_connection( array $config ) {
+		$messages = array(
+			array(
+				'role'    => 'user',
+				'content' => 'Reply with exactly: OK',
+			),
+		);
+
+		$result = self::chat_request( $messages, $config, 30 );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return array(
+			'reply' => $result,
+		);
+	}
+
+	/**
+	 * Low-level chat completion call with explicit provider config.
+	 *
+	 * @param array<int, array{role: string, content: string}> $messages Chat messages.
+	 * @param array{id: string, label: string, api_key: string, base_url: string, model: string} $config   Provider connection.
+	 * @param int                                              $timeout  Request timeout in seconds.
+	 * @return string|WP_Error
+	 */
+	private static function chat_request( array $messages, array $config, int $timeout = 90 ) {
+		if ( '' === trim( (string) ( $config['api_key'] ?? '' ) ) ) {
 			return new WP_Error(
 				'missing_api_key',
 				__( 'API Key برای ارائه‌دهنده فعال تنظیم نشده است.', 'ai-product-description' )
@@ -288,7 +407,31 @@ final class AI_Product_Desc_Client {
 			}
 		}
 
+		if ( preg_match( '/\[[\s\S]*\]/', $trimmed, $json_match ) ) {
+			$decoded = json_decode( $json_match[0], true );
+			if ( is_array( $decoded ) ) {
+				return $decoded;
+			}
+		}
+
 		return null;
+	}
+
+	/**
+	 * Whether array is a consecutive 0-indexed list (PHP 8.1 array_is_list polyfill).
+	 *
+	 * @param array<mixed> $arr Array.
+	 */
+	private static function is_list_array( array $arr ): bool {
+		if ( function_exists( 'array_is_list' ) ) {
+			return array_is_list( $arr );
+		}
+
+		if ( array() === $arr ) {
+			return true;
+		}
+
+		return array_keys( $arr ) === range( 0, count( $arr ) - 1 );
 	}
 
 	/**
@@ -661,77 +804,174 @@ PROMPT;
 	}
 
 	/**
-	 * Messages for category description body.
+	 * Normalize Q&A items from model JSON.
+	 *
+	 * @param array<string, mixed> $parsed Parsed JSON.
+	 * @return array<int, array{q: string, a: string}>
+	 */
+	private static function normalize_category_qa_items( array $parsed ): array {
+		$raw = array();
+
+		if ( isset( $parsed['items'] ) && is_array( $parsed['items'] ) ) {
+			$raw = $parsed['items'];
+		} elseif ( isset( $parsed['qa'] ) && is_array( $parsed['qa'] ) ) {
+			$raw = $parsed['qa'];
+		} elseif ( self::is_list_array( $parsed ) ) {
+			$raw = $parsed;
+		}
+
+		$items = array();
+		foreach ( $raw as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			$q = '';
+			if ( isset( $row['q'] ) && is_scalar( $row['q'] ) ) {
+				$q = trim( (string) $row['q'] );
+			} elseif ( isset( $row['question'] ) && is_scalar( $row['question'] ) ) {
+				$q = trim( (string) $row['question'] );
+			}
+
+			$a = '';
+			if ( isset( $row['a'] ) && is_scalar( $row['a'] ) ) {
+				$a = trim( (string) $row['a'] );
+			} elseif ( isset( $row['answer'] ) && is_scalar( $row['answer'] ) ) {
+				$a = trim( (string) $row['answer'] );
+			}
+
+			if ( '' === $q || '' === $a ) {
+				continue;
+			}
+
+			$items[] = array(
+				'q' => $q,
+				'a' => $a,
+			);
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Call 1: 50 expert Q&As with short one-paragraph answers (JSON).
 	 *
 	 * @param array{name: string, slug: string, description: string, parent_name: string} $data Category data.
 	 * @return array<int, array{role: string, content: string}>
 	 */
-	private static function build_category_description_messages( array $data ): array {
+	private static function build_category_qa_messages( array $data ): array {
+		$system = <<<'PROMPT'
+تو یک شیمیدان خبره و استاد دانشگاه هستی که باید دانش تخصصی را برای فروشگاه مواد شیمیایی لوک آزما تولید کنی.
+
+وظیفه (مرحله اول — فقط دانش خام):
+دقیقاً ۵۰ سوال تخصصی سطح بالا درباره موضوع دسته بساز و به هر کدام یک پاسخ کوتاه و تخصصی بده.
+
+قوانین پاسخ:
+- هر پاسخ دقیقاً یک پاراگراف کوتاه (حدود ۲ تا ۴ جمله / حدود ۴۰ تا ۸۰ کلمه)
+- بدون لیست، بدون چند پاراگراف، بدون HTML، بدون Markdown
+- لحن علمی و دقیق؛ واحدها SI؛ نام‌های استاندارد
+- هر سوال زاویه متمایز داشته باشد؛ سوال تکراری یا نزدیک به هم ممنوع
+- عدد، CAS، نقطه جوش/ذوب و ادعاهای کمی را فقط اگر مطمئن هستی بنویس؛ در غیر این صورت حدس نزن و در پاسخ بگو اطلاعات معتبر در دسترس نیست
+- برای دسته گروهی (مثل حلال‌ها) روی خانواده/انتخاب/کاربرد تمرکز کن؛ برای ماده مشخص روی خود ماده
+
+پوشش موضوعی (تقریباً متعادل بین این‌ها):
+هویت و نام‌گذاری، خواص فیزیکی/شیمیایی، کاربرد آزمایشگاهی و صنعتی، گریدها و خلوص، ایمنی و نگهداری، نکات خرید و بسته‌بندی، مقایسه با مواد مشابه، محدودیت‌ها و اشتباهات رایج
+
+خروجی فقط JSON معتبر، بدون متن اضافه و بدون بلوک کد:
+{
+  "material": "نام دسته",
+  "items": [
+    {"q": "سوال؟", "a": "پاسخ کوتاه یک‌پاراگرافی."}
+  ]
+}
+دقیقاً ۵۰ آیتم در items.
+PROMPT;
+
+		$user = sprintf(
+			"موضوع دسته:\n- نام: %s\n- اسلاگ: %s\n- دسته والد: %s\n\nبرای این موضوع دقیقاً ۵۰ سوال و جواب تخصصی با پاسخ‌های کوتاه یک‌پاراگرافی بساز. فقط JSON را برگردان.",
+			$data['name'] ?: '—',
+			$data['slug'] ?: '—',
+			$data['parent_name'] ?: '—'
+		);
+
+		return array(
+			array(
+				'role'    => 'system',
+				'content' => $system,
+			),
+			array(
+				'role'    => 'user',
+				'content' => $user,
+			),
+		);
+	}
+
+	/**
+	 * Call 2: SEO HTML article from Q&A answers only.
+	 *
+	 * @param array{name: string, slug: string, description: string, parent_name: string} $data       Category data.
+	 * @param string                                                                     $qa_payload JSON string of Q&A items.
+	 * @return array<int, array{role: string, content: string}>
+	 */
+	private static function build_category_article_from_qa_messages( array $data, string $qa_payload ): array {
 		$has_current = '' !== trim( (string) ( $data['description'] ?? '' ) );
 
 		$system = <<<'PROMPT'
 تو متخصص شیمی، نویسنده علمی، کارشناس سئو و EEAT برای فروشگاه مواد شیمیایی لوک آزما (https://lookazma.com/) هستی.
-وظیفه: تولید/بازنویسی «توضیح صفحه دسته ووکامرس» به فارسی — بالای لیست محصولات؛ مفید برای خریدار آزمایشگاهی/صنعتی و گوگل.
+وظیفه (مرحله دوم): از روی JSON سوال‌وجواب مرحله قبل، یک مقاله/توضیح دسته حرفه‌ای، نسبتاً بلند و سئوفرندلی به فارسی بنویس که بالای لیست محصولات ووکامرس قابل انتشار باشد.
 
-هدف:
-- منبع فشرده و معتبر درباره این دسته
-- کمک به تصمیم خرید (گرید/برند/بسته‌بندی)
-- دعوت طبیعی به مشاهده محصولات و استعلام از لوک آزما
-- بدون اغراق و بدون اطلاعات ساختگی
+قوانین محتوا:
+- سوالات را چاپ نکن؛ فقط از پاسخ‌ها به‌عنوان منبع استفاده کن
+- پاسخ‌های هم‌پوشان را ادغام و تکراری‌ها را حذف کن
+- عنوان‌های بخش‌ها غنی و توصیفی باشند (نه تک‌کلمه)
+- بدون اغراق و بدون افزودن واقعیت ساختگی فراتر از JSON؛ اگر چیزی در JSON نیست اختراع نکن
+- کلمات کلیدی (نام دسته، خرید، کاربرد، گرید، آزمایشگاهی) طبیعی پخش شوند
+- حجم هدف: حدود ۱۴۰۰ تا ۲۰۰۰ کلمه (کوتاه‌تر از این ننویس مگر JSON واقعاً ضعیف باشد)
+- هر بخش اصلی حداقل ۲ تا ۴ پاراگراف substantive داشته باشد؛ لیست‌ها مکمل پاراگراف‌اند نه جایگزین
+
+عنوان اصلی (اجباری):
+- دقیقاً یک <h1> در ابتدای مطلب
+- عنوان ساده مثل فقط نام ماده/دسته ممنوع است
+- عنوان باید سئوپسند، حرفه‌ای و جذاب باشد؛ ترکیبی از نام دسته + کاربرد/کاربرد آزمایشگاهی یا صنعتی + ارزش برای خریدار
+- مثال الگو (فقط الگو؛ کپی نکن): «خرید [نام] آزمایشگاهی؛ راهنمای گرید، کاربرد و انتخاب»
+- طول عنوان حدود ۸ تا ۱۶ کلمه
 
 تشخیص نوع دسته:
-A) ماده مشخص (مثل متانول، استون): ماده‌محور؛ فقط مشخصات کلیدی معتبر.
-B) گروه/خانواده (حلال‌ها، اسیدها، برند، گرید): گروهی؛ انواع/کاربرد/راهنمای انتخاب؛ CAS و خواص تک‌ماده را اجباری نکن.
-
-سقف حجم (اجباری): حدود ۵۰۰ تا ۹۰۰ کلمه.
-اسکلت موضوعی از ساختار مرجع جامع مواد شیمیایی الهام گرفته شده، ولی خروجی فشرده است — هر بخش کوتاه؛ بخش غیرمرتبط حذف شود.
+A) ماده مشخص: ماده‌محور
+B) گروه/خانواده: گروهی؛ CAS تک‌ماده را اجباری نکن
 
 ساختار خروجی HTML (همین ترتیب؛ فقط بخش‌های مرتبط):
-1) <h2> معرفی [نام دسته]
-   چیستی، جایگاه در آزمایشگاه/صنعت، اهمیت کوتاه، خلاصه کاربردها.
-2) <h3> مشخصات و ویژگی‌های مهم
-   پاراگراف کوتاه + در صورت مفید بودن <ul> یا <table> خیلی مختصر:
-   نام فارسی/انگلیسی، مترادف‌های رایج، CAS (فقط اگر ماده مشخص و مطمئن)، ظاهر، گریدهای رایج مرتبط.
-   فیلد نامطمئن: حذف یا «اطلاعات معتبر و مستندی در این زمینه در دسترس نیست».
-3) <h3> کاربردها
-   مقدمه کوتاه + <ul> با ۵ تا ۸ کاربرد واقعی مرتبط (آزمایشگاه، دارو، شیمی، غذا، آرایشی و … فقط در صورت ارتباط).
-4) <h3> گریدها و نکات خرید
-   گریدهای رایج مرتبط (Laboratory، Analytical، ACS، Extra Pure، HPLC، Food Grade و … فقط اگر مرتبط) + راهنمای انتخاب کوتاه برای خریدار.
-5) <h3> نگهداری و ایمنی (خلاصه)
-   نکات کوتاه نگهداری + ایمنی/PPE سطح خلاصه؛ بدون MSDS کامل، بدون کپی GHS طولانی، بدون ادعای تأییدنشده.
-6) <h3> سوالات متداول
-   دقیقاً ۳ تا ۵ سؤال پرتکرار جستجویی کاربر:
-   <h4>سؤال؟</h4><p>پاسخ حدود ۵۰ تا ۱۰۰ کلمه؛ دقیق و کاربردی؛ تکرار بخش‌های قبل ممنوع.</p>
-7) <h3> خرید [نام دسته] از لوک آزما
-   دعوت به مقایسه برند/گرید/بسته‌بندی و خرید/استعلام با لینک دقیقاً:
+1) <h1> عنوان سئوپسند غنی (طبق قوانین بالا)
+2) <h2> معرفی [نام دسته] و جایگاه آن — ۲ تا ۳ پاراگراف کامل
+3) <h2> مشخصات و ویژگی‌های مهم — پاراگراف‌های کافی + در صورت مفید <ul> یا <table>
+4) <h2> کاربردها در آزمایشگاه و صنعت — مقدمه + <ul> با ۸ تا ۱۲ کاربرد واقعی + توضیح کوتاه هر مورد در صورت امکان
+5) <h2> گریدها، خلوص و راهنمای خرید — نکات عملی انتخاب برای خریدار
+6) <h2> نگهداری، ایمنی و نکات عملی — خلاصه کاربردی؛ بدون MSDS کامل
+7) <h2> سوالات متداول — دقیقاً ۵ تا ۷ مورد:
+   <h3>سؤال؟</h3><p>پاسخ حدود ۶۰ تا ۱۲۰ کلمه؛ تکرار بخش‌های قبل ممنوع.</p>
+8) <h2> خرید [نام دسته] از لوک آزما
+   دعوت کامل‌تر به مقایسه برند/گرید/بسته‌بندی و استعلام با لینک دقیقاً:
    <a href="https://lookazma.com/">لوک آزما</a>
 
-از ساختار مرجع ۲۰ بخشی فقط ایده بگیر؛ این‌ها را به‌صورت فصل جدا ننویس مگر یک جمله ضروری:
-ساختار مولکولی پیشرفته، واکنش‌ها/معادلات، روش تولید، سنتز، MSDS کامل، زیست‌محیطی تفصیلی، منابع/DOI، Meta Description.
-
-قوانین سخت:
-- فقط HTML تمیز: h2, h3, h4, p, ul, ol, li, table, thead, tbody, tr, th, td, strong, em, a
-- بدون Markdown، JSON، h1، Meta Description، بلوک کد، توضیح اضافه
-- واحدها SI؛ نام‌ها استاندارد؛ برند/استاندارد ناشناخته اختراع نکن
-- اگر توضیح فعلی هست: درست‌ها را حفظ و متن را تمیز/کامل‌تر/سئومحور بازنویسی کن
-- کلمات کلیدی (نام دسته، خرید، کاربرد، گرید، آزمایشگاهی) طبیعی پخش شوند
-- لحن علمی، حرفه‌ای، قابل فهم؛ پاراگراف‌ها کوتاه
+قوانین سخت خروجی:
+- فقط HTML تمیز: h1, h2, h3, p, ul, ol, li, table, thead, tbody, tr, th, td, strong, em, a
+- بدون Markdown، JSON، Meta Description، بلوک کد، توضیح اضافه
+- فقط یک h1؛ برای زیربخش‌های FAQ از h3 استفاده کن
+- لحن علمی، حرفه‌ای، قابل فهم؛ پاراگراف‌ها متوسط (نه خیلی کوتاه)
 PROMPT;
 
-		$user = $has_current
-			? sprintf(
-				"اطلاعات دسته:\n- نام: %s\n- اسلاگ: %s\n- دسته والد: %s\n\nتوضیح فعلی:\n%s\n\nاین توضیح را با ساختار HTML اجباری فشرده (معرفی، مشخصات، کاربردها، گرید/خرید، نگهداری و ایمنی، FAQ ۳–۵، CTA لوک آزما) در حدود ۵۰۰ تا ۹۰۰ کلمه بازنویسی و تقویت کن. فقط HTML نهایی را برگردان.",
-				$data['name'] ?: '—',
-				$data['slug'] ?: '—',
-				$data['parent_name'] ?: '—',
-				$data['description']
-			)
-			: sprintf(
-				"اطلاعات دسته:\n- نام: %s\n- اسلاگ: %s\n- دسته والد: %s\n\nتوضیح فعلی خالی است. یک توضیح دسته کامل، فشرده و سئومحور از صفر با همان ساختار HTML اجباری در حدود ۵۰۰ تا ۹۰۰ کلمه بنویس. فقط HTML نهایی را برگردان.",
-				$data['name'] ?: '—',
-				$data['slug'] ?: '—',
-				$data['parent_name'] ?: '—'
-			);
+		$current_block = $has_current
+			? "\n\nتوضیح فعلی دسته (در صورت سازگاری با JSON، نکات درست را حفظ و تقویت کن):\n" . (string) $data['description']
+			: '';
+
+		$user = sprintf(
+			"اطلاعات دسته:\n- نام: %s\n- اسلاگ: %s\n- دسته والد: %s%s\n\nJSON سوال و جواب مرحله اول (منبع):\n%s\n\nیک مقاله کامل و نسبتاً بلند با <h1> سئوپسند غنی (نه فقط نام دسته) و ساختار HTML اجباری بنویس. حدود ۱۴۰۰ تا ۲۰۰۰ کلمه. فقط HTML نهایی را برگردان.",
+			$data['name'] ?: '—',
+			$data['slug'] ?: '—',
+			$data['parent_name'] ?: '—',
+			$current_block,
+			$qa_payload
+		);
 
 		return array(
 			array(
