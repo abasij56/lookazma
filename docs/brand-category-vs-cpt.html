@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>مقایسه برند: دسته در برابر CPT</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--glass: rgba(255, 255, 255, 0.08);
+			--glass-strong: rgba(255, 255, 255, 0.14);
+			--glass-edge: rgba(255, 255, 255, 0.28);
+			--ink: rgba(246, 251, 255, 0.94);
+			--muted: rgba(214, 232, 240, 0.72);
+			--accent: #7ef0d8;
+			--accent-2: #9ecbff;
+			--good: #6ee7b7;
+			--warn: #fbbf24;
+			--poor: #fb7185;
+			--shadow: 0 24px 80px rgba(4, 18, 32, 0.38);
+			--radius: 28px;
+		}
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			color: var(--ink);
+			font-family: Vazirmatn, Tahoma, system-ui, sans-serif;
+			background:
+				radial-gradient(1100px 650px at 90% -8%, rgba(72, 214, 196, 0.28), transparent 55%),
+				radial-gradient(900px 560px at -8% 20%, rgba(86, 140, 255, 0.3), transparent 48%),
+				linear-gradient(165deg, #06141f 0%, #0b2a36 45%, #12313a 100%);
+			min-height: 100vh;
+			line-height: 1.85;
+		}
+		.orb {
+			position: fixed; border-radius: 50%; filter: blur(40px);
+			pointer-events: none; z-index: 0; opacity: 0.5;
+			animation: drift 18s ease-in-out infinite;
+		}
+		.orb-a { width: 300px; height: 300px; right: -70px; top: 12%; background: #2fd4b6; }
+		.orb-b { width: 240px; height: 240px; left: -50px; top: 52%; background: #4d8dff; animation-delay: -7s; }
+		@keyframes drift {
+			0%, 100% { transform: translate3d(0,0,0) scale(1); }
+			50% { transform: translate3d(-20px,-26px,0) scale(1.06); }
+		}
+		.shell {
+			position: relative; z-index: 1;
+			max-width: 1180px; margin: 0 auto;
+			padding: 28px 20px 72px;
+			display: grid;
+			grid-template-columns: 250px minmax(0, 1fr);
+			gap: 22px;
+		}
+		.glass {
+			background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+			border: 1px solid var(--glass-edge);
+			box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.22);
+			backdrop-filter: blur(22px) saturate(160%);
+			-webkit-backdrop-filter: blur(22px) saturate(160%);
+			border-radius: var(--radius);
+		}
+		nav.toc { position: sticky; top: 18px; align-self: start; padding: 20px 16px; max-height: calc(100vh - 40px); overflow: auto; }
+		nav.toc h2 { margin: 0 0 12px; font-size: 12px; color: var(--accent); font-weight: 600; }
+		nav.toc a {
+			display: block; color: var(--muted); text-decoration: none;
+			padding: 6px 10px; border-radius: 12px; font-size: 12.8px;
+		}
+		nav.toc a:hover, nav.toc a.active {
+			background: rgba(126, 240, 216, 0.12); color: #fff;
+		}
+		.hero { padding: 34px 38px 28px; margin-bottom: 16px; }
+		.kicker {
+			display: inline-flex; padding: 6px 12px; border-radius: 999px;
+			border: 1px solid var(--glass-edge); background: rgba(255,255,255,0.06);
+			font-size: 12px; color: var(--accent);
+		}
+		h1 { font-size: clamp(1.45rem, 3vw, 2.15rem); margin: 12px 0 10px; font-weight: 700; line-height: 1.4; }
+		.lede { margin: 0; color: var(--muted); }
+		.panel { padding: 26px 30px 30px; margin-bottom: 16px; }
+		h2 { margin: 0 0 10px; font-size: 1.22rem; font-weight: 700; }
+		h3 { margin: 16px 0 8px; font-size: 1.02rem; color: var(--accent-2); font-weight: 600; }
+		p { margin: 0 0 11px; }
+		ul, ol { margin: 0 0 12px; padding-right: 1.2em; padding-left: 0; }
+		li { margin: 0 0 6px; }
+		strong { color: #fff; }
+		a { color: var(--accent); }
+		code {
+			font-family: ui-monospace, Consolas, monospace; font-size: 0.85em;
+			background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.12);
+			padding: 1px 6px; border-radius: 6px; direction: ltr; display: inline-block;
+		}
+		.pill {
+			display: inline-block; padding: 4px 10px; border-radius: 999px;
+			font-size: 12px; margin: 0 0 10px 6px;
+			border: 1px solid rgba(255,255,255,0.16); background: rgba(0,0,0,0.18);
+		}
+		.pill.ok { color: var(--good); }
+		.pill.warn { color: var(--warn); }
+		.pill.bad { color: var(--poor); }
+		.note {
+			padding: 13px 15px; border-radius: 16px; margin: 12px 0 0;
+			border: 1px solid rgba(126, 240, 216, 0.28);
+			background: rgba(126, 240, 216, 0.08);
+		}
+		.warn-box {
+			padding: 13px 15px; border-radius: 16px; margin: 12px 0 14px;
+			border: 1px solid rgba(251, 191, 36, 0.4);
+			background: rgba(251, 191, 36, 0.1);
+		}
+		.bad-box {
+			padding: 13px 15px; border-radius: 16px; margin: 12px 0 14px;
+			border: 1px solid rgba(251, 113, 133, 0.4);
+			background: rgba(251, 113, 133, 0.1);
+		}
+		.grid {
+			display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;
+		}
+		.grid-3 {
+			display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 12px 0;
+		}
+		.card {
+			padding: 14px 15px; border-radius: 18px;
+			background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+		}
+		.card h3 { margin: 0 0 8px; color: var(--accent); font-size: 0.95rem; }
+		.card p { margin: 0; color: var(--muted); font-size: 0.94rem; }
+		.example {
+			padding: 12px 14px; border-radius: 14px; margin: 10px 0 12px;
+			background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.12);
+			font-size: 0.92rem; direction: ltr; text-align: left;
+			font-family: ui-monospace, Consolas, monospace; white-space: pre-wrap;
+		}
+		table {
+			width: 100%; border-collapse: collapse; font-size: 0.88rem;
+			margin: 10px 0 8px; overflow: hidden; border-radius: 16px;
+		}
+		th, td {
+			text-align: right; padding: 9px 11px; vertical-align: top;
+			border-bottom: 1px solid rgba(255,255,255,0.1);
+		}
+		th { color: var(--accent); background: rgba(255,255,255,0.05); }
+		.win { color: var(--good); font-weight: 600; }
+		.lose { color: var(--poor); }
+		.mid { color: var(--warn); }
+		footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+		@media (max-width: 900px) {
+			.shell { grid-template-columns: 1fr; }
+			nav.toc { position: relative; top: 0; max-height: none; }
+			.grid, .grid-3 { grid-template-columns: 1fr; }
+			.hero, .panel { padding: 22px 18px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="orb orb-a"></div>
+	<div class="orb orb-b"></div>
+
+	<div class="shell">
+		<nav class="toc glass" aria-label="فهرست">
+			<h2>فهرست</h2>
+			<a href="#hero">خلاصه رأی</a>
+			<a href="#why-not-cat">چرا دسته محصول نه؟</a>
+			<a href="#compare">مقایسه دسته و CPT</a>
+			<a href="#seo">مقایسه کامل سئو</a>
+			<a href="#third">گزینه سوم: تاکسونومی برند</a>
+			<a href="#needs">نیازهای لوک‌آزما</a>
+			<a href="#verdict">رأی نهایی</a>
+		</nav>
+
+		<main>
+			<header class="hero glass" id="hero">
+				<div class="kicker">لوک‌آزما · تصمیم معماری برند</div>
+				<h1>دسته محصول بهتر است یا CPT؟</h1>
+				<p class="lede">
+					مقایسه مهاجرت برند از <code>product_tag</code> به
+					<strong>دسته ووکامرس (<code>product_cat</code>)</strong>
+					در برابر
+					<strong>Custom Post Type</strong>
+					— به‌همراه مقایسه کامل سئو و گزینه سوم (تاکسونومی اختصاصی برند).
+				</p>
+			</header>
+
+			<section class="panel glass">
+				<span class="pill ok">رأی کوتاه</span>
+				<h2>نتیجه یک‌خطی</h2>
+				<div class="bad-box">
+					اگر منظور از «دسته» همان <code>product_cat</code> است:
+					<strong>برندها را داخل دسته محصول نبرید.</strong>
+				</div>
+				<div class="note">
+					بین این دو گزینه: <strong>CPT از product_cat بهتر است.</strong><br>
+					اما از نظر فنی، تمیزترین رابطه محصول معمولاً یک
+					<strong>تاکسونومی اختصاصی برند</strong> مثل <code>product_brand</code> است —
+					نه دسته محصول، و لزوماً نه CPT.
+				</div>
+			</section>
+
+			<section class="panel glass" id="why-not-cat">
+				<span class="pill bad">نامناسب</span>
+				<h2>چرا دسته محصول برای برند مناسب نیست؟</h2>
+				<p>دسته‌های فعلی می‌گویند ماده <strong>چیست</strong>:</p>
+				<ul>
+					<li>حلال‌ها</li>
+					<li>اسیدها و بازها</li>
+					<li>نمک‌ها</li>
+					<li>مواد اولیه دارویی</li>
+				</ul>
+				<p>برندها می‌گویند ماده را <strong>چه کسی</strong> ساخته / تأمین کرده:</p>
+				<ul>
+					<li>Merck</li>
+					<li>دکتر مجللی</li>
+					<li>نوترون</li>
+				</ul>
+				<div class="example">Product: Acetone Merck
+
+Category: Solvents
+Brand: Merck</div>
+				<p>اگر Merck تبدیل به دسته محصول شود، یک تاکسونومی هم مواد شیمیایی و هم برندها را مخلوط می‌کند:</p>
+				<div class="example">Solvents
+Acids
+Pharmaceutical ingredients
+Merck
+Neutron
+Dr. Mojallali</div>
+				<p>این از نظر معنایی غلط است و فیلتر، بردکرامب، آرشیو و ساختار سئو را گیج می‌کند.</p>
+				<div class="note">
+					کد فیلتر فعلی لوک‌آزما از قبل دسته و برند را جدا نگه می‌دارد
+					(<code>product_cat</code> در برابر <code>product_tag</code>).
+					مخلوط کردن برند داخل دسته، همین جداسازی تمیز را خراب می‌کند.
+				</div>
+			</section>
+
+			<section class="panel glass" id="compare">
+				<h2>مقایسه دسته ووکامرس و CPT</h2>
+				<table>
+					<thead>
+						<tr>
+							<th>حوزه</th>
+							<th>دسته محصول</th>
+							<th>CPT برند</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>درستی معنایی</td>
+							<td class="lose">ضعیف</td>
+							<td class="win">خوب</td>
+						</tr>
+						<tr>
+							<td>اتصال به محصول</td>
+							<td class="win">native و آسان</td>
+							<td class="mid">نیاز به فیلد رابطه</td>
+						</tr>
+						<tr>
+							<td>فیلتر محصولات</td>
+							<td class="win">سریع و native</td>
+							<td class="mid">نیاز به meta/relationship query</td>
+						</tr>
+						<tr>
+							<td>صفحه غنی برند</td>
+							<td class="mid">ممکن ولی محدود</td>
+							<td class="win">عالی</td>
+						</tr>
+						<tr>
+							<td>ویرایشگر Gutenberg</td>
+							<td class="lose">محدود (term editor)</td>
+							<td class="win">کامل</td>
+						</tr>
+						<tr>
+							<td>تاریخچه revision</td>
+							<td class="lose">ندارد</td>
+							<td class="win">دارد</td>
+						</tr>
+						<tr>
+							<td>تصویر شاخص / لوگو</td>
+							<td class="mid">با term meta اضافه</td>
+							<td class="win">native</td>
+						</tr>
+						<tr>
+							<td>فیلد سفارشی</td>
+							<td class="mid">ممکن</td>
+							<td class="win">آسان</td>
+						</tr>
+						<tr>
+							<td>URL آرشیو برند</td>
+							<td class="mid">ممکن</td>
+							<td class="win">طبیعی: <code>/brand/merck/</code></td>
+						</tr>
+						<tr>
+							<td>کارایی کوئری محصول</td>
+							<td class="win">عالی</td>
+							<td class="mid">وابسته به پیاده‌سازی رابطه</td>
+						</tr>
+						<tr>
+							<td>تغییر کد فعلی</td>
+							<td class="mid">متوسط</td>
+							<td class="lose">زیاد</td>
+						</tr>
+						<tr>
+							<td>مزیت سئو به‌تنهایی</td>
+							<td>هیچ</td>
+							<td>هیچ (به‌تنهایی)</td>
+						</tr>
+						<tr>
+							<td>انعطاف بلندمدت محتوا</td>
+							<td class="mid">متوسط</td>
+							<td class="win">بالا</td>
+						</tr>
+					</tbody>
+				</table>
+			</section>
+
+			<section class="panel glass" id="seo">
+				<h2>مقایسه کامل سئو</h2>
+				<p>گوگل فقط به‌خاطر CPT بودن، صفحه را بالاتر نمی‌آورد. سئو به محتوا، ساختار، لینک داخلی و ایندکس بستگی دارد.</p>
+
+				<h3>۱. ساختار URL</h3>
+				<div class="grid">
+					<div class="card">
+						<h3>دسته</h3>
+						<p><code>lookazma.com/product-category/brands/merck/</code></p>
+					</div>
+					<div class="card">
+						<h3>CPT</h3>
+						<p><code>lookazma.com/brand/merck/</code></p>
+					</div>
+				</div>
+				<p>URL مربوط به CPT معمولاً کوتاه‌تر، واضح‌تر و قابل‌فهم‌تر است. ولی یک تاکسونومی اختصاصی هم می‌تواند همان <code>/brand/merck/</code> را داشته باشد.</p>
+				<p><span class="win">برنده:</span> CPT (از نظر ظاهر URL)</p>
+
+				<h3>۲. معماری موضوعی</h3>
+				<p>دسته‌ها باید تاکسونومی شیمیایی بسازند:</p>
+				<div class="example">Chemicals
+├── Solvents
+├── Acids and bases
+├── Organic compounds
+└── Pharmaceutical ingredients</div>
+				<p>برندها باید موازی بمانند:</p>
+				<div class="example">Brands
+├── Merck
+├── Neutron
+└── Dr. Mojallali</div>
+				<p>گذاشتن برند داخل دسته محصول، سیگنال سلسله‌مراتب سایت را مخلوط می‌کند.</p>
+				<p><span class="win">برنده:</span> CPT</p>
+
+				<h3>۳. بردکرامب</h3>
+				<p>اگر برند دسته شود، ممکن است ببینید:</p>
+				<div class="example">خانه ← محصولات ← برندها ← مرک ← استون</div>
+				<p>در حالی که همان محصول هم‌زمان این مسیر را هم دارد:</p>
+				<div class="example">خانه ← مواد شیمیایی ← حلال‌ها ← استون</div>
+				<p>این دو سلسله‌مراتب رقیب می‌سازد. با CPT، بردکرامب محصول می‌تواند دسته‌محور بماند و برند به‌صورت بج/لینک جدا نمایش داده شود.</p>
+				<p><span class="win">برنده:</span> CPT</p>
+
+				<h3>۴. ریسک محتوای تکراری / آرشیو نازک</h3>
+				<p>اگر برندها دسته شوند، چند آرشیو ممکن است محصولات مشابه را نشان دهند (حلال‌ها، مرک، مواد آزمایشگاهی و …). این لزوماً duplicate نیست، ولی آرشیوهای نازک با گرید مشابه می‌توانند رقابت کنند.</p>
+				<p>صفحه CPT برند راحت‌تر می‌تواند محتوای یکتا داشته باشد: تاریخچه، کشور، گواهی، تخصص محصول، لینک رسمی، مقدمه منحصربه‌فرد.</p>
+				<p><span class="win">برنده:</span> CPT — اگر محتوا واقعاً یکتا باشد</p>
+
+				<h3>۵. کیفیت صفحه برند</h3>
+				<ul>
+					<li>CPT: Gutenberg کامل، revision، تصویر شاخص، excerpt، فیلد سفارشی، عنوان/متای سئو، وضعیت انتشار، زمان‌بندی، مالکیت ویرایشگر</li>
+					<li>دسته: فیلد سفارشی ممکن است، ولی ویرایش و revision ضعیف‌تر است</li>
+				</ul>
+				<p><span class="win">برنده:</span> CPT</p>
+
+				<h3>۶. فیلتر و عملکرد کوئری (نقطه قوت taxonomy)</h3>
+				<p>اینجا taxonomy/دسته برنده است. کوئری تاکسونومی native و برای فیلتر، شمارش فاست، آرشیو برند و کاتالوگ بزرگ مناسب‌تر است.</p>
+				<p>رابطه CPT که فقط در meta ذخیره شود، معمولاً سنگین‌تر است.</p>
+				<div class="warn-box">
+					این استدلال به نفع <strong>تاکسونومی اختصاصی برند</strong> است —
+					نه به نفع سوءاستفاده از <code>product_cat</code>.
+				</div>
+				<p><span class="win">برنده:</span> تاکسونومی / دسته از نظر فنی — اما نه product_cat برای برند</p>
+
+				<h3>۷. داده ساخت‌یافته (Schema)</h3>
+				<p>هر دو می‌توانند خروجی دهند: Brand، Organization، BreadcrumbList، ویژگی brand روی Product، لوگو و URL رسمی.</p>
+				<p>CPT به‌تنهایی schema بهتر نمی‌سازد؛ تمپلیت باید درست پیاده شود.</p>
+				<p><span class="mid">برنده:</span> مساوی</p>
+
+				<h3>۸. لینک داخلی</h3>
+				<p>هر دو می‌توانند از نوار برند خانه، بج محصول، جستجو، کارت‌ها، برندهای مرتبط و مقالات لینک بگیرند. CPT آسان‌تر اجازه می‌دهد هر برند را لندینگ تحریریه‌ای ببینید.</p>
+				<p><span class="win">برنده:</span> CPT (مزیت جزئی)</p>
+
+				<h3>۹. ایندکس و sitemap</h3>
+				<p>هر دو می‌توانند در Yoast sitemap باشند، کنونیکال بگیرند، ایندکس شوند، عنوان/متای سفارشی داشته باشند، یا در صورت نازک بودن noindex شوند.</p>
+				<p>هیچ برتری ذاتی رتبه‌ای وجود ندارد.</p>
+				<p><span class="mid">برنده:</span> مساوی</p>
+
+				<h3>۱۰. ایمنی مهاجرت</h3>
+				<div class="grid">
+					<div class="card">
+						<h3>تگ → دسته محصول</h3>
+						<p>مهاجرت رابطه ساده‌تر، ولی بدهی معماری و معنایی بلندمدت.</p>
+					</div>
+					<div class="card">
+						<h3>تگ → CPT</h3>
+						<p>تغییر کد بیشتر (رابطه، بج، فیلتر، جستجو، خانه، AI، قیمت‌گذاری)، ولی موجودیت برند تمیزتر.</p>
+					</div>
+				</div>
+				<p>
+					<span class="win">کوتاه‌مدت:</span> دسته آسان‌تر است ·
+					<span class="win">بلندمدت:</span> CPT تمیزتر است (نسبت به product_cat)
+				</p>
+			</section>
+
+			<section class="panel glass" id="third">
+				<span class="pill ok">گزینه پیشنهادی فنی</span>
+				<h2>گزینه سوم: تاکسونومی اختصاصی برند</h2>
+				<p>برای لوک‌آزما ممکن است بهترین پاسخ کلی این باشد:</p>
+				<div class="example">Taxonomy: product_brand
+URL: /brand/merck/
+Product relationship: native taxonomy assignment</div>
+				<p>مزایا:</p>
+				<ul>
+					<li>جداسازی درست از دسته‌های شیمیایی</li>
+					<li>فیلتر سریع محصول</li>
+					<li>اتصال آسان محصول به برند</li>
+					<li>کوئری آرشیو native</li>
+					<li>مهاجرت ساده از <code>product_tag</code></li>
+					<li>یک یا چند برند در صورت نیاز</li>
+					<li>لوگو و فیلد برند با term meta / ACF</li>
+					<li>صفحه سئو در <code>/brand/{slug}/</code></li>
+				</ul>
+				<p>تنها ضعف بزرگ: ویرایشگر برند به‌اندازه CPT قدرتمند نیست (بدون Gutenberg کامل و revision).</p>
+
+				<h3>مقایسه هر سه گزینه</h3>
+				<table>
+					<thead>
+						<tr>
+							<th>نیاز</th>
+							<th><code>product_cat</code></th>
+							<th>CPT برند</th>
+							<th><code>product_brand</code></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>درستی معنایی</td>
+							<td class="lose">خیر</td>
+							<td class="win">بله</td>
+							<td class="win">بله</td>
+						</tr>
+						<tr>
+							<td>رابطه native با محصول</td>
+							<td class="win">بله</td>
+							<td class="lose">خیر</td>
+							<td class="win">بله</td>
+						</tr>
+						<tr>
+							<td>فیلتر کارآمد</td>
+							<td class="win">بله</td>
+							<td class="mid">ضعیف‌تر</td>
+							<td class="win">بله</td>
+						</tr>
+						<tr>
+							<td>صفحه تحریریه‌ای غنی</td>
+							<td class="mid">متوسط</td>
+							<td class="win">عالی</td>
+							<td class="mid">متوسط</td>
+						</tr>
+						<tr>
+							<td>مهاجرت ساده از تگ</td>
+							<td class="mid">متوسط</td>
+							<td class="lose">سخت‌تر</td>
+							<td class="win">آسان</td>
+						</tr>
+						<tr>
+							<td>URL تمیز <code>/brand/</code></td>
+							<td class="mid">ممکن</td>
+							<td class="win">بله</td>
+							<td class="win">بله</td>
+						</tr>
+						<tr>
+							<td>آلوده‌نکردن دسته‌ها</td>
+							<td class="lose">خیر</td>
+							<td class="win">بله</td>
+							<td class="win">بله</td>
+						</tr>
+						<tr>
+							<td>Revision / Gutenberg</td>
+							<td class="lose">خیر</td>
+							<td class="win">بله</td>
+							<td class="lose">خیر</td>
+						</tr>
+						<tr>
+							<td>بهترین معماری کاتالوگ</td>
+							<td class="lose">خیر</td>
+							<td class="mid">متوسط</td>
+							<td class="win">بله</td>
+						</tr>
+						<tr>
+							<td>بهترین پروفایل محتوایی برند</td>
+							<td class="lose">خیر</td>
+							<td class="win">بله</td>
+							<td class="mid">متوسط</td>
+						</tr>
+					</tbody>
+				</table>
+			</section>
+
+			<section class="panel glass" id="needs">
+				<h2>نیازهای واقعی لوک‌آزما چیست؟</h2>
+				<p>سیستم برند فعلی نیاز دارد به:</p>
+				<div class="grid">
+					<div class="card">
+						<h3>کاتالوگ</h3>
+						<p>نام، لوگو، توضیح، گرید محصول، بج/لینک روی محصول، نوار خانه، جستجو، فیلتر</p>
+					</div>
+					<div class="card">
+						<h3>ابزار ادمین</h3>
+						<p>ثبت اتوماتیک AI بر اساس برند، Attribute Price Editor بر اساس برند</p>
+					</div>
+				</div>
+				<p>بیشتر این‌ها نیاز <strong>طبقه‌بندی و فیلتر کاتالوگ</strong> هستند، نه نیاز انتشار تحریریه‌ای سنگین.</p>
+
+				<div class="grid">
+					<div class="card">
+						<h3>اگر صفحه برند ساده بماند</h3>
+						<p>تاکسونومی اختصاصی <code>product_brand</code> پیشنهاد فنی اصلی است.</p>
+					</div>
+					<div class="card">
+						<h3>اگر هر برند مثل مینی‌سایت شود</h3>
+						<p>CPT توجیه دارد: صفحه بلند، بخش‌های متعدد، revision، بلوک Gutenberg، متادیتای پیچیده.</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="panel glass" id="verdict">
+				<span class="pill ok">جمع‌بندی</span>
+				<h2>رأی نهایی</h2>
+				<ol>
+					<li>
+						<strong>از دسته محصول ووکامرس استفاده نکنید.</strong>
+						برند را با طبقه‌بندی شیمیایی مخلوط می‌کند و معماری اطلاعات را خراب می‌کند.
+					</li>
+					<li>
+						<strong>بهترین گزینه برای نیازهای فعلی لوک‌آزما:</strong>
+						تاکسونومی اختصاصی <code>product_brand</code>
+						— رابطه تمیز، فیلتر سریع، مهاجرت ساده‌تر از تگ.
+					</li>
+					<li>
+						<strong>اگر اولویت، صفحه تحریریه‌ای خیلی غنی است:</strong>
+						CPT برند — ویرایشگر قوی‌تر، ولی کار رابطه و فیلتر بیشتر.
+					</li>
+				</ol>
+
+				<div class="note">
+					<strong>نتیجه سئو:</strong>
+					گوگل ذاتاً CPT را به taxonomy ترجیح نمی‌دهد.
+					رتبه به محتوای یکتای برند، عنوان/متا، لینک محصول، کنونیکال، schema، لینک داخلی، اجتناب از صفحه نازک و ۳۰۱ از URLهای قدیمی بستگی دارد.
+				</div>
+
+				<div class="warn-box">
+					اگر بخواهید برنامه مهاجرت را بازنگری کنید، مسیر پیشنهادی از
+					<code>product_tag → Brand CPT</code>
+					به
+					<code>product_tag → product_brand taxonomy</code>
+					تغییر می‌کند —
+					مگر اینکه صریحاً Gutenberg کامل و revision برای صفحات برند لازم داشته باشید.
+				</div>
+
+				<p style="margin-top:14px;color:var(--muted);font-size:0.92rem">
+					مرتبط:
+					<a href="./brand-cpt-migration-plan.html">برنامه مهاجرت برند (CPT)</a>
+				</p>
+			</section>
+
+			<footer>اسناد لوک‌آزما · مقایسه دسته در برابر CPT برای برند · به‌همراه گزینه تاکسونومی اختصاصی</footer>
+		</main>
+	</div>
+
+	<script>
+		(function () {
+			var links = document.querySelectorAll("nav.toc a");
+			var sections = [];
+			links.forEach(function (a) {
+				var el = document.getElementById(a.getAttribute("href").slice(1));
+				if (el) sections.push({ el: el, a: a });
+			});
+			function sync() {
+				var y = window.scrollY + 80, current = sections[0];
+				sections.forEach(function (s) { if (s.el.offsetTop <= y) current = s; });
+				links.forEach(function (a) { a.classList.remove("active"); });
+				if (current) current.a.classList.add("active");
+			}
+			window.addEventListener("scroll", sync, { passive: true });
+			sync();
+		})();
+	</script>
+</body>
+</html>

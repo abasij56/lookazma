@@ -325,6 +325,12 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			return false;
 		}
 
+		if ( class_exists( 'Hello_Elementor_Child_Custom_Brand_Single' )
+			&& Hello_Elementor_Child_Custom_Brand_Single::is_brand_request()
+		) {
+			return false;
+		}
+
 		if ( class_exists( 'Hello_Elementor_Child_Light_Homepage_Template' )
 			&& Hello_Elementor_Child_Light_Homepage_Template::is_enabled()
 		) {

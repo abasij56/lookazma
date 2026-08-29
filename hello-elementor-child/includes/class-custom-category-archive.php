@@ -405,7 +405,7 @@ final class Hello_Elementor_Child_Custom_Category_Archive {
 	}
 
 	/**
-	 * Parse category description into H1 + heading TOC sections.
+	 * Parse category description into H1 + nested heading TOC (h2 → h3 children).
 	 *
 	 * @param string $html Description HTML.
 	 * @return array<string, mixed>
@@ -443,10 +443,12 @@ final class Hello_Elementor_Child_Custom_Category_Archive {
 			$heading_html = (string) $headings[ $i ]['html'];
 			$with_id      = self::inject_heading_id( $heading_html, $id );
 			$annotated    = substr( $annotated, 0, $offset ) . $with_id . substr( $annotated, $offset + strlen( $heading_html ) );
+			$headings[ $i ]['id'] = $id;
 		}
 
 		$out['full_html'] = wp_kses_post( $annotated );
 
+		$flat = array();
 		for ( $i = 0; $i < $count; $i++ ) {
 			$label = trim( (string) $headings[ $i ]['label'] );
 			if ( '' === $label ) {
@@ -457,13 +459,56 @@ final class Hello_Elementor_Child_Custom_Category_Archive {
 				);
 			}
 
-			$out['sections'][] = array(
-				'id'    => 'lk-cat-sec-' . ( $i + 1 ),
-				'label' => $label,
+			$flat[] = array(
+				'id'       => (string) ( $headings[ $i ]['id'] ?? ( 'lk-cat-sec-' . ( $i + 1 ) ) ),
+				'label'    => $label,
+				'level'    => (int) ( $headings[ $i ]['level'] ?? 2 ),
+				'children' => array(),
 			);
 		}
 
+		$out['sections'] = self::nest_heading_sections( $flat );
+
 		return $out;
+	}
+
+	/**
+	 * Nest flat h2/h3 items: h3s become children of the preceding h2.
+	 *
+	 * @param array<int, array{id:string,label:string,level:int,children:array}> $flat Flat headings.
+	 * @return array<int, array{id:string,label:string,level:int,children:array}>
+	 */
+	private static function nest_heading_sections( array $flat ): array {
+		$nested     = array();
+		$current_h2 = null;
+
+		foreach ( $flat as $item ) {
+			$level = (int) ( $item['level'] ?? 2 );
+			if ( $level <= 2 ) {
+				$item['level']    = 2;
+				$item['children'] = array();
+				$nested[]         = $item;
+				$current_h2       = count( $nested ) - 1;
+				continue;
+			}
+
+			$child = array(
+				'id'    => (string) $item['id'],
+				'label' => (string) $item['label'],
+				'level' => $level,
+			);
+
+			if ( null === $current_h2 ) {
+				$item['level']    = 2;
+				$item['children'] = array();
+				$nested[]         = $item;
+				continue;
+			}
+
+			$nested[ $current_h2 ]['children'][] = $child;
+		}
+
+		return $nested;
 	}
 
 	/**
@@ -495,10 +540,22 @@ final class Hello_Elementor_Child_Custom_Category_Archive {
 	}
 
 	/**
+	 * Detect heading level from markup (h2→2, h3→3, fallbacks→2).
+	 *
+	 * @param string $html Heading HTML.
+	 */
+	private static function detect_heading_level( string $html ): int {
+		if ( preg_match( '/^<h([2-4])\b/i', $html, $m ) ) {
+			return (int) $m[1];
+		}
+		return 2;
+	}
+
+	/**
 	 * Find H2/H3/Elementor/strong headings with offsets.
 	 *
 	 * @param string $html HTML.
-	 * @return array<int, array{html:string,offset:int,label:string}>
+	 * @return array<int, array{html:string,offset:int,label:string,level:int}>
 	 */
 	private static function find_section_headings( string $html ): array {
 		$real_patterns = array(
@@ -526,7 +583,7 @@ final class Hello_Elementor_Child_Custom_Category_Archive {
 			}
 		);
 
-		$deduped = array();
+		$deduped  = array();
 		$last_end = -1;
 		foreach ( $hits as $hit ) {
 			if ( $hit['offset'] < $last_end ) {
@@ -537,6 +594,7 @@ final class Hello_Elementor_Child_Custom_Category_Archive {
 				continue;
 			}
 			$hit['label'] = $label;
+			$hit['level'] = self::detect_heading_level( (string) $hit['html'] );
 			$deduped[]    = $hit;
 			$last_end     = $hit['offset'] + strlen( $hit['html'] );
 		}

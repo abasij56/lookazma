@@ -84,6 +84,10 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			return true;
 		}
 
+		if ( self::is_brand_singular_context() ) {
+			return true;
+		}
+
 		$mode = apply_filters( 'lk_archive_filter_mode', self::MODE );
 
 		if ( 'sitewide' === $mode ) {
@@ -145,11 +149,20 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		}
 
 		return self::is_product_search_context()
+			|| self::is_brand_singular_context()
 			|| ( function_exists( 'is_shop' ) && is_shop() )
 			|| ( function_exists( 'is_product_category' ) && is_product_category() )
 			|| is_tax( 'product_cat' )
 			|| ( function_exists( 'is_product_tag' ) && is_product_tag() )
 			|| is_tax( 'product_tag' );
+	}
+
+	/**
+	 * Light brand CPT single (/brands/{slug}/).
+	 */
+	public static function is_brand_singular_context(): bool {
+		return class_exists( 'Hello_Elementor_Child_Custom_Brand_Single' )
+			&& Hello_Elementor_Child_Custom_Brand_Single::is_enabled();
 	}
 
 	/**
@@ -187,6 +200,9 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		}
 		if ( is_tax( 'product_cat' ) ) {
 			return 'product_cat';
+		}
+		if ( self::is_brand_singular_context() ) {
+			return 'product_tag';
 		}
 		return '';
 	}
@@ -330,6 +346,12 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	 * Current category/tag term for scoping counts/options.
 	 */
 	private static function get_scope_term(): ?WP_Term {
+		if ( self::is_brand_singular_context()
+			&& class_exists( 'Hello_Elementor_Child_Custom_Brand_Single' )
+		) {
+			return Hello_Elementor_Child_Custom_Brand_Single::get_primary_product_tag();
+		}
+
 		$taxonomy = self::get_scope_taxonomy();
 		if ( '' === $taxonomy ) {
 			return null;
@@ -795,6 +817,9 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 					) || (
 						class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' )
 						&& Hello_Elementor_Child_Custom_Tag_Archive::is_enabled()
+					) || (
+						class_exists( 'Hello_Elementor_Child_Custom_Brand_Single' )
+						&& Hello_Elementor_Child_Custom_Brand_Single::is_enabled()
 					),
 				'perPage'        => (
 					class_exists( 'Hello_Elementor_Child_Light_Product_Template' )
@@ -802,20 +827,25 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 				)
 					? Hello_Elementor_Child_Light_Product_Template::get_per_page()
 					: ( (
-						class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
-						&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled()
+						class_exists( 'Hello_Elementor_Child_Custom_Brand_Single' )
+						&& Hello_Elementor_Child_Custom_Brand_Single::is_enabled()
 					)
-						? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
+						? Hello_Elementor_Child_Custom_Brand_Single::get_per_page()
 						: ( (
-							class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' )
-							&& Hello_Elementor_Child_Custom_Tag_Archive::is_enabled()
+							class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+							&& Hello_Elementor_Child_Custom_Category_Archive::is_enabled()
 						)
-							? Hello_Elementor_Child_Custom_Tag_Archive::get_per_page()
-							: ( ( $use_shop_ui && 'product_cat' !== $taxonomy )
-								? 12
-								: ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
-									? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
-									: 12 ) ) ) ),
+							? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
+							: ( (
+								class_exists( 'Hello_Elementor_Child_Custom_Tag_Archive' )
+								&& Hello_Elementor_Child_Custom_Tag_Archive::is_enabled()
+							)
+								? Hello_Elementor_Child_Custom_Tag_Archive::get_per_page()
+								: ( ( $use_shop_ui && 'product_cat' !== $taxonomy )
+									? 12
+									: ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' )
+										? Hello_Elementor_Child_Custom_Category_Archive::get_per_page()
+										: 12 ) ) ) ) ),
 				'i18n'           => array(
 					'empty'      => __( 'محصولی با این فیلترها پیدا نشد.', 'hello-elementor-child' ),
 					'error'      => __( 'خطا در فیلتر محصولات.', 'hello-elementor-child' ),
@@ -870,12 +900,18 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		}
 
 		$per_page = 12;
-		if ( class_exists( 'Hello_Elementor_Child_Light_Product_Template' ) ) {
+		if ( class_exists( 'Hello_Elementor_Child_Custom_Brand_Single' )
+			&& Hello_Elementor_Child_Custom_Brand_Single::is_enabled()
+		) {
+			$per_page = Hello_Elementor_Child_Custom_Brand_Single::get_per_page();
+		} elseif ( class_exists( 'Hello_Elementor_Child_Light_Product_Template' ) ) {
 			$per_page = Hello_Elementor_Child_Light_Product_Template::get_per_page();
 		}
 
 		$is_search    = self::is_product_search_context();
 		$search_query = $is_search ? trim( (string) get_search_query( false ) ) : '';
+		$scope_term   = self::get_scope_term();
+		$scope_tax    = self::get_scope_taxonomy();
 
 		wp_localize_script(
 			'lk-archive-filters',
@@ -884,8 +920,8 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
 				'action'         => 'lk_archive_filter_products',
 				'nonce'          => wp_create_nonce( 'lk_archive_filter' ),
-				'termId'         => 0,
-				'taxonomy'       => '',
+				'termId'         => $scope_term ? (int) $scope_term->term_id : 0,
+				'taxonomy'       => $scope_tax,
 				'isShop'         => true,
 				'isSearch'       => $is_search,
 				'searchQuery'    => $search_query,
@@ -1213,6 +1249,12 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 			&& Hello_Elementor_Child_Custom_Tag_Archive::is_enabled( $term_id > 0 ? $term_id : null )
 		) {
 			$per_page = Hello_Elementor_Child_Custom_Tag_Archive::get_per_page();
+		} elseif ( class_exists( 'Hello_Elementor_Child_Custom_Brand_Single' )
+			&& 'product_tag' === $taxonomy
+			&& $term_id > 0
+		) {
+			// AJAX from /brands/{slug}/ sends the mapped product_tag id.
+			$per_page = Hello_Elementor_Child_Custom_Brand_Single::get_per_page();
 		} elseif ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' ) ) {
 			$per_page = Hello_Elementor_Child_Custom_Category_Archive::get_per_page();
 		}
@@ -2026,6 +2068,17 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 				),
 				home_url( '/' )
 			);
+		}
+
+		// Brand CPT singles: keep pagination on /brands/{slug}/page/N/.
+		if ( self::is_brand_singular_context() ) {
+			$brand = get_queried_object();
+			if ( $brand instanceof WP_Post ) {
+				$permalink = get_permalink( $brand );
+				if ( is_string( $permalink ) && '' !== $permalink ) {
+					return self::pagination_base_from_url( $permalink );
+				}
+			}
 		}
 
 		$url = '';

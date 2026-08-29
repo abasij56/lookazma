@@ -132,6 +132,38 @@ body.lk-light-tag .lk-lpt-breadcrumb {
 	margin-bottom: 0;
 }
 
+.lk-tag-hero__more {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.35rem;
+	margin-top: 0.55rem;
+	padding: 0.55rem 1.1rem;
+	border: 0;
+	border-radius: 8px;
+	background: #0d6e6e;
+	color: #fff;
+	font-family: var(--lk-lpt-font), "Vazirmatn", Tahoma, sans-serif;
+	font-size: 0.88rem;
+	font-weight: 800;
+	line-height: 1.2;
+	letter-spacing: 0.02em;
+	cursor: pointer;
+	text-decoration: none;
+	box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+.lk-tag-hero__more:hover,
+.lk-tag-hero__more:focus-visible {
+	background: #0a5858;
+	color: #fff;
+	outline: none;
+}
+
+.lk-brand-page .lk-cat-shell {
+	margin-top: 1.25rem;
+}
+
 .lk-tag-shell {
 	min-width: 0;
 }

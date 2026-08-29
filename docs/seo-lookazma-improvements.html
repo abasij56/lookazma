@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>بهبود سئوی لوک‌آزما — راهنمای ساده برای مبتدی</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--glass: rgba(255, 255, 255, 0.08);
+			--glass-strong: rgba(255, 255, 255, 0.14);
+			--glass-edge: rgba(255, 255, 255, 0.28);
+			--ink: rgba(246, 251, 255, 0.94);
+			--muted: rgba(214, 232, 240, 0.72);
+			--accent: #7ef0d8;
+			--accent-2: #9ecbff;
+			--good: #6ee7b7;
+			--warn: #fbbf24;
+			--shadow: 0 24px 80px rgba(4, 18, 32, 0.38);
+			--radius: 28px;
+		}
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			color: var(--ink);
+			font-family: Vazirmatn, Tahoma, system-ui, sans-serif;
+			background:
+				radial-gradient(1100px 650px at 90% -8%, rgba(72, 214, 196, 0.28), transparent 55%),
+				radial-gradient(900px 560px at -8% 20%, rgba(86, 140, 255, 0.3), transparent 48%),
+				linear-gradient(165deg, #06141f 0%, #0b2a36 45%, #12313a 100%);
+			min-height: 100vh;
+			line-height: 1.9;
+		}
+		.orb {
+			position: fixed; border-radius: 50%; filter: blur(40px);
+			pointer-events: none; z-index: 0; opacity: 0.5;
+			animation: drift 18s ease-in-out infinite;
+		}
+		.orb-a { width: 300px; height: 300px; right: -70px; top: 12%; background: #2fd4b6; }
+		.orb-b { width: 240px; height: 240px; left: -50px; top: 52%; background: #4d8dff; animation-delay: -7s; }
+		@keyframes drift {
+			0%, 100% { transform: translate3d(0,0,0) scale(1); }
+			50% { transform: translate3d(-20px,-26px,0) scale(1.06); }
+		}
+		.shell {
+			position: relative; z-index: 1;
+			max-width: 1180px; margin: 0 auto;
+			padding: 28px 20px 72px;
+			display: grid;
+			grid-template-columns: 250px minmax(0, 1fr);
+			gap: 22px;
+		}
+		.glass {
+			background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+			border: 1px solid var(--glass-edge);
+			box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.22);
+			backdrop-filter: blur(22px) saturate(160%);
+			-webkit-backdrop-filter: blur(22px) saturate(160%);
+			border-radius: var(--radius);
+		}
+		nav.toc { position: sticky; top: 18px; align-self: start; padding: 20px 16px; }
+		nav.toc h2 { margin: 0 0 12px; font-size: 12px; color: var(--accent); font-weight: 600; }
+		nav.toc a {
+			display: block; color: var(--muted); text-decoration: none;
+			padding: 7px 10px; border-radius: 12px; font-size: 13px;
+		}
+		nav.toc a:hover, nav.toc a.active {
+			background: rgba(126, 240, 216, 0.12); color: #fff;
+		}
+		.hero { padding: 34px 38px 28px; margin-bottom: 16px; }
+		.kicker {
+			display: inline-flex; padding: 6px 12px; border-radius: 999px;
+			border: 1px solid var(--glass-edge); background: rgba(255,255,255,0.06);
+			font-size: 12px; color: var(--accent);
+		}
+		h1 { font-size: clamp(1.45rem, 3vw, 2.1rem); margin: 12px 0 10px; font-weight: 700; line-height: 1.4; }
+		.lede { margin: 0; color: var(--muted); }
+		.panel { padding: 26px 30px 30px; margin-bottom: 16px; }
+		h2 { margin: 0 0 10px; font-size: 1.22rem; font-weight: 700; }
+		h3 { margin: 18px 0 8px; font-size: 1.02rem; color: var(--accent-2); font-weight: 600; }
+		p { margin: 0 0 12px; }
+		ul, ol { margin: 0 0 12px; padding-right: 1.2em; padding-left: 0; }
+		li { margin: 0 0 8px; }
+		strong { color: #fff; }
+		a { color: var(--accent); }
+		.simple {
+			padding: 12px 14px; border-radius: 16px; margin: 0 0 14px;
+			background: rgba(158, 203, 255, 0.1);
+			border: 1px solid rgba(158, 203, 255, 0.28);
+			color: var(--muted);
+			font-size: 0.96rem;
+		}
+		.simple strong { color: var(--accent-2); }
+		.do-box {
+			padding: 14px 16px; border-radius: 16px; margin: 12px 0 0;
+			border: 1px solid rgba(126, 240, 216, 0.28);
+			background: rgba(126, 240, 216, 0.08);
+		}
+		.do-box h3 { margin-top: 0; color: var(--good); }
+		.example {
+			padding: 12px 14px; border-radius: 14px; margin: 10px 0 12px;
+			background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.12);
+			font-size: 0.95rem;
+		}
+		.step {
+			display: grid; grid-template-columns: 52px 1fr; gap: 12px;
+			padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+		}
+		.step:last-child { border-bottom: 0; }
+		.num {
+			width: 44px; height: 44px; border-radius: 14px;
+			display: flex; align-items: center; justify-content: center;
+			background: rgba(126, 240, 216, 0.15); color: var(--accent);
+			font-weight: 700; font-size: 1.1rem;
+		}
+		.pill {
+			display: inline-block; padding: 4px 10px; border-radius: 999px;
+			font-size: 12px; margin-bottom: 8px;
+			border: 1px solid rgba(255,255,255,0.16); background: rgba(0,0,0,0.18);
+			color: var(--warn);
+		}
+		.grid {
+			display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;
+		}
+		.card {
+			padding: 14px 15px; border-radius: 18px;
+			background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+		}
+		.card h3 { margin: 0 0 8px; color: var(--accent); font-size: 0.98rem; }
+		table {
+			width: 100%; border-collapse: collapse; font-size: 0.9rem;
+			margin: 10px 0 8px; overflow: hidden; border-radius: 16px;
+		}
+		th, td {
+			text-align: right; padding: 9px 11px; vertical-align: top;
+			border-bottom: 1px solid rgba(255,255,255,0.1);
+		}
+		th { color: var(--accent); background: rgba(255,255,255,0.05); }
+		footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+		@media (max-width: 900px) {
+			.shell { grid-template-columns: 1fr; }
+			nav.toc { position: relative; top: 0; }
+			.grid { grid-template-columns: 1fr; }
+			.hero, .panel { padding: 22px 18px; }
+			.step { grid-template-columns: 1fr; }
+		}
+	</style>
+</head>
+<body>
+	<div class="orb orb-a"></div>
+	<div class="orb orb-b"></div>
+
+	<div class="shell">
+		<nav class="toc glass" aria-label="فهرست">
+			<h2>فهرست ساده</h2>
+			<a href="#hero">سئو چیست؟</a>
+			<a href="#goal">هدف ما چیست؟</a>
+			<a href="#rule">یک قانون طلایی</a>
+			<a href="#products">کار ۱: صفحه محصول</a>
+			<a href="#categories">کار ۲: صفحه دسته</a>
+			<a href="#guides">کار ۳: مقاله و راهنما</a>
+			<a href="#links">کار ۴: لینک داخل سایت</a>
+			<a href="#tech">کار ۵: کارهای فنی ساده</a>
+			<a href="#trust">کار ۶: اعتماد مشتری</a>
+			<a href="#outside">کار ۷: بیرون از سایت</a>
+			<a href="#check">چطور بفهمیم خوب شد؟</a>
+			<a href="#plan">برنامه ۳ ماهه</a>
+		</nav>
+
+		<main>
+			<header class="hero glass" id="hero">
+				<div class="kicker">لوک‌آزما · راهنمای مبتدی</div>
+				<h1>چطور سئوی سایت را بهتر کنیم؟</h1>
+				<p class="lede">
+					این صفحه برای کسی نوشته شده که تازه با سئو آشنا شده.
+					بدون اصطلاح سخت؛ فقط بگوییم <strong>چه کار کنیم</strong> و <strong>چرا مهم است</strong>.
+				</p>
+			</header>
+
+			<section class="panel glass">
+				<h2>سئو چیست؟ (خیلی ساده)</h2>
+				<div class="simple">
+					<strong>سئو</strong> یعنی کاری کنیم وقتی کسی در گوگل چیزی مثل
+					«خرید استون» یا «CAS فلان ماده» جستجو می‌کند،
+					سایت لوک‌آزما را ببیند و روی آن کلیک کند.
+				</div>
+				<p>گوگل مثل یک کتابخانه بزرگ است. برای دیده شدن باید:</p>
+				<ol>
+					<li>صفحه‌های شما را <strong>پیدا</strong> کند</li>
+					<li>بفهمد هر صفحه درباره <strong>چه چیزی</strong> است</li>
+					<li>به مشتری نشان دهد که صفحه شما <strong>مفید و قابل اعتماد</strong> است</li>
+				</ol>
+			</section>
+
+			<section class="panel glass" id="goal">
+				<h2>هدف لوک‌آزما چیست؟</h2>
+				<p>سایت رقیبی مثل <a href="https://milimol.com/" target="_blank" rel="noopener">میلی‌مول</a> بیشتر شبیه بازار چندفروشنده‌ای است.</p>
+				<p>لوک‌آزما فروشگاه خودش است. پس هدف ما این نیست که عین آن‌ها شویم.</p>
+				<div class="do-box">
+					<h3>هدف ما</h3>
+					<p style="margin:0">وقتی کسی می‌خواهد <strong>بخرد</strong>، صفحه محصول یا دسته لوک‌آزما را ببیند — با مشخصات کامل، قیمت/استعلام، و اعتماد.</p>
+				</div>
+			</section>
+
+			<section class="panel glass" id="rule">
+				<h2>یک قانون طلایی</h2>
+				<p>برای هر ماده مهم، این سه صفحه را مشخص کنید:</p>
+				<div class="grid">
+					<div class="card">
+						<h3>۱) صفحه محصول</h3>
+						<p>برای کسی که آماده خرید است.<br>مثل: خرید استون ۹۹٪</p>
+					</div>
+					<div class="card">
+						<h3>۲) صفحه دسته</h3>
+						<p>برای کسی که هنوز دارد می‌گردد.<br>مثل: حلال‌های آزمایشگاهی</p>
+					</div>
+					<div class="card">
+						<h3>۳) مقاله راهنما</h3>
+						<p>برای کسی که هنوز سؤال دارد.<br>مثل: تفاوت گرید آزمایشگاهی و صنعتی</p>
+					</div>
+					<div class="card">
+						<h3>بعد چه؟</h3>
+						<p>از مقاله به محصول لینک بدهید.<br>از دسته به محصولات برتر لینک بدهید.</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="panel glass" id="products">
+				<span class="pill">اول انجام دهید · خیلی مهم</span>
+				<h2>کار ۱: صفحه محصول را کامل کنید</h2>
+				<div class="simple">
+					<strong>چرا؟</strong> گوگل و مشتری باید در چند ثانیه بفهمند این ماده دقیقاً چیست و آیا همان چیزی است که می‌خواهند.
+				</div>
+				<p>در بالای صفحه (جایی که بدون اسکرول زیاد دیده می‌شود) بنویسید:</p>
+				<ul>
+					<li>نام فارسی ماده</li>
+					<li>نام انگلیسی رایج</li>
+					<li>شماره CAS (اگر دارد)</li>
+					<li>درصد خلوص / گرید / برند</li>
+					<li>بسته‌بندی</li>
+					<li>قیمت یا دکمه استعلام</li>
+					<li>لینک برگه آنالیز (COA) یا دیتاشیت</li>
+				</ul>
+				<p>عنوان صفحه در گوگل می‌تواند شبیه این باشد:</p>
+				<div class="example">خرید استون | CAS 67-64-1 | گرید آزمایشگاهی | لوک آزما</div>
+				<div class="do-box">
+					<h3>کار عملی این هفته</h3>
+					<ol style="margin-bottom:0">
+						<li>۵۰ محصول پرفروش را انتخاب کنید</li>
+						<li>عنوان و اطلاعات بالا را برایشان کامل کنید</li>
+						<li>اگر توضیح خالی یا تکراری است، با ابزار AI سایت توضیح یکتا بنویسید و یک‌بار بخوانید</li>
+					</ol>
+				</div>
+			</section>
+
+			<section class="panel glass" id="categories">
+				<span class="pill">اول انجام دهید · خیلی مهم</span>
+				<h2>کار ۲: صفحه دسته را مثل یک صفحه فروش بسازید</h2>
+				<div class="simple">
+					<strong>چرا؟</strong> خیلی‌ها اول «حلال‌ها» یا «اسیدها» را سرچ می‌کنند، نه اسم یک محصول خاص. اگر صفحه دسته خالی یا تکراری باشد، گوگل آن را جدی نمی‌گیرد.
+				</div>
+				<p>برای هر دسته مهم این‌ها را پر کنید:</p>
+				<ul>
+					<li>یک عنوان مخصوص همان دسته (نه عنوان عمومی سایت)</li>
+					<li>یک توضیح کوتاه و مفید در خود صفحه (نه فقط چند خط نامفهوم)</li>
+					<li>لیست محصولات مهم همان دسته با لینک</li>
+					<li>یک لینک به مقاله مرتبط (اگر دارید)</li>
+				</ul>
+				<div class="do-box">
+					<h3>کار عملی</h3>
+					<p style="margin:0">اول ۲۰ دسته مهم را انتخاب کنید و با ابزار سئوی دسته در پنل AI، عنوان و توضیح را بسازید؛ بعد دستی چک کنید اشتباه علمی نداشته باشد.</p>
+				</div>
+			</section>
+
+			<section class="panel glass" id="guides">
+				<span class="pill">قدم بعدی</span>
+				<h2>کار ۳: مقاله و راهنما بنویسید (کم ولی مفید)</h2>
+				<div class="simple">
+					<strong>چرا؟</strong> بعضی افراد هنوز نمی‌خرند؛ فقط می‌خواهند بفهمند. اگر شما جواب بدهید و بعد دکمه خرید بگذارید، هم در گوگل بهتر دیده می‌شوید هم مشتری راه‌تان را پیدا می‌کند.
+				</div>
+				<p>موضوع‌های خوب برای لوک‌آزما:</p>
+				<ul>
+					<li>تفاوت گرید آزمایشگاهی و صنعتی</li>
+					<li>کاربرد یک ماده در صنعت خاص</li>
+					<li>چگونه ماده X را بخریم؟ (چه مشخصاتی مهم است)</li>
+					<li>ایمنی و نگهداری ساده (بدون اغراق خطرناک)</li>
+				</ul>
+				<p><strong>قانون:</strong> هر ماه ۲ تا ۴ مقاله کافی است — ولی باید واقعی و مفید باشد، نه متن پر از تکرار.</p>
+				<p>در پایان هر مقاله بنویسید: «برای خرید به این محصول / دسته بروید» و لینک بدهید.</p>
+			</section>
+
+			<section class="panel glass" id="links">
+				<span class="pill">قدم بعدی</span>
+				<h2>کار ۴: صفحات را به هم وصل کنید</h2>
+				<div class="simple">
+					<strong>چرا؟</strong> اگر صفحه خوبی داشته باشید ولی هیچ لینک داخلی به آن نرود، مثل اتاقی است که در ساختمان هست ولی راهرو ندارد. گوگل و مشتری سخت پیدایش می‌کنند.
+				</div>
+				<ul>
+					<li>از دسته به محصولات مهم همان دسته لینک بدهید</li>
+					<li>از مقاله به محصول و دسته لینک بدهید</li>
+					<li>از محصول به دسته مادر لینک بدهید</li>
+					<li>روی لینک متن معنی‌دار بنویسید، نه فقط «اینجا»</li>
+				</ul>
+				<div class="example">خوب: خرید متانول گرید آزمایشگاهی<br>بد: اینجا کلیک کنید</div>
+			</section>
+
+			<section class="panel glass" id="tech">
+				<span class="pill">مهم ولی با کمک فنی</span>
+				<h2>کار ۵: چند کار فنی ساده (با تیم فنی)</h2>
+				<div class="simple">
+					<strong>به زبان ساده:</strong> سایت باید سریع باز شود، روی موبایل درست کار کند، و گوگل فقط صفحات مفید را ایندکس کند — نه هزاران صفحه فیلتر خالی.
+				</div>
+				<ul>
+					<li><strong>سرعت موبایل:</strong> عکس‌های خیلی بزرگ را فشرده کنید؛ صفحه نباید دیر لود شود</li>
+					<li><strong>صفحات فیلتر:</strong> بعضی فیلترها نباید در گوگل جداگانه بیایند (تیم فنی این را تنظیم می‌کند)</li>
+					<li><strong>نقشه سایت (sitemap):</strong> فقط صفحات خوب و واقعی در آن باشند</li>
+					<li><strong>اطلاعات ساخت‌یافته (Schema):</strong> به گوگل بگویید این صفحه «محصول» است، قیمت دارد، برند دارد (با افزونه سئو / تیم فنی)</li>
+				</ul>
+				<p>اگر Search Console دارید، هفته‌ای یک‌بار ببینید کدام صفحات ایندکس نشده‌اند.</p>
+			</section>
+
+			<section class="panel glass" id="trust">
+				<span class="pill">قدم بعدی</span>
+				<h2>کار ۶: اعتماد بسازید</h2>
+				<div class="simple">
+					<strong>چرا؟</strong> مواد شیمیایی حساس است. گوگل و مشتری باید بفهمند پشت سایت یک شرکت واقعی است، نه یک صفحه خالی.
+				</div>
+				<ul>
+					<li>صفحه درباره ما و تماس کامل باشد (آدرس، تلفن، ایمیل)</li>
+					<li>سیاست ارسال و مرجوعی روشن باشد</li>
+					<li>روی مقالات نام نویسنده / کارشناس بگذارید</li>
+					<li>اگر COA می‌دهید، در صفحه محصول واضح بنویسید</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="outside">
+				<span class="pill">بعد از کارهای داخل سایت</span>
+				<h2>کار ۷: بیرون از سایت (آرام و واقعی)</h2>
+				<div class="simple">
+					<strong>به زبان ساده:</strong> وقتی سایت‌های دیگر درباره شما حرف بزنند یا به شما لینک بدهند، گوگل اعتماد بیشتری می‌کند. ولی اول باید خود سایت خوب باشد.
+				</div>
+				<ul>
+					<li>یک مطلب مفید بسازید که دیگران بخواهند به آن ارجاع بدهند (مثلاً جدول مقایسه گریدها)</li>
+					<li>با انجمن‌ها، نمایشگاه‌ها یا تأمین‌کنندگان واقعی همکاری کنید</li>
+					<li>از خرید لینک جعلی پرهیز کنید</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="check">
+				<h2>چطور بفهمیم بهتر شده؟</h2>
+				<table>
+					<thead>
+						<tr><th>چه می‌بینیم؟</th><th>یعنی چه؟</th></tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>گوگل صفحات مهم را نشان می‌دهد</td>
+							<td>سایت پیدا شده (قدم اول)</td>
+						</tr>
+						<tr>
+							<td>در سرچ‌های غیرنام برند دیده می‌شوید</td>
+							<td>مردم بدون اینکه اسم لوک‌آزما را بدانند شما را پیدا می‌کنند</td>
+						</tr>
+						<tr>
+							<td>کلیک و تماس / سفارش از گوگل بیشتر می‌شود</td>
+							<td>سئو واقعاً به فروش کمک کرده</td>
+						</tr>
+					</tbody>
+				</table>
+				<p><strong>نکته:</strong> فقط «رتبه ۱ بودن» کافی نیست. مهم است مشتری واقعی از گوگل بیاید و خرید یا استعلام کند.</p>
+			</section>
+
+			<section class="panel glass" id="plan">
+				<h2>برنامه ساده ۳ ماهه</h2>
+
+				<div class="step">
+					<div class="num">۱</div>
+					<div>
+						<strong>ماه اول</strong>
+						<ul>
+							<li>۵۰ محصول مهم را کامل کنید</li>
+							<li>۲۰ دسته مهم را عنوان و توضیح بدهید</li>
+							<li>با تیم فنی: فیلترهای اضافه و سرعت موبایل را چک کنید</li>
+							<li>Search Console را وصل و نگاه کنید</li>
+						</ul>
+					</div>
+				</div>
+				<div class="step">
+					<div class="num">۲</div>
+					<div>
+						<strong>ماه دوم</strong>
+						<ul>
+							<li>یک موضوع بزرگ انتخاب کنید (مثلاً مواد آزمایشگاهی) و چند مقاله دور آن بنویسید</li>
+							<li>از مقاله به محصول لینک بدهید</li>
+							<li>صفحاتی که در گوگل نزدیک صفحه اول هستند را بهتر کنید</li>
+						</ul>
+					</div>
+				</div>
+				<div class="step">
+					<div class="num">۳</div>
+					<div>
+						<strong>ماه سوم</strong>
+						<ul>
+							<li>ادامه تکمیل دسته و محصول</li>
+							<li>هر ماه ۲–۴ مقاله مفید</li>
+							<li>یک مطلب قابل‌اشتراک بسازید</li>
+							<li>ببینید کدام صفحات از گوگل سفارش/تماس آورده‌اند و همان‌ها را تقویت کنید</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="do-box">
+					<h3>جمع‌بندی یک جمله‌ای</h3>
+					<p style="margin:0">محصول و دسته را کامل کنید، مقاله مفید بنویسید، صفحات را به هم لینک دهید، سایت را سریع و قابل‌اعتماد نگه دارید — بعد کم‌کم بیرون از سایت هم دیده شوید.</p>
+				</div>
+
+				<p style="margin-top:16px;color:var(--muted);font-size:0.92rem">
+					نسخه تخصصی‌تر:
+					<a href="./seo-lookazma-improvements.html">راه‌های بهبود (نسخه کامل)</a>
+					·
+					<a href="./seo-lookazma-vs-milimol.html">مقایسه با میلی‌مول</a>
+					·
+					<a href="./seo-masterclass-2026.html">مسترکلاس سئو</a>
+				</p>
+			</section>
+
+			<footer>اسناد لوک‌آزما · راهنمای مبتدی بهبود سئو</footer>
+		</main>
+	</div>
+
+	<script>
+		(function () {
+			var links = document.querySelectorAll("nav.toc a");
+			var sections = [];
+			links.forEach(function (a) {
+				var el = document.getElementById(a.getAttribute("href").slice(1));
+				if (el) sections.push({ el: el, a: a });
+			});
+			function sync() {
+				var y = window.scrollY + 80, current = sections[0];
+				sections.forEach(function (s) { if (s.el.offsetTop <= y) current = s; });
+				links.forEach(function (a) { a.classList.remove("active"); });
+				if (current) current.a.classList.add("active");
+			}
+			window.addEventListener("scroll", sync, { passive: true });
+			sync();
+		})();
+	</script>
+</body>
+</html>

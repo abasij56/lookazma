@@ -95,6 +95,13 @@ function hello_elementor_child_enqueue_styles() {
 		return;
 	}
 
+	if ( class_exists( 'Hello_Elementor_Child_Custom_Brand_Single' )
+		&& method_exists( 'Hello_Elementor_Child_Custom_Brand_Single', 'is_brand_request' )
+		&& Hello_Elementor_Child_Custom_Brand_Single::is_brand_request()
+	) {
+		return;
+	}
+
 	if ( class_exists( 'Hello_Elementor_Child_Light_Contact_Template' )
 		&& Hello_Elementor_Child_Light_Contact_Template::is_enabled()
 	) {
@@ -372,6 +379,13 @@ function hello_elementor_child_get_shop_url(): string {
 }
 
 /**
+ * Canonical shop label for crumbs / titles (never «فروشگاه-2» from a trashed WC shop page).
+ */
+function hello_elementor_child_get_shop_label(): string {
+	return __( 'فروشگاه', 'hello-elementor-child' );
+}
+
+/**
  * Force WooCommerce shop permalinks / "browse products" / empty-cart buttons to /فروشگاه/.
  *
  * @param string $url Permalink from WooCommerce.
@@ -381,3 +395,59 @@ function hello_elementor_child_force_shop_permalink( $url ): string {
 }
 add_filter( 'woocommerce_get_shop_page_permalink', 'hello_elementor_child_force_shop_permalink', 99 );
 add_filter( 'woocommerce_return_to_shop_redirect', 'hello_elementor_child_force_shop_permalink', 99 );
+
+/**
+ * WC breadcrumbs use get_permalink( shop_page_id ), which can be /shop/__trashed/ («فروشگاه-2»).
+ * Replace those crumbs with the live /فروشگاه/ page (search, product, archives, etc.).
+ *
+ * @param array<int, array{0?: string, 1?: string}> $crumbs Breadcrumb trail.
+ * @return array<int, array{0?: string, 1?: string}>
+ */
+function hello_elementor_child_fix_shop_breadcrumb( array $crumbs ): array {
+	$canonical = hello_elementor_child_get_shop_url();
+	$label     = hello_elementor_child_get_shop_label();
+
+	$wc_shop_url = '';
+	if ( function_exists( 'wc_get_page_id' ) ) {
+		$shop_id = (int) wc_get_page_id( 'shop' );
+		if ( $shop_id > 0 ) {
+			$permalink = get_permalink( $shop_id );
+			if ( is_string( $permalink ) && '' !== $permalink ) {
+				$wc_shop_url = $permalink;
+			}
+		}
+	}
+
+	foreach ( $crumbs as $i => $crumb ) {
+		if ( ! is_array( $crumb ) ) {
+			continue;
+		}
+
+		$title = isset( $crumb[0] ) ? (string) $crumb[0] : '';
+		$url   = isset( $crumb[1] ) ? (string) $crumb[1] : '';
+
+		$needs_fix = false;
+		if ( '' !== $url && false !== strpos( $url, '__trashed' ) ) {
+			$needs_fix = true;
+		}
+		if ( false !== strpos( $title, 'فروشگاه-2' ) ) {
+			$needs_fix = true;
+		}
+		if (
+			'' !== $wc_shop_url
+			&& '' !== $url
+			&& untrailingslashit( $url ) === untrailingslashit( $wc_shop_url )
+			&& untrailingslashit( $wc_shop_url ) !== untrailingslashit( $canonical )
+		) {
+			$needs_fix = true;
+		}
+
+		if ( $needs_fix ) {
+			$crumbs[ $i ][0] = $label;
+			$crumbs[ $i ][1] = $canonical;
+		}
+	}
+
+	return $crumbs;
+}
+add_filter( 'woocommerce_get_breadcrumb', 'hello_elementor_child_fix_shop_breadcrumb', 99 );

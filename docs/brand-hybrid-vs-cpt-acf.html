@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>برند: طرح هیبرید در برابر CPT + ACF</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--glass: rgba(255, 255, 255, 0.08);
+			--glass-strong: rgba(255, 255, 255, 0.14);
+			--glass-edge: rgba(255, 255, 255, 0.28);
+			--ink: rgba(246, 251, 255, 0.94);
+			--muted: rgba(214, 232, 240, 0.72);
+			--accent: #7ef0d8;
+			--accent-2: #9ecbff;
+			--good: #6ee7b7;
+			--warn: #fbbf24;
+			--poor: #fb7185;
+			--shadow: 0 24px 80px rgba(4, 18, 32, 0.38);
+			--radius: 28px;
+		}
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			color: var(--ink);
+			font-family: Vazirmatn, Tahoma, system-ui, sans-serif;
+			background:
+				radial-gradient(1100px 650px at 90% -8%, rgba(72, 214, 196, 0.28), transparent 55%),
+				radial-gradient(900px 560px at -8% 20%, rgba(86, 140, 255, 0.3), transparent 48%),
+				linear-gradient(165deg, #06141f 0%, #0b2a36 45%, #12313a 100%);
+			min-height: 100vh;
+			line-height: 1.85;
+		}
+		.orb {
+			position: fixed; border-radius: 50%; filter: blur(40px);
+			pointer-events: none; z-index: 0; opacity: 0.5;
+			animation: drift 18s ease-in-out infinite;
+		}
+		.orb-a { width: 300px; height: 300px; right: -70px; top: 12%; background: #2fd4b6; }
+		.orb-b { width: 240px; height: 240px; left: -50px; top: 52%; background: #4d8dff; animation-delay: -7s; }
+		@keyframes drift {
+			0%, 100% { transform: translate3d(0,0,0) scale(1); }
+			50% { transform: translate3d(-20px,-26px,0) scale(1.06); }
+		}
+		.shell {
+			position: relative; z-index: 1;
+			max-width: 1180px; margin: 0 auto;
+			padding: 28px 20px 72px;
+			display: grid;
+			grid-template-columns: 250px minmax(0, 1fr);
+			gap: 22px;
+		}
+		.glass {
+			background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+			border: 1px solid var(--glass-edge);
+			box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.22);
+			backdrop-filter: blur(22px) saturate(160%);
+			-webkit-backdrop-filter: blur(22px) saturate(160%);
+			border-radius: var(--radius);
+		}
+		nav.toc { position: sticky; top: 18px; align-self: start; padding: 20px 16px; max-height: calc(100vh - 40px); overflow: auto; }
+		nav.toc h2 { margin: 0 0 12px; font-size: 12px; color: var(--accent); font-weight: 600; }
+		nav.toc a {
+			display: block; color: var(--muted); text-decoration: none;
+			padding: 6px 10px; border-radius: 12px; font-size: 12.8px;
+		}
+		nav.toc a:hover, nav.toc a.active {
+			background: rgba(126, 240, 216, 0.12); color: #fff;
+		}
+		.hero { padding: 34px 38px 28px; margin-bottom: 16px; }
+		.kicker {
+			display: inline-flex; padding: 6px 12px; border-radius: 999px;
+			border: 1px solid var(--glass-edge); background: rgba(255,255,255,0.06);
+			font-size: 12px; color: var(--accent);
+		}
+		h1 { font-size: clamp(1.4rem, 3vw, 2.1rem); margin: 12px 0 10px; font-weight: 700; line-height: 1.4; }
+		.lede { margin: 0; color: var(--muted); }
+		.panel { padding: 26px 30px 30px; margin-bottom: 16px; }
+		h2 { margin: 0 0 10px; font-size: 1.22rem; font-weight: 700; }
+		h3 { margin: 16px 0 8px; font-size: 1.02rem; color: var(--accent-2); font-weight: 600; }
+		p { margin: 0 0 11px; }
+		ul, ol { margin: 0 0 12px; padding-right: 1.2em; padding-left: 0; }
+		li { margin: 0 0 6px; }
+		strong { color: #fff; }
+		a { color: var(--accent); }
+		code {
+			font-family: ui-monospace, Consolas, monospace; font-size: 0.85em;
+			background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.12);
+			padding: 1px 6px; border-radius: 6px; direction: ltr; display: inline-block;
+		}
+		.pill {
+			display: inline-block; padding: 4px 10px; border-radius: 999px;
+			font-size: 12px; margin: 0 0 10px 6px;
+			border: 1px solid rgba(255,255,255,0.16); background: rgba(0,0,0,0.18);
+		}
+		.pill.ok { color: var(--good); }
+		.pill.warn { color: var(--warn); }
+		.pill.bad { color: var(--poor); }
+		.pill.info { color: var(--accent-2); }
+		.note {
+			padding: 13px 15px; border-radius: 16px; margin: 12px 0 0;
+			border: 1px solid rgba(126, 240, 216, 0.28);
+			background: rgba(126, 240, 216, 0.08);
+		}
+		.warn-box {
+			padding: 13px 15px; border-radius: 16px; margin: 12px 0 14px;
+			border: 1px solid rgba(251, 191, 36, 0.4);
+			background: rgba(251, 191, 36, 0.1);
+		}
+		.grid {
+			display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;
+		}
+		.card {
+			padding: 14px 15px; border-radius: 18px;
+			background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+		}
+		.card h3 { margin: 0 0 8px; color: var(--accent); font-size: 0.95rem; }
+		.card p, .card ul { margin-bottom: 0; font-size: 0.94rem; }
+		.card ul { color: var(--ink); margin-top: 6px; }
+		.example {
+			padding: 12px 14px; border-radius: 14px; margin: 10px 0 12px;
+			background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.12);
+			font-size: 0.9rem; direction: ltr; text-align: left;
+			font-family: ui-monospace, Consolas, monospace; white-space: pre-wrap;
+		}
+		.step {
+			display: grid; grid-template-columns: 48px 1fr; gap: 12px;
+			padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+		}
+		.step:last-child { border-bottom: 0; }
+		.num {
+			width: 40px; height: 40px; border-radius: 12px;
+			display: flex; align-items: center; justify-content: center;
+			background: rgba(126, 240, 216, 0.15); color: var(--accent); font-weight: 700;
+		}
+		.check li { list-style: none; padding-right: 0; }
+		.check li::before { content: "☐ "; color: var(--accent); }
+		table {
+			width: 100%; border-collapse: collapse; font-size: 0.86rem;
+			margin: 10px 0 8px; overflow: hidden; border-radius: 16px;
+		}
+		th, td {
+			text-align: right; padding: 9px 10px; vertical-align: top;
+			border-bottom: 1px solid rgba(255,255,255,0.1);
+		}
+		th { color: var(--accent); background: rgba(255,255,255,0.05); }
+		.win { color: var(--good); font-weight: 600; }
+		.lose { color: var(--poor); }
+		.mid { color: var(--warn); }
+		footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+		@media (max-width: 900px) {
+			.shell { grid-template-columns: 1fr; }
+			nav.toc { position: relative; top: 0; max-height: none; }
+			.grid { grid-template-columns: 1fr; }
+			.hero, .panel { padding: 22px 18px; }
+			.step { grid-template-columns: 1fr; }
+		}
+	</style>
+</head>
+<body>
+	<div class="orb orb-a"></div>
+	<div class="orb orb-b"></div>
+
+	<div class="shell">
+		<nav class="toc glass" aria-label="فهرست">
+			<h2>فهرست</h2>
+			<a href="#hero">خلاصه</a>
+			<a href="#hybrid">طرح هیبرید چیست؟</a>
+			<a href="#hybrid-do">با هیبرید چه کار می‌کنیم؟</a>
+			<a href="#cpt">طرح CPT + ACF چیست؟</a>
+			<a href="#cpt-do">با CPT + ACF چه کار می‌کنیم؟</a>
+			<a href="#compare">مقایسه کنار هم</a>
+			<a href="#seo">سئو</a>
+			<a href="#pick">کدام را انتخاب کنیم؟</a>
+			<a href="#advanced">هیبرید پیشرفته (اختیاری)</a>
+		</nav>
+
+		<main>
+			<header class="hero glass" id="hero">
+				<div class="kicker">لوک‌آزما · دو مسیر مهاجرت برند</div>
+				<h1>طرح هیبرید در برابر CPT + ACF</h1>
+				<p class="lede">
+					دو راه عملی برای خروج از <code>product_tag</code>:
+					<strong>هیبرید</strong> (تاکسونومی اختصاصی برند + فیلدهای ACF روی ترم)
+					و
+					<strong>CPT + ACF</strong> (پست برند + رابطه ACF روی محصول).
+					این صفحه نشان می‌دهد هر کدام چه می‌دهد و چه هزینه‌ای دارد.
+				</p>
+			</header>
+
+			<section class="panel glass">
+				<span class="pill ok">رأی سریع</span>
+				<h2>کدام برای لوک‌آزما منطقی‌تر است؟</h2>
+				<div class="grid">
+					<div class="card">
+						<h3>هیبرید — پیشنهادی برای کاتالوگ فعلی</h3>
+						<p>فیلتر سریع، اتصال native به محصول، مهاجرت ساده‌تر از تگ، URL تمیز <code>/brand/</code>، صفحه برند با لوگو و توضیح کافی.</p>
+					</div>
+					<div class="card">
+						<h3>CPT + ACF — اگر صفحه برند خیلی غنی می‌خواهید</h3>
+						<p>ویرایشگر Gutenberg، revision، صفحه تحریریه‌ای قوی — ولی رابطه محصول و فیلتر پیچیده و پرهزینه‌تر است.</p>
+					</div>
+				</div>
+				<div class="note">
+					هیبرید اینجا یعنی: <strong>دیگر از تگ یا دسته محصول برای برند استفاده نکنیم</strong>؛
+					یک تاکسونومی جدا به نام مثلاً <code>product_brand</code> بسازیم و با ACF روی همان ترم، لوگو و فیلدهای برند را نگه داریم.
+				</div>
+			</section>
+
+			<!-- Hybrid -->
+			<section class="panel glass" id="hybrid">
+				<span class="pill info">مسیر A</span>
+				<h2>طرح هیبرید چیست؟</h2>
+				<p>ترکیب «قدرت taxonomy برای فروشگاه» + «فیلدهای سفارشی ACF برای محتوای برند»:</p>
+				<div class="example">Taxonomy: product_brand
+Rewrite: /brand/{slug}/
+Product link: native term assignment (like today's tags)
+Brand fields: ACF on the term (logo, description extras, country, …)
+Old URLs: 301 /product-tag/{slug}/ → /brand/{slug}/</div>
+				<p><strong>چرا «هیبرید»؟</strong> چون نه دسته محصول است (معنا غلط)، نه CPT کامل (ویرایشگر پست). وسط راه است: ساختار کاتالوگ مثل تگ/دسته، محتوای برند غنی‌تر از تگ خام با ACF.</p>
+
+				<h3>رابطه محصول چطور است؟</h3>
+				<ul>
+					<li>در ویرایش محصول، به‌جای Tags، باکس «برند» می‌بینید</li>
+					<li>انتخاب Merck = اتصال محصول به ترم برند Merck</li>
+					<li>فیلتر آرشیو و صفحه برند با <code>tax_query</code> کار می‌کند — مثل امروز با تگ</li>
+					<li>یک یا چند برند روی یک محصول ممکن است (اگر بخواهید)</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="hybrid-do">
+				<h2>با طرح هیبرید عملاً چه کار می‌توانیم بکنیم؟</h2>
+				<div class="step">
+					<div class="num">۱</div>
+					<div>
+						<strong>ثبت تاکسونومی <code>product_brand</code></strong>
+						<p>منوی ادمین «برندها»، URL <code>/brand/...</code>، جدا از دسته‌های شیمیایی.</p>
+					</div>
+				</div>
+				<div class="step">
+					<div class="num">۲</div>
+					<div>
+						<strong>مهاجرت تگ‌ها → ترم‌های برند</strong>
+						<p>نام، slug، توضیح، لوگو؛ نگاشت <code>old_tag_id → new_brand_term_id</code>.</p>
+					</div>
+				</div>
+				<div class="step">
+					<div class="num">۳</div>
+					<div>
+						<strong>کپی اتصال محصولات</strong>
+						<p>هر محصولی که تگ Merck داشت، ترم برند Merck می‌گیرد. فیلتر و گرید محصول همان روز کار می‌کند.</p>
+					</div>
+				</div>
+				<div class="step">
+					<div class="num">۴</div>
+					<div>
+						<strong>صفحه برند + فیلتر + بج محصول</strong>
+						<p>آرشیو برند با گرید محصول؛ بج و لینک روی کارت/صفحه محصول؛ فاست «برند» از همین تاکسونومی.</p>
+					</div>
+				</div>
+				<div class="step">
+					<div class="num">۵</div>
+					<div>
+						<strong>هوم‌پیج، جستجو، ۳۰۱، ابزارها</strong>
+						<p>نوار برند از ترم‌ها؛ جستجوی شرکت‌ها؛ ریدایرکت تگ قدیمی؛ AI auto-submit و Price Editor با همان تاکسونومی.</p>
+					</div>
+				</div>
+				<div class="step">
+					<div class="num">۶</div>
+					<div>
+						<strong>بازنشستگی تگ به‌عنوان برند</strong>
+						<p>بعد از soak، دیگر برند را از <code>product_tag</code> نخوانیم.</p>
+					</div>
+				</div>
+
+				<h3>چک‌لیست قابلیت‌ها</h3>
+				<ul class="check">
+					<li>صفحه <code>/brand/merck/</code> با لوگو و توضیح</li>
+					<li>لیست محصولات همان برند (از روز اول مهاجرت اتصال)</li>
+					<li>فیلتر برند در آرشیو دسته/فروشگاه</li>
+					<li>بج برند روی محصول و کارت</li>
+					<li>نوار برند خانه داینامیک</li>
+					<li>جستجوی «شرکت‌ها»</li>
+					<li>۳۰۱ از تگ قدیمی</li>
+					<li>ثبت اتوماتیک AI بر اساس برند</li>
+					<li>اسکوپ برند در Attribute Price Editor</li>
+					<li>فیلدهای اضافه با ACF روی ترم (کشور، گواهی، لینک رسمی…)</li>
+				</ul>
+				<div class="warn-box">
+					محدودیت هیبرید: ویرایشگر ترم به اندازه صفحه CPT قدرتمند نیست (بدون revision کامل و بلوک‌های پیچیده Gutenberg روی خود ترم).
+					برای اکثر برندهای شیمیایی لوک‌آزما معمولاً کافی است.
+				</div>
+			</section>
+
+			<!-- CPT + ACF -->
+			<section class="panel glass" id="cpt">
+				<span class="pill warn">مسیر B</span>
+				<h2>طرح CPT + ACF چیست؟</h2>
+				<p>هر برند یک <strong>پست</strong> است (مثل صفحه)، نه ترم:</p>
+				<div class="example">CPT: brand  →  /brand/{slug}/
+ACF on product: "Brand" (Post Object / Relationship) → brand post ID
+Product query: meta_query or relationship query
+Brand page products: reverse lookup of products pointing to this brand
+Old URLs: 301 /product-tag/{slug}/ → /brand/{slug}/</div>
+				<p>محتوای برند در Gutenberg نوشته می‌شود. اتصال به محصول با فیلد ACF روی محصول (یا متای <code>_lk_brand_id</code>) انجام می‌شود — این همان «فاز R» خالی در برنامه قبلی است.</p>
+
+				<h3>رابطه محصول چطور است؟</h3>
+				<ul>
+					<li>روی محصول یک فیلد ACF می‌گذارید: انتخاب پست برند</li>
+					<li>فیلتر و آرشیو باید خودتان با meta/relationship بنویسید</li>
+					<li>مهاجرت از تگ = ساخت پست + پر کردن فیلد روی هر محصول</li>
+					<li>چندبرندی ممکن است ولی کوئری سخت‌تر می‌شود</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="cpt-do">
+				<h2>با طرح CPT + ACF عملاً چه کار می‌توانیم بکنیم؟</h2>
+				<div class="step">
+					<div class="num">۱</div>
+					<div>
+						<strong>ثبت CPT <code>brand</code></strong>
+						<p>منوی «برندها»، Gutenberg، تصویر شاخص، revision.</p>
+					</div>
+				</div>
+				<div class="step">
+					<div class="num">۲</div>
+					<div>
+						<strong>مهاجرت محتوا تگ → پست</strong>
+						<p>عنوان، slug، توضیح، لوگو؛ متای نگاشت به تگ قدیمی.</p>
+					</div>
+				</div>
+				<div class="step">
+					<div class="num">۳</div>
+					<div>
+						<strong>تعریف و پر کردن رابطه (فاز R)</strong>
+						<p>فیلد ACF روی محصول؛ اسکریپت: اولین تگ → پست برند متناظر. تا این مرحله، گرید محصول روی صفحه برند خالی می‌ماند.</p>
+					</div>
+				</div>
+				<div class="step">
+					<div class="num">۴</div>
+					<div>
+						<strong>تعویض همه خواندن‌ها</strong>
+						<p>بج محصول، کارت‌ها، فیلتر، جستجو، AI، Price Editor — همه از CPT + ACF می‌خوانند.</p>
+					</div>
+				</div>
+				<div class="step">
+					<div class="num">۵</div>
+					<div>
+						<strong>صفحه برند غنی + ۳۰۱ + پاکسازی تگ</strong>
+						<p>محتوای تحریریه‌ای بلند، ریدایرکت، سپس قطع وابستگی به تگ.</p>
+					</div>
+				</div>
+
+				<h3>چک‌لیست قابلیت‌ها</h3>
+				<ul class="check">
+					<li>صفحه برند با Gutenberg و revision</li>
+					<li>لوگو، گالری، سکشن‌های سفارشی، بلاک‌ها</li>
+					<li>لیست محصولات (بعد از تعریف رابطه ACF)</li>
+					<li>بج و لینک برند روی محصول</li>
+					<li>نوار خانه از پست‌های برند</li>
+					<li>جستجو و ۳۰۱</li>
+					<li>ابزارهای ادمین (با کوئری سفارشی)</li>
+					<li>فیلتر برند (باید دوباره نوشته شود — native نیست)</li>
+				</ul>
+				<div class="warn-box">
+					هزینه اصلی CPT + ACF: فیلتر، شمارش فاست، و کوئری‌های بزرگ کاتالوگ باید دستی و با دقت پرفورمنس پیاده شوند.
+					تا رابطه محصول تعریف نشود، نیمی از ارزش برند (گرید محصول) قفل است.
+				</div>
+			</section>
+
+			<!-- Compare -->
+			<section class="panel glass" id="compare">
+				<h2>مقایسه کنار هم</h2>
+				<table>
+					<thead>
+						<tr>
+							<th>موضوع</th>
+							<th>هیبرید (taxonomy + ACF ترم)</th>
+							<th>CPT + ACF محصول</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>نوع برند</td>
+							<td>ترم تاکسونومی</td>
+							<td>پست سفارشی</td>
+						</tr>
+						<tr>
+							<td>اتصال به محصول</td>
+							<td class="win">native (مثل تگ)</td>
+							<td class="mid">فیلد ACF / متا</td>
+						</tr>
+						<tr>
+							<td>فیلتر فروشگاه</td>
+							<td class="win">آماده با tax_query</td>
+							<td class="lose">باید از نو نوشته شود</td>
+						</tr>
+						<tr>
+							<td>گرید محصول روی صفحه برند</td>
+							<td class="win">از روز مهاجرت اتصال</td>
+							<td class="mid">بعد از فاز رابطه</td>
+						</tr>
+						<tr>
+							<td>مهاجرت از تگ</td>
+							<td class="win">ترم‌به‌ترم + کپی term_relationships</td>
+							<td class="lose">پست + آپدیت هر محصول</td>
+						</tr>
+						<tr>
+							<td>ویرایش محتوا</td>
+							<td class="mid">ویرایشگر ترم + ACF</td>
+							<td class="win">Gutenberg + revision</td>
+						</tr>
+						<tr>
+							<td>صفحه خیلی غنی / مینی‌سایت</td>
+							<td class="mid">محدود</td>
+							<td class="win">قوی</td>
+						</tr>
+						<tr>
+							<td>حجم کار توسعه</td>
+							<td class="win">کم‌تر</td>
+							<td class="lose">بیشتر</td>
+						</tr>
+						<tr>
+							<td>ریسک پرفورمنس فیلتر</td>
+							<td class="win">کم</td>
+							<td class="lose">بالاتر</td>
+						</tr>
+						<tr>
+							<td>نزدیکی به کد فعلی لوک‌آزما</td>
+							<td class="win">خیلی نزدیک (جایگزین تگ)</td>
+							<td class="lose">بازنویسی مسیرهای خواندن</td>
+						</tr>
+						<tr>
+							<td>فاز «رابطه خالی»</td>
+							<td class="win">لازم نیست — رابطه همان ترم است</td>
+							<td class="lose">لازم است (فاز R)</td>
+						</tr>
+						<tr>
+							<td>AI / Price Editor</td>
+							<td class="win">تعویض taxonomy آسان</td>
+							<td class="mid">کوئری سفارشی</td>
+						</tr>
+					</tbody>
+				</table>
+			</section>
+
+			<!-- SEO -->
+			<section class="panel glass" id="seo">
+				<h2>سئو: آیا یکی برنده است؟</h2>
+				<p>گوگل به‌خاطر taxonomy یا CPT بودن، رتبه نمی‌دهد. هر دو می‌توانند:</p>
+				<ul>
+					<li>URL یکسان‌شکل داشته باشند: <code>/brand/merck/</code></li>
+					<li>عنوان و متای Yoast بگیرند</li>
+					<li>در sitemap بیایند</li>
+					<li>۳۰۱ از تگ قدیمی بگیرند</li>
+					<li>schema برند / سازمان / محصول داشته باشند</li>
+				</ul>
+				<div class="grid">
+					<div class="card">
+						<h3>هیبرید از نظر سئو کاتالوگ</h3>
+						<ul>
+							<li>آرشیو برند سریع با محصولات واقعی</li>
+							<li>فاست برند تمیز</li>
+							<li>کمتر صفحه نازک خالی در انتقال</li>
+							<li>محتوای یکتا با توضیح ترم + ACF</li>
+						</ul>
+					</div>
+					<div class="card">
+						<h3>CPT + ACF از نظر سئو محتوا</h3>
+						<ul>
+							<li>صفحه برند قابل بسط به راهنما/اعتماد</li>
+							<li>revision و به‌روزرسانی تحریریه‌ای راحت‌تر</li>
+							<li>اگر رابطه دیر پر شود، موقتاً صفحه بدون محصول = ضعیف‌تر</li>
+						</ul>
+					</div>
+				</div>
+				<div class="note">
+					<strong>جمع سئو:</strong> برای لوک‌آزما که هدفش «خرید از تأمین‌کننده با مشخصات» است،
+					هیبرید زودتر صفحه برندِ پر از محصول تحویل می‌دهد.
+					CPT فقط وقتی سئوی تحریریه‌ای برند خیلی مهم شود، برتری محتوایی می‌آورد.
+				</div>
+			</section>
+
+			<!-- Pick -->
+			<section class="panel glass" id="pick">
+				<span class="pill ok">تصمیم</span>
+				<h2>کدام را انتخاب کنیم؟</h2>
+				<table>
+					<thead>
+						<tr><th>اگر…</th><th>انتخاب</th></tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>اولویت: فیلتر، کاتالوگ، مهاجرت سریع، کم‌ریسک</td>
+							<td class="win">هیبرید</td>
+						</tr>
+						<tr>
+							<td>اولویت: صفحه برند مثل مجله / مینی‌سایت با Gutenberg</td>
+							<td class="win">CPT + ACF</td>
+						</tr>
+						<tr>
+							<td>نمی‌خواهید فاز رابطه محصول را جدا طراحی کنید</td>
+							<td class="win">هیبرید</td>
+						</tr>
+						<tr>
+							<td>تیم محتوا revision و بلاک‌های پیچیده می‌خواهد</td>
+							<td class="win">CPT + ACF</td>
+						</tr>
+						<tr>
+							<td>وضعیت فعلی سایت (تگ = برند + فیلتر تگ)</td>
+							<td class="win">هیبرید نزدیک‌ترین ارتقا است</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="note">
+					پیشنهاد عملی برای شروع: <strong>هیبرید</strong> را اجرا کنید.
+					اگر بعداً برای چند برند مهم (مثلاً Merck، مجللی) صفحه تحریریه‌ای خیلی غنی لازم شد،
+					می‌توان همان‌ها را به مدل پیشرفته‌تر ارتقا داد — بدون برگرداندن کل کاتالوگ به تگ.
+				</div>
+			</section>
+
+			<!-- Advanced hybrid -->
+			<section class="panel glass" id="advanced">
+				<span class="pill warn">اختیاری · پیشرفته</span>
+				<h2>هیبرید پیشرفته: Taxonomy + CPT با هم</h2>
+				<p>اگر بخواهید <strong>هر دو دنیا</strong> را داشته باشید:</p>
+				<div class="example">product_brand taxonomy  → filters + product assignment
+brand CPT               → rich editorial page
+Link: each term ↔ one brand post (shared slug or ACF map)</div>
+				<ul>
+					<li>محصول به ترم وصل می‌شود (فیلتر سریع)</li>
+					<li>صفحه عمومی می‌تواند پست CPT را نشان دهد (محتوای غنی)</li>
+					<li>هزینه: دو موجودیت برای هر برند + همگام‌سازی نام/slug/لوگو</li>
+				</ul>
+				<div class="warn-box">
+					برای الان پیشنهاد نمی‌شود مگر مطمئن باشید چند برند واقعاً به صفحه مجله‌مانند نیاز دارند.
+					پیچیدگی نگهداری دو برابر است.
+				</div>
+				<p style="margin-top:14px;color:var(--muted);font-size:0.92rem">
+					مرتبط:
+					<a href="./brand-category-vs-cpt.html">دسته در برابر CPT</a>
+					·
+					<a href="./brand-cpt-migration-plan.html">برنامه مهاجرت CPT</a>
+				</p>
+			</section>
+
+			<footer>اسناد لوک‌آزما · هیبرید در برابر CPT + ACF برای مهاجرت برند</footer>
+		</main>
+	</div>
+
+	<script>
+		(function () {
+			var links = document.querySelectorAll("nav.toc a");
+			var sections = [];
+			links.forEach(function (a) {
+				var el = document.getElementById(a.getAttribute("href").slice(1));
+				if (el) sections.push({ el: el, a: a });
+			});
+			function sync() {
+				var y = window.scrollY + 80, current = sections[0];
+				sections.forEach(function (s) { if (s.el.offsetTop <= y) current = s; });
+				links.forEach(function (a) { a.classList.remove("active"); });
+				if (current) current.a.classList.add("active");
+			}
+			window.addEventListener("scroll", sync, { passive: true });
+			sync();
+		})();
+	</script>
+</body>
+</html>

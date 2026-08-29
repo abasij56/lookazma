@@ -133,7 +133,7 @@ final class Hello_Elementor_Child_Light_Homepage_Blocks {
 					'title'       => array( 'type' => 'string', 'default' => 'برترین برندها' ),
 					'description' => array( 'type' => 'string', 'default' => 'محصولات برترین تولید کنندگان مواد شیمیایی یکجا' ),
 					'ctaText'     => array( 'type' => 'string', 'default' => 'مشاهده همه برندها' ),
-					'ctaUrl'      => array( 'type' => 'string', 'default' => '/فروشگاه/' ),
+					'ctaUrl'      => array( 'type' => 'string', 'default' => '/brands/' ),
 					'brands'      => array(
 						'type'    => 'array',
 						'default' => self::default_brands(),
@@ -332,14 +332,14 @@ HTML;
 	 */
 	private static function default_brands(): array {
 		return array(
-			array( 'image' => 'https://lookazma.com/wp-content/uploads/2023/10/download.jpg', 'alt' => 'دکتر مجللی', 'link' => '/product-tag/dr-mojallai/' ),
-			array( 'image' => 'https://lookazma.com/wp-content/uploads/2023/10/noetrun-logo.webp', 'alt' => 'نوترون', 'link' => '/product-tag/neutron/' ),
-			array( 'image' => 'https://lookazma.com/wp-content/uploads/2024/07/Merck_Logo.webp', 'alt' => 'مرک', 'link' => '/product-tag/merck/' ),
-			array( 'image' => 'https://lookazma.com/wp-content/uploads/2023/12/Untitled.png', 'alt' => 'ویستاکم', 'link' => '/product-tag/vistachem/' ),
-			array( 'image' => 'https://lookazma.com/wp-content/uploads/2024/07/Tat-chem-Logo-Exp.png', 'alt' => 'امرتات', 'link' => '/product-tag/ameretat/' ),
-			array( 'image' => 'https://lookazma.com/wp-content/uploads/2025/11/armansina-logo-1.png-e1765191395192.webp', 'alt' => 'آرمان سینا', 'link' => '/product-tag/شرکت-آرمان-سینا/' ),
-			array( 'image' => 'https://lookazma.com/wp-content/uploads/2025/12/logo.png', 'alt' => 'سینا', 'link' => '/product-tag/sina/' ),
-			array( 'image' => 'https://lookazma.com/wp-content/uploads/2026/05/قطران-شیمی-تجهیز-23506-e1783410412564.png', 'alt' => 'قطران شیمی', 'link' => '/product-tag/قطران-شیمی/' ),
+			array( 'image' => 'https://lookazma.com/wp-content/uploads/2023/10/download.jpg', 'alt' => 'دکتر مجللی', 'link' => '/brands/dr-mojallai/' ),
+			array( 'image' => 'https://lookazma.com/wp-content/uploads/2023/10/noetrun-logo.webp', 'alt' => 'نوترون', 'link' => '/brands/neutron/' ),
+			array( 'image' => 'https://lookazma.com/wp-content/uploads/2024/07/Merck_Logo.webp', 'alt' => 'مرک', 'link' => '/brands/merck/' ),
+			array( 'image' => 'https://lookazma.com/wp-content/uploads/2023/12/Untitled.png', 'alt' => 'ویستاکم', 'link' => '/brands/vistachem/' ),
+			array( 'image' => 'https://lookazma.com/wp-content/uploads/2024/07/Tat-chem-Logo-Exp.png', 'alt' => 'امرتات', 'link' => '/brands/ameretat/' ),
+			array( 'image' => 'https://lookazma.com/wp-content/uploads/2025/11/armansina-logo-1.png-e1765191395192.webp', 'alt' => 'آرمان سینا', 'link' => '/brands/شرکت-آرمان-سینا/' ),
+			array( 'image' => 'https://lookazma.com/wp-content/uploads/2025/12/logo.png', 'alt' => 'سینا', 'link' => '/brands/shahrabi/' ),
+			array( 'image' => 'https://lookazma.com/wp-content/uploads/2026/05/قطران-شیمی-تجهیز-23506-e1783410412564.png', 'alt' => 'قطران شیمی', 'link' => '/brands/قطران-شیمی/' ),
 		);
 	}
 
@@ -409,6 +409,36 @@ HTML;
 	}
 
 	/**
+	 * Brand-strip CTA: prefer /brands/ (and remap old shop links).
+	 *
+	 * @param string $url Saved CTA URL.
+	 */
+	private static function prefer_brands_archive_path( string $url ): string {
+		$url  = trim( $url );
+		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+		if ( '' === $path ) {
+			$path = $url;
+		}
+		$path = untrailingslashit( rawurldecode( $path ) );
+		$slug = ltrim( $path, '/' );
+
+		// Empty or legacy shop CTA → brands listing.
+		if ( '' === $url
+			|| '/shop' === $path
+			|| 'shop' === $slug
+			|| '/فروشگاه' === $path
+			|| 'فروشگاه' === $slug
+		) {
+			if ( class_exists( 'Hello_Elementor_Child_Brand_Cpt' ) ) {
+				return Hello_Elementor_Child_Brand_Cpt::get_archive_url();
+			}
+			return '/brands/';
+		}
+
+		return $url;
+	}
+
+	/**
 	 * Merge saved brands with defaults so missing brand links are filled.
 	 *
 	 * @param array<string, mixed> $attributes Block attributes.
@@ -435,8 +465,8 @@ HTML;
 			$alt = isset( $brand['alt'] ) ? (string) $brand['alt'] : '';
 			if ( '' !== $alt && isset( $defaults_by_alt[ $alt ] ) ) {
 				$default = $defaults_by_alt[ $alt ];
-				$link    = isset( $brand['link'] ) ? trim( (string) $brand['link'] ) : '';
-				if ( '' === $link && ! empty( $default['link'] ) ) {
+				// Prefer coded defaults so link updates (e.g. sina → shahrabi) apply on saved blocks.
+				if ( ! empty( $default['link'] ) ) {
 					$brand['link'] = $default['link'];
 				}
 			}
@@ -589,7 +619,7 @@ HTML;
 		$title       = isset( $attributes['title'] ) ? (string) $attributes['title'] : '';
 		$description = isset( $attributes['description'] ) ? (string) $attributes['description'] : '';
 		$cta_text    = isset( $attributes['ctaText'] ) ? (string) $attributes['ctaText'] : '';
-		$cta_url     = isset( $attributes['ctaUrl'] ) ? self::normalize_url( self::prefer_shop_path( (string) $attributes['ctaUrl'] ) ) : '';
+		$cta_url     = isset( $attributes['ctaUrl'] ) ? self::normalize_url( self::prefer_brands_archive_path( (string) $attributes['ctaUrl'] ) ) : '';
 		$brands      = self::resolve_brands( $attributes );
 		$brand_html  = '';
 

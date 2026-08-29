@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>مسترکلاس سئوی مدرن ۲۰۲۵–۲۰۲۶</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--glass: rgba(255, 255, 255, 0.08);
+			--glass-strong: rgba(255, 255, 255, 0.14);
+			--glass-edge: rgba(255, 255, 255, 0.28);
+			--ink: rgba(246, 251, 255, 0.94);
+			--muted: rgba(214, 232, 240, 0.72);
+			--accent: #7ef0d8;
+			--accent-2: #9ecbff;
+			--good: #6ee7b7;
+			--warn: #fbbf24;
+			--poor: #fb7185;
+			--shadow: 0 24px 80px rgba(4, 18, 32, 0.38);
+			--radius: 28px;
+		}
+
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+
+		body {
+			margin: 0;
+			color: var(--ink);
+			font-family: Vazirmatn, Tahoma, system-ui, sans-serif;
+			background:
+				radial-gradient(1200px 700px at 92% -10%, rgba(72, 214, 196, 0.28), transparent 55%),
+				radial-gradient(900px 600px at -10% 8%, rgba(86, 140, 255, 0.32), transparent 48%),
+				radial-gradient(800px 500px at 50% 110%, rgba(255, 140, 210, 0.16), transparent 45%),
+				linear-gradient(165deg, #06141f 0%, #0b2a36 42%, #12313a 100%);
+			min-height: 100vh;
+			line-height: 1.85;
+		}
+
+		.orb {
+			position: fixed;
+			border-radius: 50%;
+			filter: blur(40px);
+			pointer-events: none;
+			z-index: 0;
+			opacity: 0.55;
+			animation: drift 18s ease-in-out infinite;
+		}
+		.orb-a { width: 340px; height: 340px; right: -80px; top: 18%; background: #2fd4b6; }
+		.orb-b { width: 280px; height: 280px; left: -60px; top: 48%; background: #4d8dff; animation-delay: -6s; }
+		.orb-c { width: 220px; height: 220px; right: 38%; bottom: 4%; background: #7aa7ff; animation-delay: -11s; }
+
+		@keyframes drift {
+			0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+			50% { transform: translate3d(-24px, -30px, 0) scale(1.08); }
+		}
+
+		.shell {
+			position: relative;
+			z-index: 1;
+			max-width: 1240px;
+			margin: 0 auto;
+			padding: 28px 20px 80px;
+			display: grid;
+			grid-template-columns: 260px minmax(0, 1fr);
+			gap: 24px;
+		}
+
+		.glass {
+			background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+			border: 1px solid var(--glass-edge);
+			box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.22);
+			backdrop-filter: blur(22px) saturate(160%);
+			-webkit-backdrop-filter: blur(22px) saturate(160%);
+			border-radius: var(--radius);
+		}
+
+		nav.toc {
+			position: sticky;
+			top: 20px;
+			align-self: start;
+			padding: 22px 18px;
+		}
+		nav.toc h2 {
+			margin: 0 0 14px;
+			font-size: 12px;
+			letter-spacing: 0.08em;
+			color: var(--accent);
+			font-weight: 600;
+		}
+		nav.toc a {
+			display: block;
+			color: var(--muted);
+			text-decoration: none;
+			padding: 8px 10px;
+			border-radius: 12px;
+			font-size: 13.5px;
+			transition: background 0.2s, color 0.2s;
+		}
+		nav.toc a:hover,
+		nav.toc a.active {
+			background: rgba(126, 240, 216, 0.12);
+			color: #fff;
+		}
+
+		header.hero {
+			padding: 42px 44px 36px;
+			margin-bottom: 22px;
+			position: relative;
+			overflow: hidden;
+		}
+		header.hero::after {
+			content: "";
+			position: absolute;
+			inset: auto 40% -40% -20%;
+			height: 220px;
+			background: radial-gradient(circle, rgba(126,240,216,0.25), transparent 70%);
+			pointer-events: none;
+		}
+		.kicker {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			padding: 6px 12px;
+			border-radius: 999px;
+			border: 1px solid var(--glass-edge);
+			background: rgba(255,255,255,0.06);
+			font-size: 12px;
+			color: var(--accent);
+		}
+		h1 {
+			font-size: clamp(1.7rem, 3.6vw, 2.8rem);
+			line-height: 1.35;
+			margin: 16px 0 12px;
+			font-weight: 700;
+		}
+		.lede { font-size: 1.05rem; color: var(--muted); max-width: 70ch; margin: 0; }
+
+		section.panel {
+			padding: 32px 36px 36px;
+			margin-bottom: 22px;
+		}
+		section.panel h2 {
+			font-size: 1.55rem;
+			margin: 0 0 8px;
+			font-weight: 700;
+		}
+		section.panel > p.section-intro {
+			color: var(--muted);
+			margin: 0 0 22px;
+		}
+		h3 { font-size: 1.12rem; margin: 26px 0 10px; color: #fff; font-weight: 600; }
+		h4 { margin: 18px 0 8px; color: var(--accent-2); font-weight: 600; font-size: 1rem; }
+		p { margin: 0 0 12px; }
+		ul, ol { margin: 0 0 14px; padding-right: 1.2em; padding-left: 0; }
+		li { margin: 0 0 6px; }
+		strong { color: #fff; font-weight: 600; }
+		code {
+			font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+			font-size: 0.86em;
+			background: rgba(0,0,0,0.25);
+			border: 1px solid rgba(255,255,255,0.12);
+			padding: 1px 6px;
+			border-radius: 6px;
+			direction: ltr;
+			display: inline-block;
+		}
+		pre {
+			overflow: auto;
+			padding: 14px 16px;
+			border-radius: 16px;
+			background: rgba(4, 14, 24, 0.45);
+			border: 1px solid rgba(255,255,255,0.12);
+			font-size: 13px;
+			line-height: 1.5;
+			direction: ltr;
+			text-align: left;
+		}
+
+		.cards {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 14px;
+			margin: 16px 0 20px;
+		}
+		.card {
+			padding: 16px 16px 14px;
+			border-radius: 20px;
+			background: rgba(255,255,255,0.06);
+			border: 1px solid rgba(255,255,255,0.16);
+		}
+		.card h3 { margin-top: 0; font-size: 1rem; color: var(--accent); }
+
+		.metric {
+			display: flex;
+			gap: 10px;
+			flex-wrap: wrap;
+			margin: 8px 0 14px;
+		}
+		.pill {
+			padding: 6px 10px;
+			border-radius: 999px;
+			font-size: 12px;
+			border: 1px solid rgba(255,255,255,0.16);
+			background: rgba(0,0,0,0.18);
+		}
+		.pill.good { color: var(--good); }
+		.pill.warn { color: var(--warn); }
+		.pill.poor { color: var(--poor); }
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 0.92rem;
+			margin: 12px 0 18px;
+			overflow: hidden;
+			border-radius: 16px;
+		}
+		th, td {
+			text-align: right;
+			padding: 10px 12px;
+			border-bottom: 1px solid rgba(255,255,255,0.1);
+			vertical-align: top;
+		}
+		th { color: var(--accent); font-weight: 600; background: rgba(255,255,255,0.05); }
+
+		.note {
+			padding: 14px 16px;
+			border-radius: 18px;
+			border: 1px solid rgba(126, 240, 216, 0.28);
+			background: rgba(126, 240, 216, 0.08);
+			margin: 14px 0 18px;
+		}
+
+		.week {
+			display: grid;
+			grid-template-columns: 100px 1fr;
+			gap: 12px;
+			padding: 14px 0;
+			border-bottom: 1px solid rgba(255,255,255,0.1);
+		}
+		.week:last-child { border-bottom: 0; }
+		.week-label {
+			color: var(--accent);
+			font-weight: 600;
+		}
+
+		footer {
+			text-align: center;
+			color: var(--muted);
+			font-size: 13px;
+			padding: 8px 0 0;
+		}
+
+		@media (max-width: 920px) {
+			.shell { grid-template-columns: 1fr; }
+			nav.toc { position: relative; top: 0; }
+			.cards { grid-template-columns: 1fr; }
+			header.hero, section.panel { padding: 24px 20px; }
+			.week { grid-template-columns: 1fr; }
+		}
+	</style>
+</head>
+<body>
+	<div class="orb orb-a"></div>
+	<div class="orb orb-b"></div>
+	<div class="orb orb-c"></div>
+
+	<div class="shell">
+		<nav class="toc glass" aria-label="فهرست مطالب">
+			<h2>فهرست</h2>
+			<a href="#hero">نمای کلی</a>
+			<a href="#trinity">۱. سه‌گانه بنیادین</a>
+			<a href="#technical">۲. سئوی فنی</a>
+			<a href="#onpage">۳. محتوا و معنا</a>
+			<a href="#offpage">۴. اعتبار بیرونی</a>
+			<a href="#ux">۵. تجربه کاربری</a>
+			<a href="#analytics">۶. تحلیل و ممیزی</a>
+			<a href="#roadmap">۷. نقشه ۳۰ روزه</a>
+		</nav>
+
+		<main>
+			<header class="hero glass" id="hero">
+				<div class="kicker">لوک‌آزما · مسترکلاس سئو</div>
+				<h1>سئوی مدرن برای ۲۰۲۵–۲۰۲۶</h1>
+				<p class="lede">
+					یک راهنمای ساختاریافته درباره زیرساخت فنی، محتوای معنایی، اعتبار، رضایت کاربر و برنامه اجرایی ۳۰ روزه — شامل <strong>AI Overviews</strong> گوگل. نسخه آزمایشی «SGE» امروز معمولاً با همین نام شناخته می‌شود.
+				</p>
+			</header>
+
+			<section class="panel glass" id="trinity">
+				<h2>۱. سه‌گانه بنیادین</h2>
+				<p class="section-intro">سئوی فنی، درون‌صفحه‌ای و برون‌صفحه‌ای یک سیستم واحدند. قوت در دو بخش، ضعف بخش سوم را جبران نمی‌کند.</p>
+
+				<div class="cards">
+					<div class="card">
+						<h3>فنی — دسترسی‌پذیری</h3>
+						<p>کشف URL، دریافت منابع، رندر صفحه، درک روابط، انتخاب کنونیکال و ایندکس کارآمد محتوای هدف.</p>
+					</div>
+					<div class="card">
+						<h3>درون‌صفحه — معنا</h3>
+						<p>موضوع صفحه، نیت جستجو، کامل و معتبر بودن ادعاها، ارتباط با صفحات دیگر و اقدام بعدی کاربر.</p>
+					</div>
+					<div class="card">
+						<h3>برون‌صفحه — اعتماد بیرونی</h3>
+						<p>شناخت مستقل برند، پیوند موضوعی، ارجاع‌های مرتبط و قابل‌اعتماد، و مشروعیت سازمان.</p>
+					</div>
+				</div>
+
+				<h3>تشبیه دانشگاه</h3>
+				<ul>
+					<li><strong>سئوی فنی</strong> ساختمان، جاده، تابلو، برق و دسترسی است.</li>
+					<li><strong>محتوا</strong> کیفیت اساتید و برنامه درسی است.</li>
+					<li><strong>برون‌صفحه</strong> اعتبار، ارجاع‌ها و همکاری‌های علمی است.</li>
+				</ul>
+				<p>اگر ساختمان غیرقابل‌دسترسی باشد، کسی با اساتید روبه‌رو نمی‌شود. اگر برنامه درسی ضعیف باشد، اعتبار نمی‌تواند دانشجو نگه دارد. اگر کسی دانشگاه را نشناسد، حتی بهترین دوره‌ها دیده نمی‌شوند.</p>
+				<div class="note">بک‌لینک قوی معمولاً ایندکس‌نشدن را نجات نمی‌دهد. سئوی فنی بی‌نقص محتوای نازک را ارزشمند نمی‌کند. محتوای عالی بدون اعتبار اغلب در جستجوهای رقابتی می‌بازد.</div>
+			</section>
+
+			<section class="panel glass" id="technical">
+				<h2>۲. ضروریات سئوی فنی</h2>
+				<p class="section-intro">زیرساختی که موتور جستجو قبل از هر رتبه‌ای به آن نیاز دارد.</p>
+
+				<h3>۲.۱ خط لوله مدرن جستجو</h3>
+				<h4>کشف (Discovery)</h4>
+				<p>گوگل URLها را از لینک داخلی، لینک خارجی، نقشه XML، ریدایرکت، URLهای قبلی و فیدها پیدا می‌کند. بودن در sitemap به‌معنی تضمین کراول یا ایندکس نیست.</p>
+
+				<h4>کراول (Crawling)</h4>
+				<p>ربات وضعیت HTTP، HTML، هدرها، ریدایرکت و دستورات robots را می‌گیرد.</p>
+				<ul>
+					<li><code>200</code> صفحه موفق</li>
+					<li><code>301/308</code> ریدایرکت دائمی</li>
+					<li><code>302/307</code> ریدایرکت موقت</li>
+					<li><code>404/410</code> حذف‌شده</li>
+					<li><code>5xx</code> خطای سرور</li>
+					<li><strong>Soft 404:</strong> کد ۲۰۰ برمی‌گرداند اما گوگل آن را خالی یا حذف‌شده می‌داند</li>
+				</ul>
+
+				<h4>رندر (Rendering)</h4>
+				<ol>
+					<li>دانلود HTML</li>
+					<li>پارس محتوای قابل‌دیدن و لینک‌ها</li>
+					<li>صف‌بندی CSS/JavaScript</li>
+					<li>اجرای JS</li>
+					<li>ساخت DOM رندرشده</li>
+					<li>ارزیابی محتوا، لینک، کنونیکال، داده ساخت‌یافته و چیدمان</li>
+				</ol>
+				<p>محتوای حیاتی سئو را ترجیحاً در <strong>HTML سمت سرور</strong> بگذارید. قبل از متن و لینک‌های داخلی ضروری، به کلیک، اسکرول یا API فقط‌مرورگر وابسته نشوید. لینک واقعی <code>&lt;a href&gt;</code> اولویت دارد.</p>
+
+				<h4>ایندکس (Indexing)</h4>
+				<p>گوگل تصمیم می‌گیرد ایندکس کند یا نه، کدام URL کنونیکال است، صفحه برای کدام کوئری‌ها مناسب است، تکراری است یا نه، و سیستم‌های کیفیت/سیاست آن را سرکوب می‌کنند یا نه. <strong>کراول‌شده ≠ ایندکس‌شده.</strong></p>
+
+				<h3>بودجه کراول، رندر و ایندکس</h3>
+				<h4>بودجه کراول</h4>
+				<p>بیشتر برای سایت‌های بزرگ یا پرتغییر مهم است. تحت‌تأثیر ظرفیت سرور، تقاضای کراول، اهمیت لینک داخلی، تکراری‌ها، فیلترها، زنجیره ریدایرکت، پارامترها و تازگی محتواست.</p>
+				<ul>
+					<li>فضاهای واقعاً بی‌فایده را با <code>robots.txt</code> محدود کنید</li>
+					<li>صفحاتی که گوگل باید <code>noindex</code> آن‌ها را بخواند را مسدود نکنید</li>
+					<li>URLهای فیلتر تکراری را یکپارچه کنید</li>
+					<li>زنجیره ریدایرکت را حذف کنید؛ کد وضعیت درست برگردانید</li>
+					<li>موجودی مهم را لینک داخلی بدهید</li>
+					<li>sitemap را فقط با URLهای کنونیکال و قابل‌ایندکس نگه دارید</li>
+				</ul>
+
+				<h4>بودجه رندر</h4>
+				<p>صفحات سنگین جاوااسکریپت کشف محتوا را کند می‌کنند. محتوای اصلی را سمت سرور رندر کنید، پیشرفت تدریجی بدهید، کنونیکال/متا فقط‌کلاینت نگذارید، باندل JS را سبک کنید و HTML رندرشده را در Search Console ببینید.</p>
+
+				<h4>کیفیت ایندکس</h4>
+				<p>گوگل انتخابی ایندکس می‌کند. دسته‌های نزدیک‌به‌تکراری، تگ‌های خالی، جستجوی داخلی، ترکیب پارامترها و وریانت‌های نازک مجموعه ایندکس را ضعیف می‌کنند.</p>
+
+				<h3>۲.۲ Core Web Vitals</h3>
+				<p>داده میدانی را در <strong>صدک ۷۵</strong> برای موبایل و دسکتاپ جدا ببینید. ابزار آزمایشگاهی تشخیص می‌دهد؛ CrUX / Search Console / PSI تصمیم «خوب» را می‌سازند.</p>
+
+				<h4>LCP — بزرگ‌ترین رنگ محتوا</h4>
+				<p>سرعت ظاهر شدن محتوای اصلی قابل‌دید.</p>
+				<div class="metric">
+					<span class="pill good">خوب ≤ ۲٫۵ ثانیه</span>
+					<span class="pill warn">نیاز به بهبود ۲٫۵–۴٫۰</span>
+					<span class="pill poor">ضعیف &gt; ۴٫۰</span>
+				</div>
+				<ul>
+					<li>تصویر قهرمان با AVIF/WebP و <code>srcset</code> واکنش‌گرا</li>
+					<li>تصویر LCP را lazy-load نکنید؛ <code>fetchpriority="high"</code> بگذارید</li>
+					<li>preload گزینشی فونت/تصویر؛ CSS حیاتی حداقلی inline</li>
+					<li>حذف CSS/JS مسدودکننده رندر؛ بهبود TTFB (کش، CDN، دیتابیس)</li>
+					<li>از اسلایدری که قهرمان اول را دیر نشان می‌دهد پرهیز کنید</li>
+				</ul>
+
+				<h4>INP — تعامل تا رنگ بعدی</h4>
+				<p>پاسخ‌گویی در تعاملات کاربر.</p>
+				<div class="metric">
+					<span class="pill good">خوب ≤ ۲۰۰ میلی‌ثانیه</span>
+					<span class="pill warn">نیاز به بهبود ۲۰۰–۵۰۰</span>
+					<span class="pill poor">ضعیف &gt; ۵۰۰</span>
+				</div>
+				<ul>
+					<li>کارهای JS طولانی‌تر از حدود ۵۰ms را بشکنید؛ اسکریپت شخص‌ثالث را کم کنید</li>
+					<li>جستجو/فیلتر را debounce کنید؛ از event delegation استفاده کنید</li>
+					<li>از اندازه‌گیری مکرر DOM و سپس نوشتن پرهیز کنید؛ لیست‌های خیلی بلند را مجازی کنید</li>
+					<li>محاسبات سنگین در Web Worker؛ اسکریپت مخصوص صفحه فقط همان‌جا</li>
+					<li>UI را فوری به‌روز کنید، بعد کار async سنگین را شروع کنید</li>
+				</ul>
+
+				<h4>CLS — جابه‌جایی تجمعی چیدمان</h4>
+				<p>حرکت ناخواسته عناصر روی صفحه.</p>
+				<div class="metric">
+					<span class="pill good">خوب ≤ ۰٫۱</span>
+					<span class="pill warn">نیاز به بهبود ۰٫۱–۰٫۲۵</span>
+					<span class="pill poor">ضعیف &gt; ۰٫۲۵</span>
+				</div>
+				<ul>
+					<li>برای تصویر و ویدیو width/height بگذارید؛ برای تبلیغ و embed فضای ثابت/aspect-ratio</li>
+					<li>بنر را بالای محتوای موجود هل ندهید</li>
+					<li>فونت را درست preload کنید؛ متریک فونت جایگزین سازگار</li>
+					<li>انیمیشن با <code>transform</code> نه با ویژگی‌های layout</li>
+					<li>برای اعلان، گالری و کاروسل فضا رزرو کنید</li>
+				</ul>
+
+				<h3>۲.۳ ایندکس موبایل‌اول</h3>
+				<p>گوگل معمولاً نسخه <strong>موبایل</strong> را نسخه اصلی می‌داند. موبایل باید محتوای اصلی، سرفصل‌ها، لینک داخلی، داده ساخت‌یافته، alt تصویر و دستورات robots/کنونیکال معادل داشته باشد.</p>
+				<p><strong>طراحی واکنش‌گرا (ترجیحی):</strong> یک URL، یک HTML، تطبیق با CSS. خطای برابری محتوا، ریدایرکت و تکراری کمتر.</p>
+				<p><strong>سرویس پویا:</strong> همان URL با HTML متفاوت بر اساس دستگاه. ریسک: تشخیص اشتباه User-Agent، کش HTML دسکتاپ برای موبایل، نبود schema، ناسازگاری برای Googlebot. محتوای حیاتی سئو را فقط برای «ساده‌سازی» موبایل مخفی نکنید.</p>
+
+				<h3>۲.۴ معماری سایت</h3>
+				<p>سلسله‌مراتب معمول: خانه → دسته اصلی → زیردسته → محصول، خدمت یا مقاله. صفحات مهم معمولاً باید در حدود <strong>سه گام لینک داخلی معنادار</strong> از یک هاب اصلی قابل‌دسترسی باشند.</p>
+				<p>سایت کاملاً تخت روابط موضوعی را ضعیف می‌کند؛ عمق بیش‌ازحد محتوا را پنهان می‌کند. از <strong>سلسله‌مراتب معنایی کم‌عمق</strong> استفاده کنید: چند بخش پایدار بالا، زیردسته‌های متمرکز، لینک زمینه‌ای، بردکرامب.</p>
+				<ul>
+					<li>یک هدف اصلی برای هر صفحه قابل‌ایندکس</li>
+					<li>چند صفحه را روی یک نیت واحد نگذارید</li>
+					<li>از مفهوم کلی به جزئی لینک دهید؛ صفحات پشتیبان به ستون برگردند</li>
+					<li>به صفحات اولویت‌دار لینک داخلی مرتبط بیشتری بدهید</li>
+					<li>انکر توصیفی؛ نه «اینجا کلیک کنید»</li>
+				</ul>
+				<p><strong>نقشه XML:</strong> فقط URL کنونیکال، قابل‌ایندکس، با کد ۲۰۰، ارزشمند و با <code>lastmod</code> درست. سایت بزرگ را جدا کنید (محصول، دسته، مقاله، صفحه). sitemap پیشنهاد می‌دهد؛ رتبه نمی‌سازد.</p>
+
+				<h3>۲.۵ کنونیکال و hreflang</h3>
+				<pre><code>&lt;link rel="canonical" href="https://example.com/preferred-url/" /&gt;</code></pre>
+				<p>برای صفحات عادی قابل‌ایندکس، کنونیکال خودارجاع بگذارید. اشتباهات رایج: کنونیکال صفحه‌بندی به صفحه ۱؛ کنونیکال محصول متمایز به دسته کلی؛ کنونیکال به ریدایرکت یا ۴۰۴؛ سیگنال متناقض sitemap/لینک/کنونیکال؛ ترویج فیلترهایی که کنونیکال می‌کنید. کنونیکال <strong>راهنما</strong> است — با ریدایرکت، لینک و sitemap تقویتش کنید.</p>
+				<pre><code>&lt;link rel="alternate" hreflang="fa-IR" href="https://example.com/fa/page/" /&gt;
+&lt;link rel="alternate" hreflang="en-US" href="https://example.com/en/page/" /&gt;
+&lt;link rel="alternate" hreflang="x-default" href="https://example.com/page/" /&gt;</code></pre>
+				<p>hreflang: خودارجاع، دوطرفه، URL کنونیکال قابل‌ایندکس، کد معتبر، بومی‌سازی واقعی. کنونیکال معمولاً به همان زبان اشاره می‌کند، نه یک زبان جهانی واحد.</p>
+			</section>
+
+			<section class="panel glass" id="onpage">
+				<h2>۳. استراتژی محتوا و معنای درون‌صفحه</h2>
+				<p class="section-intro">فراتر از تراکم کلمه کلیدی: مفهوم، زمینه، تجاری‌بودن، خوشه موضوعی، E-E-A-T، اسکیما و AI Overviews.</p>
+
+				<h3>۳.۱ سه C تحقیق کلمه کلیدی</h3>
+				<h4>مفهوم (Concept)</h4>
+				<p>موجودیت یا مسئله‌ای که کاربر می‌جوید؛ مثلاً کلرید سدیم، تأمین‌کننده مواد شیمیایی آزمایشگاهی، اتانول گرید آنالیتیکال. واژگان بسازید: نام‌ها، مترادف‌ها، اصطلاحات صنعتی، کاربردها، مشکلات، نتایج و ویژگی‌ها.</p>
+				<h4>زمینه (Context)</h4>
+				<p>شرایط: آموزشی در برابر تجاری، آزمایشگاهی در برابر صنعتی، مبتدی در برابر متخصص، محلی در برابر بین‌المللی، مقایسه در برابر عیب‌یابی. زمینه عمق، واژگان، شواهد و قالب را تعیین می‌کند.</p>
+				<h4>تجاری‌بودن (Commerciality)</h4>
+				<p>فاصله تا اقدام: خرید/قیمت/تأمین‌کننده؛ بهترین/بررسی/مقایسه؛ گرید/خلوص/CAS؛ چیست/کاربرد/ایمنی. صفحه تراکنشی را به زور روی کوئری اطلاعاتی گسترده نگذارید.</p>
+
+				<h3>نگاشت نیت جستجو</h3>
+				<table>
+					<thead>
+						<tr><th>نیت</th><th>کاربر می‌خواهد</th><th>بهترین قالب‌ها</th></tr>
+					</thead>
+					<tbody>
+						<tr><td><strong>دانستن (Know)</strong></td><td>توضیح</td><td>راهنما، تعریف، آموزش، خلاصه پژوهش، FAQ</td></tr>
+						<tr><td><strong>انجام (Do)</strong></td><td>انجام یک کار</td><td>گام‌به‌گام، ماشین‌حساب، ابزار، چک‌لیست، راهنمای پیکربندی</td></tr>
+						<tr><td><strong>رفتن (Go)</strong></td><td>مقصد مشخص</td><td>خانه، برند، تماس، مکان</td></tr>
+						<tr><td><strong>خرید (Buy)</strong></td><td>مقایسه یا خرید</td><td>محصول، دسته، مقایسه، قیمت، لندینگ تأمین‌کننده</td></tr>
+					</tbody>
+				</table>
+				<p>SERP زنده را ببینید. اگر گوگل عمدتاً صفحه دسته می‌آورد، مقاله از نظر ساختاری اشتباه است — هرچقدر هم کلمه کلیدی داشته باشد.</p>
+
+				<h3>۳.۲ خوشه موضوعی در برابر سیلو</h3>
+				<p><strong>سیلو:</strong> شاخه‌های موضوعی سخت‌گیرانه — خوب برای ناوبری و URL؛ ریسک مسدود کردن لینک‌های مفید بین موضوعات.</p>
+				<p><strong>خوشه موضوعی:</strong> یک صفحه ستون + صفحات پشتیبان متمرکز — پوشش موضوعی، نیت‌های مختلف، لینک داخلی طبیعی، تمرکز اعتبار روی یک موجودیت.</p>
+				<p>سلسله‌مراتب شفاف داشته باشید و لینک‌های خوشه‌ای مرتبط و انعطاف‌پذیر بگذارید.</p>
+				<ol>
+					<li><strong>موضوع را انتخاب کنید</strong> با ارتباط تجاری، چند زیرنیت، تخصص واقعی و محصولات/خدمات متصل (مثلاً مواد شیمیایی آزمایشگاهی).</li>
+					<li><strong>نیت‌ها را نقشه کنید:</strong> گرید و خلوص، ایمنی، کاربرد، بسته‌بندی، انتخاب تأمین‌کننده، مقررات، مقایسه، خانواده‌های شیمیایی.</li>
+					<li><strong>ستون:</strong> تعریف موضوع در ۱۰۰–۱۵۰ واژه اول؛ پوشش زیرموضوع‌های اصلی؛ لینک به هر خوشه مهم؛ تصویر یا ابزار تصمیم‌گیری اصلی؛ استناد به منابع اولیه؛ تظاهر نکنید یک صفحه همه سؤالات تخصصی را جواب می‌دهد.</li>
+					<li><strong>یک صفحه خوشه برای هر نیت متمایز:</strong> اطلاعات غیرتکراری، لینک به ستون و خوشه‌های مجاور، گام بعدی روشن.</li>
+					<li><strong>هم‌پوشانی را حل کنید:</strong> برای هر کوئری یک URL ترجیحی؛ ادغام، ریدایرکت یا جابه‌جایی صفحات رقیب.</li>
+				</ol>
+
+				<h3>۳.۳ E-E-A-T بدون گفتن «ما متخصصیم»</h3>
+				<p>E-E-A-T یک چارچوب کیفیت است، نه یک امتیاز رتبه‌بندی واحد.</p>
+				<ul>
+					<li><strong>تجربه (Experience):</strong> عکس اصلی محصول، نتیجه تست، اسکرین شات فرایند، کیس‌استادی با تاریخ و نتیجه، محدودیت‌ها، روش‌شناسی.</li>
+					<li><strong>تخصص (Expertise):</strong> اصطلاحات دقیق، نویسنده و مدرک، بازبینی‌کننده، استناد به منابع اولیه، مشخصات و ایمنی کامل، تاریخچه به‌روزرسانی.</li>
+					<li><strong>مرجعیت (Authoritativeness):</strong> ارجاع صنعتی، رابطه با تأمین‌کننده/تولیدکننده، ذکر در نشریات حرفه‌ای، داده موجودیت یکدست، پروفایل نویسنده متصل به هویت واقعی.</li>
+					<li><strong>اعتماد (Trustworthiness):</strong> هویت و تماس، HTTPS، سیاست مرجوعی/ارسال/حریم خصوصی، شفافیت قیمت و موجودی، اصالت محصول، منابع و تاریخ بازبینی، نظرات واقعی با سیاست تعدیل، مسیر اصلاح خطا.</li>
+				</ul>
+				<p>صفحه محصول با مشخصات، گواهی، منبع‌یابی، کاربرد، ایمنی، تصویر واقعی و مسئولیت‌پذیری محتوا ثابت می‌کند — نه با شعار.</p>
+
+				<h3>۳.۴ داده ساخت‌یافته — پنج نوع مهم</h3>
+				<p>مارکاپ باید با محتوای قابل‌دید یکی باشد. اسکیما ضمانت ریچ‌ریزالت نیست.</p>
+				<ol>
+					<li><strong>Organization</strong> — هویت شرکت، لوگو، تماس، پروفایل‌ها.</li>
+					<li><strong>BreadcrumbList</strong> — موقعیت در سلسله‌مراتب؛ ممکن است بردکرامب SERP را بهتر کند.</li>
+					<li><strong>Product</strong> — قیمت، موجودی، SKU، برند، امتیاز، پیشنهاد. فقط برای صفحه محصول واقعی.</li>
+					<li><strong>Article</strong> — عنوان، نویسنده، تاریخ انتشار/به‌روزرسانی، تصویر.</li>
+					<li><strong>FAQPage</strong> — ساختار سؤال و جواب. نمایش FAQ در نتایج امروز بسیار محدود است؛ روی سایت تجاری معمولی حساب نکنید.</li>
+				</ol>
+				<p>همچنین: WebSite، LocalBusiness، VideoObject، Review، MerchantReturnPolicy، OfferShippingDetails. با Rich Results Test و Schema.org اعتبارسنجی کنید.</p>
+
+				<h3>۳.۵ بهینه‌سازی برای AI Overviews</h3>
+				<p>اسکیمای ویژه «AI Overview» وجود ندارد و تضمینی برای ذکرشدن نیست. متن را قابل‌استخراج و شواهدمحور کنید:</p>
+				<ul>
+					<li>بلافاصله بعد از هر عنوان پاسخ مستقیم بدهید</li>
+					<li>هر بخش یک سؤال یا ادعا؛ موجودیت‌ها unambiguous</li>
+					<li>اول واقعیت کوتاه، بعد nuance؛ استناد به منبع اولیه</li>
+					<li>تاریخ، واحد، شرایط و محدودیت‌ها</li>
+					<li>پژوهش، مقایسه یا مشاهده اصلی</li>
+					<li>جدول فقط وقتی داده را روشن می‌کند</li>
+					<li>نویسنده/سازمان شفاف؛ URL پایدار؛ تاریخ به‌روزرسانی قابل‌دید</li>
+					<li>محتوای مهم در HTML رندرشده؛ قطعیت بی‌پشتیبانی نگذارید</li>
+				</ul>
+				<p>بلوک پاسخ قوی: (۱) جواب ۱–۲ جمله‌ای، (۲) شواهد، (۳) شرایط، (۴) منبع، (۵) سؤال بعدی مرتبط.</p>
+			</section>
+
+			<section class="panel glass" id="offpage">
+				<h2>۴. مکانیک اعتبار برون‌صفحه</h2>
+				<p class="section-intro">فیزیک مدرن لینک‌سازی: اول مرتبط‌بودن، بعد اعتبار؛ داده منحصربه‌فرد مهم‌تر از طول متن.</p>
+
+				<h3>اعتبار در برابر مرتبط‌بودن</h3>
+				<p><strong>مرتبط‌بودن</strong> مشخص می‌کند لینک از نظر موضوعی معنا دارد یا نه. <strong>اعتبار</strong> روی میزان اعتماد سیگنال اثر می‌گذارد. لینک زمینه‌ای از یک نشریه تخصصی معتبر معمولاً از لینک بی‌ربط یک دامنه معروف بهتر است.</p>
+				<p>فرصت‌ها را با مرتبط‌بودن موضوعی، استقلال تحریریه، کیفیت صفحه، مخاطب واقعی، زمینه اطراف لینک، پتانسیل ترافیک ارجاعی، اعتبار دامنه و طبیعی‌بودن انکر بسنجید.</p>
+
+				<h3>استراتژی‌های سفید</h3>
+				<h4>روابط عمومی دیجیتال (Digital PR)</h4>
+				<p>دارایی خبرساز: داده بازار اصلی، نظرسنجی، نظر کارشناسی درباره رویداد جاری، ابزار/دیتاست عمومی، آزمایش شفاف، تحلیل مقررات یا قیمت.</p>
+				<ol>
+					<li>خبرنگاران حوزه را پیدا کنید</li>
+					<li>ببینید چه شواهدی را مرتب نقل می‌کنند</li>
+					<li>شواهد تازه بسازید — نه تفسیر دوباره مطالب دیگران</li>
+					<li>یافته کلیدی را کوتاه پیچ کنید؛ روش‌شناسی و فایل قابل‌دانلود بدهید</li>
+					<li>ذکرها را رصد کنید؛ در صورت نیاز درخواست attribution بدهید</li>
+				</ol>
+
+				<h4>لینک شکسته (Broken-link building)</h4>
+				<ol>
+					<li>صفحات مرتبط با ارجاع خارجی شکسته پیدا کنید</li>
+					<li>هدف منبع اصلی را بفهمید</li>
+					<li>جایگزین واقعاً مناسب بسازید</li>
+					<li>به ویراستار بنویسید: URL شکسته، محل در صفحه، جایگزین شما، دلیل برابری</li>
+				</ol>
+				<p>پیام انبوه عمومی نفرستید.</p>
+
+				<h4>آسمان‌خراش ۲٫۰ (Skyscraper 2.0)</h4>
+				<p>تمایز با طول نیست؛ با <strong>سودمندی منحصربه‌فرد</strong> است: داده اختصاصی، آزمایش، ابزار تعاملی، روش بهتر، داده منطقه‌ای، مصاحبه کارشناسی، به‌روزرسانی منظم، قالب قابل‌دانلود، دیتاست باز. ده هزار واژه عمومی از یک صفحه کوتاه با شواهد اصلی ضعیف‌تر است.</p>
+
+				<h3>ابزار Disavow</h3>
+				<p>اکثر سایت‌ها نباید <strong>به‌طور معمول</strong> disavow کنند. گوگل بسیاری از لینک‌های اسپم را خودش نادیده می‌گیرد. فقط وقتی اقدام دستی برای لینک غیرطبیعی دارید، سابقه ساخت لینک دستکاری‌شده دارید، یا الگوی مستندی هست که حذف دستی‌اش ممکن نیست.</p>
+				<p>ریسک‌ها: disavow لینک خوب، کاهش بی‌مورد اعتبار، اعتماد به امتیاز «سمی» شخص‌ثالث. اگر لازم شد: بک‌لینک‌ها را خروجی بگیرید، الگو را مستند کنید، حذف را امتحان کنید، در سطح دامنه با احتیاط disavow کنید، شواهد تاریخ‌دار نگه دارید.</p>
+			</section>
+
+			<section class="panel glass" id="ux">
+				<h2>۵. تجربه کاربری و حلقه بازخورد تعامل</h2>
+				<p class="section-intro">رضایت را بهینه کنید؛ متریک‌های فولکلور را مثل دکمه رتبه‌بندی نبینید.</p>
+
+				<h3>Pogo-sticking، Dwell Time و CTR</h3>
+				<p><strong>Pogo-sticking</strong> (کلیک، بازگشت سریع، انتخاب نتیجه دیگر) می‌تواند نارضایتی را نشان دهد، اما متریک رتبه‌بندی مستقل مستندی نیست. بازگشت سریع گاهی یعنی جواب فوری پیدا شده است.</p>
+				<p><strong>Dwell time</strong> عامل رتبه‌بندی جهانی تأییدشده نیست. زمان نشست را مصنوعی طولانی نکنید.</p>
+				<p><strong>CTR</strong> به جایگاه، نیت، برند، ویژگی‌های SERP، عنوان و اسنیپت بستگی دارد. برای تشخیص مفید است؛ گوگل CTR ارگانیک معمولی را اهرم مستقیم ساده رتبه‌بندی معرفی نکرده است.</p>
+
+				<h3>عنوان و متا دیسکریپشن</h3>
+				<p>عنوان قوی با نیت اصلی هم‌خوان است، موجودیت را نام می‌برد، تمایز می‌دهد، در عرض نمایش معمول جا می‌شود، boilerplate تکراری سایت‌گسترده ندارد و صادق است.</p>
+				<ul>
+					<li><code>[محصول/موضوع]: مشخصات، کاربرد و قیمت</code></li>
+					<li><code>چگونه [نتیجه]: [روش مشخص]</code></li>
+					<li><code>[گزینه الف] در برابر [گزینه ب]: تفاوت‌ها برای [کاربرد]</code></li>
+					<li><code>خرید [محصول] — گرید، بسته‌بندی و موجودی</code></li>
+				</ul>
+				<p>متا: مسئله کاربر، ارزش مشخص، شواهد یا تمایز، اقدام مناسب. فوریت جعلی و پنهان‌کردن جواب برای کنجکاوی ارزان ممنوع.</p>
+				<div class="note">
+					<strong>کنجکاوی خوب:</strong> قبل از سفارش، گرید آزمایشگاهی، سطح خلوص و بسته‌بندی را مقایسه کنید.<br>
+					<strong>کلیک‌بیت:</strong> باور نمی‌کنید دانشمندان درباره این ماده چه کشف کرده‌اند!
+				</div>
+			</section>
+
+			<section class="panel glass" id="analytics">
+				<h2>۶. تحلیل، KPI و بهینه‌سازی پیوسته</h2>
+				<p class="section-intro">رتبه تشخیص می‌دهد. ترافیک دامنه دسترسی را نشان می‌دهد. تبدیل کسب‌وکار را می‌گرداند.</p>
+
+				<h3>چه چیزی را کی اولویت دهید</h3>
+				<table>
+					<thead>
+						<tr><th>متریک</th><th>کاربرد</th><th>کی پیشرو است</th></tr>
+					</thead>
+					<tbody>
+						<tr><td>رتبه</td><td>دیدن دیده شدن کوئری/صفحه</td><td>اعتبارسنجی موضوع، لانچ، تحلیل رقبا — هرگز تنها KPI</td></tr>
+						<tr><td>ترافیک ارگانیک</td><td>کشف؛ تفکیک برند و غیربرند</td><td>رشد پوشش و آگاهی</td></tr>
+						<tr><td>تبدیل</td><td>خرید، لید، تماس، استعلام، درآمد</td><td>به‌محض قابل‌اعتماد شدن ترکینگ</td></tr>
+					</tbody>
+				</table>
+				<ol>
+					<li>سایت جدید: ایندکس و ایمپرشن واجد شرایط</li>
+					<li>رشد: کلیک غیربرندی و نشست‌های درگیر در لندینگ</li>
+					<li>تجاری: لید، درآمد، نرخ تبدیل، سود</li>
+					<li>بالغ: درآمد افزایشی، LTV، سهم بازار</li>
+				</ol>
+
+				<h3>گردش کار Google Search Console</h3>
+				<h4>ایندکس</h4>
+				<p>بررسی کنید: ایندکس‌شده، کراول‌شده ولی ایندکس‌نشده، کشف‌شده ولی ایندکس‌نشده، تکراری بدون کنونیکال انتخاب‌شده، صفحه جایگزین با کنونیکال درست، soft 404، خطای سرور، بلاک robots. در URL Inspection: کنونیکال اعلامی در برابر انتخاب گوگل، تاریخ کراول، موبایل، صفحه رندرشده، واجد شرایط بودن.</p>
+				<h4>الگوهای عملکرد</h4>
+				<ul>
+					<li>ایمپرشن بالا، CTR پایین ← عنوان/اسنیپت یا نیت</li>
+					<li>جایگاه ۵–۱۵ ← محتوا، لینک داخلی، اعتبار</li>
+					<li>کلیک پایین با رتبه ثابت ← تقاضا یا چیدمان SERP</li>
+					<li>چند URL برای یک کوئری ← هم‌پوشانی</li>
+					<li>ایمپرشن رو به رشد ← قبل از رقبا همان صفحه را گسترش دهید</li>
+				</ul>
+				<p>حداقل ۲۸ روز را با دوره معادل قبل مقایسه کنید؛ فصلی‌بودن را در نظر بگیرید.</p>
+
+				<h3>ممیزی سئو در ۷ گام</h3>
+				<ol>
+					<li><strong>دسترسی و ایندکس:</strong> robots، متا robots، کد وضعیت، sitemap، کنونیکال، کنونیکال انتخابی گوگل، noindex تصادفی، یتیم‌ها.</li>
+					<li><strong>معماری:</strong> عمق کلیک، ناوبری، بردکرامب، انکر، لینک شکسته، زنجیره ریدایرکت.</li>
+					<li><strong>تکراری و کم‌ارزش:</strong> پارامتر، فیلتر، تگ، جستجوی داخلی، صفحه‌بندی، محصول نزدیک‌به‌تکراری، دسته نازک، نسخه HTTP/HTTPS و www.</li>
+					<li><strong>عملکرد:</strong> CWV میدانی، TTFB، منبع LCP، کار طولانی JS، CLS، برابری موبایل، HTML رندرشده.</li>
+					<li><strong>درون‌صفحه:</strong> عنوان و H1 یکتا، نیت، پوشش موجودیت، سرفصل، alt، هم‌پوشانی، تازگی.</li>
+					<li><strong>اعتماد و اسکیما:</strong> نویسنده، منابع، جزئیات سازمان، سیاست‌ها، اطلاعات محصول، اعتبار اسکیما، HTTPS.</li>
+					<li><strong>اعتبار و نتیجه:</strong> دامنه ارجاعی مرتبط، سابقه لینک دستکاری، ذکر برند، ترکینگ تبدیل، درآمد لندینگ ارگانیک، بک‌لاگ اولویت‌دار.</li>
+				</ol>
+				<p>یافته‌ها را با <strong>تأثیر × اطمینان ÷ هزینه اجرا</strong> رتبه‌بندی کنید.</p>
+			</section>
+
+			<section class="panel glass" id="roadmap">
+				<h2>۷. نقشه راه صفر تا قهرمان — ۳۰ روز</h2>
+				<p class="section-intro">اول بالاترین بازده مرکب. فرض: هنوز سایتی نیست.</p>
+
+				<div class="week">
+					<div class="week-label">هفته ۱<br>زیربنا</div>
+					<div>
+						<p><strong>روز ۱:</strong> یک تبدیل اصلی، مشتری هدف، مسئله حل‌شده، KPI پایه.</p>
+						<p><strong>روز ۲:</strong> ۱۰ رقیب؛ نوع صفحات، قوی‌ترین دسته/راهنما، ویژگی SERP برای ۲۰ کوئری تجاری.</p>
+						<p><strong>روز ۳:</strong> نقشه ۱۰ موضوع تراکنشی، ۱۰ مقایسه‌ای، ۲۰ اطلاعاتی — برای هر نیت یک URL ترجیحی.</p>
+						<p><strong>روز ۴:</strong> ۳–۷ بخش اصلی، زیردسته، نقشه ستون/خوشه، قرارداد URL، بردکرامب.</p>
+						<p><strong>روز ۵:</strong> قالب واکنش‌گرا، HTTPS، هاست سریع، permalink تمیز، Analytics، Search Console، ترکینگ تبدیل.</p>
+						<p><strong>روز ۶:</strong> درباره ما، تماس، حریم خصوصی، قوانین، ارسال/مرجوعی در صورت نیاز، پروفایل نویسنده و سازمان.</p>
+						<p><strong>روز ۷:</strong> استاندارد محتوا: یک نیت، مالک نام‌دار، تاریخ به‌روزرسانی، سهم اصلی، منابع، لینک داخلی، CTA قابل‌اندازه‌گیری.</p>
+					</div>
+				</div>
+				<div class="week">
+					<div class="week-label">هفته ۲<br>محتوا</div>
+					<div>
+						<p><strong>روز ۸:</strong> طرح ستون — تعریف، معیار تصمیم، زیرموضوع، اشتباهات رایج، شواهد، لینک خوشه.</p>
+						<p><strong>روز ۹:</strong> انتشار ستون: جواب اصلی در ابتدای متن؛ پوشش زیرنیت‌های مهم SERP؛ حداقل یک تصویر/فرایند/داده/ابزار اصلی؛ منابع اولیه.</p>
+						<p><strong>روز ۱۰–۱۲:</strong> سه صفحه خوشه — نیت متمایز، ارزش اصلی، لینک به ستون + یک هم‌خوشه، CTA مشخص.</p>
+						<p><strong>روز ۱۳:</strong> صفحات تجاری — پیشنهاد دقیق، مشخصات، فرایند قیمت، موجودی، شواهد، محدودیت، FAQ، اقدام تبدیل.</p>
+						<p><strong>روز ۱۴:</strong> لینک داخلی: ستون ↔ خوشه‌ها؛ اطلاعات → تجاری؛ بدون یتیم؛ انکر توصیفی.</p>
+					</div>
+				</div>
+				<div class="week">
+					<div class="week-label">هفته ۳<br>فنی</div>
+					<div>
+						<p><strong>روز ۱۵:</strong> کراول سایت — لینک شکسته، ریدایرکت، متای تکراری، کنونیکال، دستور ایندکس، یتیم.</p>
+						<p><strong>روز ۱۶:</strong> ارسال sitemap کنونیکال؛ بازرسی انواع URL؛ رندر زنده؛ برابری موبایل.</p>
+						<p><strong>روز ۱۷:</strong> LCP — عنصر را پیدا کنید، فشرده کنید، lazy نکنید، TTFB، تست دوباره موبایل.</p>
+						<p><strong>روز ۱۸:</strong> INP — کار طولانی، JS شخص‌ثالث، شکستن handler، تست فیلتر/منو/جستجو/سبد.</p>
+						<p><strong>روز ۱۹:</strong> CLS — ابعاد رسانه، فضای رزرو، فونت، بنر و کاروسل.</p>
+						<p><strong>روز ۲۰:</strong> فقط اسکیمای قابل‌اعمال؛ اعتبارسنجی هر قالب.</p>
+						<p><strong>روز ۲۱:</strong> هر URL قابل‌ایندکس: نیت یکتا، ارزش یکتا، کنونیکال، لینک داخلی، ارزش هزینه کراول.</p>
+					</div>
+				</div>
+				<div class="week">
+					<div class="week-label">هفته ۴<br>آوت‌ریچ</div>
+					<div>
+						<p><strong>روز ۲۲:</strong> یک دارایی لینک‌پذیر — دیتاست، نظرسنجی، ماشین‌حساب، مقایسه قطعی، ویژوال پژوهشی، منبع فنی قابل‌دانلود.</p>
+						<p><strong>روز ۲۳:</strong> ۳۰–۵۰ خبرنگار، ناشر، انجمن، تأمین‌کننده، منبع آموزشی مرتبط.</p>
+						<p><strong>روز ۲۴–۲۵:</strong> پیچ شخصی (مقاله مشخص، چرا کمک می‌کند، داده منحصربه‌فرد، URL)؛ دسته کوچک اول؛ رصد تحویل/پاسخ/پوشش/ارجاع.</p>
+						<p><strong>روز ۲۶:</strong> حداقل ۱۰ جایگزین لینک شکسته مرتبط.</p>
+						<p><strong>روز ۲۷:</strong> Search Console — کوئری رو به رشد، جایگاه ۵–۱۵، CTR پایین، حذف ایندکس، هم‌پوشانی.</p>
+						<p><strong>روز ۲۸:</strong> یک صفحه فرصت بالا را بهتر کنید (ایمپرشن، جایگاه ۵–۱۵، ارتباط تجاری).</p>
+						<p><strong>روز ۲۹:</strong> فرم/تسویه، رویدادها، CTA موبایل، اعتماد کنار تصمیم، attribution ارگانیک.</p>
+						<p><strong>روز ۳۰:</strong> برنامه ۹۰ روزه: نزدیک صفحه یک ← شکاف نیت تجاری ← گسترش خوشه ← دارایی اصلی ← کسب اعتبار مرتبط ← باگ فنی چندصفحه‌ای.</p>
+					</div>
+				</div>
+
+				<h3>«محتوای خوب» یعنی چه — معیار قابل‌اندازه‌گیری</h3>
+				<ul>
+					<li>یک نیت غالب؛ جواب اصلی سریع</li>
+					<li>زیرموضوع‌های تصمیم‌ساز پوشش داده شده</li>
+					<li>اطلاعاتی که از خلاصه عمومی به‌دست نمی‌آید</li>
+					<li>نویسنده/سازمان نام‌دار؛ منبع؛ تاریخ، شرایط، محدودیت</li>
+					<li>گام بعدی منطقی؛ قابل‌استفاده روی موبایل</li>
+					<li>ایمپرشن، کلیک یا تبدیل واجد شرایط می‌سازد</li>
+					<li>بدون تغییر URL اصلی قابل به‌روزرسانی است</li>
+				</ul>
+				<div class="note">
+					برای لوک‌آزما، اولویت‌های پرارزش معمولاً این‌هاست: معماری تمیز محصول/دسته، اطلاعات علمی منحصربه‌فرد محصول، شفافیت برند و گرید، منبع‌یابی و گواهی قابل‌اعتماد، کنترل ایندکس فیلتر/تگ، Product schema، و صفحات دسته/محصول سریع موبایل.
+				</div>
+			</section>
+
+			<footer>مرجع استاتیک · اسناد لوک‌آزما · هم‌راستا با رویه‌های جستجوی ۲۰۲۵–۲۰۲۶ از جمله AI Overviews</footer>
+		</main>
+	</div>
+
+	<script>
+		(function () {
+			var links = document.querySelectorAll("nav.toc a");
+			var sections = [];
+			links.forEach(function (a) {
+				var id = a.getAttribute("href").slice(1);
+				var el = document.getElementById(id);
+				if (el) sections.push({ el: el, a: a });
+			});
+			function sync() {
+				var y = window.scrollY + 80;
+				var current = sections[0];
+				sections.forEach(function (s) {
+					if (s.el.offsetTop <= y) current = s;
+				});
+				links.forEach(function (a) { a.classList.remove("active"); });
+				if (current) current.a.classList.add("active");
+			}
+			window.addEventListener("scroll", sync, { passive: true });
+			sync();
+		})();
+	</script>
+</body>
+</html>

@@ -97,6 +97,12 @@ if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' )
 		if ( is_string( $page_title ) && '' !== trim( $page_title ) ) {
 			$title = $page_title;
 		}
+		// WC shop page may be a trashed duplicate titled «فروشگاه-2».
+		if ( 'shop' === $kind && function_exists( 'hello_elementor_child_get_shop_label' ) ) {
+			if ( false !== strpos( (string) $title, 'فروشگاه-2' ) || false !== strpos( (string) get_permalink( $page_id ), '__trashed' ) ) {
+				$title = hello_elementor_child_get_shop_label();
+			}
+		}
 	}
 }
 

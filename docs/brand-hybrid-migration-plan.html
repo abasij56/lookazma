@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>برنامه کامل مهاجرت هیبرید برند</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--glass: rgba(255, 255, 255, 0.08);
+			--glass-strong: rgba(255, 255, 255, 0.14);
+			--glass-edge: rgba(255, 255, 255, 0.28);
+			--ink: rgba(246, 251, 255, 0.94);
+			--muted: rgba(214, 232, 240, 0.72);
+			--accent: #7ef0d8;
+			--accent-2: #9ecbff;
+			--good: #6ee7b7;
+			--warn: #fbbf24;
+			--poor: #fb7185;
+			--shadow: 0 24px 80px rgba(4, 18, 32, 0.38);
+			--radius: 28px;
+		}
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			color: var(--ink);
+			font-family: Vazirmatn, Tahoma, system-ui, sans-serif;
+			background:
+				radial-gradient(1100px 650px at 90% -8%, rgba(72, 214, 196, 0.28), transparent 55%),
+				radial-gradient(900px 560px at -8% 20%, rgba(86, 140, 255, 0.3), transparent 48%),
+				linear-gradient(165deg, #06141f 0%, #0b2a36 45%, #12313a 100%);
+			min-height: 100vh;
+			line-height: 1.85;
+		}
+		.orb {
+			position: fixed; border-radius: 50%; filter: blur(40px);
+			pointer-events: none; z-index: 0; opacity: 0.5;
+			animation: drift 18s ease-in-out infinite;
+		}
+		.orb-a { width: 300px; height: 300px; right: -70px; top: 12%; background: #2fd4b6; }
+		.orb-b { width: 240px; height: 240px; left: -50px; top: 52%; background: #4d8dff; animation-delay: -7s; }
+		@keyframes drift {
+			0%, 100% { transform: translate3d(0,0,0) scale(1); }
+			50% { transform: translate3d(-20px,-26px,0) scale(1.06); }
+		}
+		.shell {
+			position: relative; z-index: 1;
+			max-width: 1180px; margin: 0 auto;
+			padding: 28px 20px 72px;
+			display: grid;
+			grid-template-columns: 250px minmax(0, 1fr);
+			gap: 22px;
+		}
+		.glass {
+			background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+			border: 1px solid var(--glass-edge);
+			box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.22);
+			backdrop-filter: blur(22px) saturate(160%);
+			-webkit-backdrop-filter: blur(22px) saturate(160%);
+			border-radius: var(--radius);
+		}
+		nav.toc { position: sticky; top: 18px; align-self: start; padding: 20px 16px; max-height: calc(100vh - 40px); overflow: auto; }
+		nav.toc h2 { margin: 0 0 12px; font-size: 12px; color: var(--accent); font-weight: 600; }
+		nav.toc a {
+			display: block; color: var(--muted); text-decoration: none;
+			padding: 6px 10px; border-radius: 12px; font-size: 12.5px;
+		}
+		nav.toc a:hover, nav.toc a.active {
+			background: rgba(126, 240, 216, 0.12); color: #fff;
+		}
+		.hero { padding: 34px 38px 28px; margin-bottom: 16px; }
+		.kicker {
+			display: inline-flex; padding: 6px 12px; border-radius: 999px;
+			border: 1px solid var(--glass-edge); background: rgba(255,255,255,0.06);
+			font-size: 12px; color: var(--accent);
+		}
+		h1 { font-size: clamp(1.4rem, 3vw, 2.1rem); margin: 12px 0 10px; font-weight: 700; line-height: 1.4; }
+		.lede { margin: 0; color: var(--muted); }
+		.panel { padding: 26px 30px 30px; margin-bottom: 16px; }
+		h2 { margin: 0 0 10px; font-size: 1.2rem; font-weight: 700; }
+		h3 { margin: 16px 0 8px; font-size: 1.02rem; color: var(--accent-2); font-weight: 600; }
+		p { margin: 0 0 11px; }
+		ul, ol { margin: 0 0 12px; padding-right: 1.2em; padding-left: 0; }
+		li { margin: 0 0 6px; }
+		strong { color: #fff; }
+		a { color: var(--accent); }
+		code {
+			font-family: ui-monospace, Consolas, monospace; font-size: 0.85em;
+			background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.12);
+			padding: 1px 6px; border-radius: 6px; direction: ltr; display: inline-block;
+		}
+		.pill {
+			display: inline-block; padding: 4px 10px; border-radius: 999px;
+			font-size: 12px; margin: 0 0 10px 6px;
+			border: 1px solid rgba(255,255,255,0.16); background: rgba(0,0,0,0.18);
+		}
+		.pill.ok { color: var(--good); }
+		.pill.warn { color: var(--warn); }
+		.pill.low { color: var(--accent-2); }
+		.note {
+			padding: 13px 15px; border-radius: 16px; margin: 12px 0 0;
+			border: 1px solid rgba(126, 240, 216, 0.28);
+			background: rgba(126, 240, 216, 0.08);
+		}
+		.warn-box {
+			padding: 13px 15px; border-radius: 16px; margin: 12px 0 14px;
+			border: 1px solid rgba(251, 191, 36, 0.4);
+			background: rgba(251, 191, 36, 0.1);
+		}
+		.check li { list-style: none; padding-right: 0; }
+		.check li::before { content: "☐ "; color: var(--accent); }
+		.example {
+			padding: 12px 14px; border-radius: 14px; margin: 10px 0 12px;
+			background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.12);
+			font-size: 0.88rem; direction: ltr; text-align: left;
+			font-family: ui-monospace, Consolas, monospace; white-space: pre-wrap;
+		}
+		.grid {
+			display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;
+		}
+		.card {
+			padding: 14px 15px; border-radius: 18px;
+			background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+		}
+		.card h3 { margin: 0 0 8px; color: var(--accent); font-size: 0.95rem; }
+		.card p { margin: 0; color: var(--muted); font-size: 0.94rem; }
+		table {
+			width: 100%; border-collapse: collapse; font-size: 0.86rem;
+			margin: 10px 0 8px; overflow: hidden; border-radius: 16px;
+		}
+		th, td {
+			text-align: right; padding: 9px 10px; vertical-align: top;
+			border-bottom: 1px solid rgba(255,255,255,0.1);
+		}
+		th { color: var(--accent); background: rgba(255,255,255,0.05); }
+		footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+		@media (max-width: 900px) {
+			.shell { grid-template-columns: 1fr; }
+			nav.toc { position: relative; top: 0; max-height: none; }
+			.grid { grid-template-columns: 1fr; }
+			.hero, .panel { padding: 22px 18px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="orb orb-a"></div>
+	<div class="orb orb-b"></div>
+
+	<div class="shell">
+		<nav class="toc glass" aria-label="فهرست">
+			<h2>فهرست فازها</h2>
+			<a href="#hero">خلاصه طرح</a>
+			<a href="#locked">تصمیم‌های قفل‌شده</a>
+			<a href="#now">وضعیت فعلی</a>
+			<a href="#target">هدف نهایی</a>
+			<a href="#p0">فاز ۰ — آماده‌سازی</a>
+			<a href="#p1">فاز ۱ — ثبت تاکسونومی</a>
+			<a href="#p2">فاز ۲ — مهاجرت ترم‌ها</a>
+			<a href="#p3">فاز ۳ — اتصال محصولات</a>
+			<a href="#p4">فاز ۴ — قالب برند</a>
+			<a href="#p5">فاز ۵ — خواندن فرانت</a>
+			<a href="#p6">فاز ۶ — فیلتر و جستجو</a>
+			<a href="#p7">فاز ۷ — هوم‌پیج</a>
+			<a href="#p8">فاز ۸ — ریدایرکت</a>
+			<a href="#p9">فاز ۹ — ابزار ادمین</a>
+			<a href="#p10">فاز ۱۰ — پاکسازی تگ</a>
+			<a href="#p11">فاز ۱۱ — سئو</a>
+			<a href="#done">تعریف «تمام»</a>
+		</nav>
+
+		<main>
+			<header class="hero glass" id="hero">
+				<div class="kicker">لوک‌آزما · مهاجرت هیبرید برند</div>
+				<h1>برنامه کامل: <code>product_tag</code> → <code>product_brand</code></h1>
+				<p class="lede">
+					مسیر هیبرید: تاکسونومی اختصاصی برند با URL
+					<code>/brand/{slug}/</code>
+					+ فیلدهای ACF روی ترم + اتصال native محصول.
+					هر فاز: <strong>تغییرات</strong> و <strong>تست</strong>. رابطه محصول جداگانه طراحی نمی‌شود — همان ترم است.
+				</p>
+			</header>
+
+			<section class="panel glass" id="locked">
+				<span class="pill ok">قفل‌شده</span>
+				<h2>تصمیم‌های این طرح</h2>
+				<ul>
+					<li>تاکسونومی: <code>product_brand</code> (نام فنی انگلیسی)</li>
+					<li>برچسب ادمین فارسی: «برندها»</li>
+					<li>Rewrite: <code>brand</code> → URL به شکل <code>/brand/merck/</code></li>
+					<li>متصل به <code>product</code> (مثل تگ امروز)</li>
+					<li>لوگو و فیلدهای اضافه با ACF روی ترم برند</li>
+					<li>۳۰۱ از <code>/product-tag/{slug}/</code> به <code>/brand/{slug}/</code></li>
+					<li>همه تگ‌های فعلی محصول = برند</li>
+					<li>دسته محصول (<code>product_cat</code>) دست نخورده می‌ماند</li>
+					<li>نوار برند خانه از <code>product_brand</code> پر می‌شود</li>
+				</ul>
+				<div class="example">Taxonomy: product_brand
+URL: /brand/{slug}/
+Product link: wp_term_relationships (native)
+Fields: ACF on term (logo, extras…)
+Redirect: /product-tag/{slug}/ → 301 → /brand/{slug}/</div>
+			</section>
+
+			<section class="panel glass" id="now">
+				<h2>وضعیت فعلی</h2>
+				<ul>
+					<li>برند = <code>product_tag</code></li>
+					<li>صفحه محصول / کارت: اولین تگ = نام و لینک برند</li>
+					<li>آرشیو: <code>/product-tag/...</code></li>
+					<li>فیلتر «برند» و جستجوی شرکت‌ها: روی تگ</li>
+					<li>ACF <code>آدرس_برند</code>: رابطه نیست (لوگو/نام پشتیبان)</li>
+					<li>هوم‌پیج: لینک‌های هاردکد به <code>/product-tag/...</code></li>
+					<li>AI auto-submit و Price Editor: اسکوپ با تگ</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="target">
+				<h2>هدف نهایی (وقتی همه فازها تمام شد)</h2>
+				<div class="grid">
+					<div class="card">
+						<h3>کاربر</h3>
+						<p>صفحه <code>/brand/merck/</code> با لوگو، توضیح و گرید محصول؛ بج برند روی محصول به همین URL؛ فیلتر برند در فروشگاه.</p>
+					</div>
+					<div class="card">
+						<h3>ادمین</h3>
+						<p>منوی «برندها»؛ روی محصول باکس برند به‌جای تگ‌های برند؛ AI و قیمت‌گذاری بر اساس <code>product_brand</code>.</p>
+					</div>
+				</div>
+				<div class="note">تگ محصول دیگر نقش برند ندارد (یا خالی/حذف می‌شود طبق فاز ۱۰).</div>
+			</section>
+
+			<!-- Phase 0 -->
+			<section class="panel glass" id="p0">
+				<span class="pill low">ریسک خیلی کم</span>
+				<h2>فاز ۰ — آماده‌سازی</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>خروجی لیست همه <code>product_tag</code>: term_id، نام، slug، تعداد محصول، لوگو، توضیح</li>
+					<li>جدول نگاشت: <code>old_slug → brand_slug</code> (معمولاً همان)</li>
+					<li>قانون چندتگ: کدام ترم برند اصلی است؟ (پیشنهاد: همه تگ‌ها به برند کپی شوند؛ «اولین تگ» همچنان برای بج پیش‌فرض)</li>
+					<li>بک‌آپ دیتابیس + فایل‌ها</li>
+					<li>ثبت permalinkها بعد از هر فاز دارای rewrite را در چک‌لیست بگذارید</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>لیست تگ‌ها کامل است</li>
+					<li>تعداد برند تقریبی و برندهای مهم (Merck، مجللی، نوترون، …) مشخص‌اند</li>
+					<li>بک‌آپ موجود است</li>
+				</ul>
+			</section>
+
+			<!-- Phase 1 -->
+			<section class="panel glass" id="p1">
+				<span class="pill ok">ریسک خیلی کم</span>
+				<h2>فاز ۱ — ثبت تاکسونومی <code>product_brand</code></h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>ثبت taxonomy روی <code>product</code>: public، show_ui، show_admin_column، rewrite slug = <code>brand</code>، hierarchical = false (مثل تگ)</li>
+					<li>برچسب‌ها فارسی در ادمین</li>
+					<li>گروه فیلد ACF برای ترم برند: لوگو، فیلدهای اختیاری (کشور، لینک رسمی، …)</li>
+					<li>هنوز ریدایرکت نباشد؛ هنوز محصول‌ها فقط تگ داشته باشند</li>
+					<li>یک‌بار flush rewrite (Settings → Permalinks → Save)</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>منوی «برندها» دیده می‌شود</li>
+					<li>ساخت ترم تست؛ URL پیش‌نمایش <code>/brand/test-slug/</code></li>
+					<li>فیلدهای ACF روی ترم ذخیره می‌شوند</li>
+					<li>فروشگاه / محصول / تگ قدیمی بدون fatal</li>
+					<li>دسته‌های شیمیایی بدون تغییر</li>
+				</ul>
+				<div class="warn-box">اگر rewrite کار نکرد، دوباره Permalinks را Save کنید.</div>
+			</section>
+
+			<!-- Phase 2 -->
+			<section class="panel glass" id="p2">
+				<span class="pill ok">ریسک کم</span>
+				<h2>فاز ۲ — مهاجرت ترم‌ها (تگ → برند)</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>ابزار ادمین یک‌بارمصرف: «Migrate tags to product_brand»</li>
+					<li>برای هر تگ: ساخت ترم برند با همان نام و slug</li>
+					<li>کپی توضیح ترم</li>
+					<li>کپی لوگو/thumbnail تگ → ACF لوگو یا thumbnail برند</li>
+					<li>متای نگاشت روی ترم برند: <code>_lk_source_tag_id</code>، <code>_lk_source_tag_slug</code></li>
+					<li>تگ‌ها را حذف نکنید</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>تعداد ترم برند ≈ تعداد تگ</li>
+					<li>۱۰ برند نمونه: نام، slug، لوگو، توضیح</li>
+					<li>متای نگاشت پر است</li>
+					<li>محصول‌ها هنوز فقط از تگ برند می‌گیرند (عمدی تا فاز ۳)</li>
+				</ul>
+			</section>
+
+			<!-- Phase 3 -->
+			<section class="panel glass" id="p3">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۳ — اتصال محصولات به <code>product_brand</code></h2>
+				<p>این همان «رابطه محصول» است — native، بدون فاز R جدا.</p>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>اسکریپت مهاجرت: برای هر محصول، تگ‌هایش را بخوان؛ ترم برند متناظر را <code>wp_set_object_terms</code> کن</li>
+					<li>حالت پیشنهادی گذار: <strong>دوگانه</strong> — هم تگ هم برند روی محصول بماند تا فازهای بعد پایدار شوند</li>
+					<li>لاگ محصولات بدون تگ / تگ بدون نگاشت</li>
+					<li>اجرای مجدد امن باشد (idempotent)</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>محصول نمونه Merck هم تگ Merck دارد هم برند Merck</li>
+					<li>شمارش: محصولات دارای برند ≈ محصولات دارای تگ برند</li>
+					<li>محصول بدون تگ در لاگ مشخص است</li>
+					<li>فرانت هنوز از تگ می‌خواند (تا فاز ۵) — سایت نشکند</li>
+				</ul>
+				<div class="note">بعد از این فاز، می‌توانید با <code>tax_query</code> روی <code>product_brand</code> محصولات را لیست کنید — حتی قبل از تعویض UI.</div>
+			</section>
+
+			<!-- Phase 4 -->
+			<section class="panel glass" id="p4">
+				<span class="pill ok">ریسک کم–متوسط</span>
+				<h2>فاز ۴ — قالب آرشیو برند</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>تمپلیت لایت برای <code>taxonomy-product_brand</code> (شبیه آرشیو تگ فعلی)</li>
+					<li>هیرو: نام، لوگو ACF، توضیح</li>
+					<li>گرید محصول با <code>tax_query</code> روی <code>product_brand</code> + فیلترهای موجود در صورت امکان</li>
+					<li>بردکرامب مناسب</li>
+					<li>اختیاری: ایندکس لیست همه برندها</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li><code>/brand/merck/</code> هیرو + محصولات درست</li>
+					<li>صفحه‌بندی کار می‌کند</li>
+					<li>موبایل OK</li>
+					<li><code>/product-tag/merck/</code> هنوز زنده است (تا فاز ۸)</li>
+				</ul>
+			</section>
+
+			<!-- Phase 5 -->
+			<section class="panel glass" id="p5">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۵ — خواندن فرانت از برند (به‌جای تگ)</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>صفحه محصول لایت: نام/لینک/لوگو از <code>product_brand</code> (اولین ترم)، لینک به <code>/brand/...</code></li>
+					<li>کارت‌های فروشگاه / آرشیو: همین</li>
+					<li>Fallback کوتاه: اگر برند نبود، تگ (فقط در دوره گذار)</li>
+					<li>دیگر اولویت با تگ نباشد مگر fallback</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>بج محصول به <code>/brand/...</code> می‌رود</li>
+					<li>کارت‌ها لوگو/نام درست</li>
+					<li>محصول فقط‌تگ (اگر ماند) fallback درست</li>
+					<li>محصول بدون برند/تگ بدون خطا</li>
+				</ul>
+			</section>
+
+			<!-- Phase 6 -->
+			<section class="panel glass" id="p6">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۶ — فیلتر آرشیو و جستجو</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>فاست «برند» در <code>get_filter_definitions()</code>: taxonomy = <code>product_brand</code></li>
+					<li>روی آرشیو برند، فاست برند مخفی/غیرفعال بماند (مثل امروز برای تگ)</li>
+					<li>جستجوی لوک‌آزما «شرکت‌ها»: جستجو در <code>product_brand</code> با لینک <code>/brand/...</code></li>
+					<li>شمارش فاست و AJAX فیلتر را روی یک دسته آزمایش کنید</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>انتخاب برند در فیلتر، محصولات همان برند را می‌آورد</li>
+					<li>شمارنده‌ها منطقی‌اند</li>
+					<li>تایپ نام برند در جستجو → لینک <code>/brand/...</code></li>
+					<li>جستجوی محصول خراب نشده</li>
+				</ul>
+			</section>
+
+			<!-- Phase 7 -->
+			<section class="panel glass" id="p7">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۷ — نوار برند هوم‌پیج</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>جایگزینی <code>default_brands()</code> هاردکد با کوئری ترم‌های <code>product_brand</code> (یا لیست انتخابی ادمین)</li>
+					<li>لینک‌ها به <code>/brand/{slug}/</code></li>
+					<li>لوگو از ACF ترم</li>
+					<li>fallback اگر ترم خالی بود</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>لوگوهای خانه درست‌اند</li>
+					<li>کلیک → <code>/brand/...</code> نه <code>/product-tag/...</code></li>
+					<li>برند بدون تصویر صفحه را نمی‌شکند</li>
+				</ul>
+			</section>
+
+			<!-- Phase 8 -->
+			<section class="panel glass" id="p8">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۸ — ریدایرکت تگ → برند</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>روی <code>is_product_tag()</code>: پیدا کردن برند با متای نگاشت / slug</li>
+					<li><code>301</code> به <code>/brand/{slug}/</code></li>
+					<li>تگ بدون نگاشت: نگه داشتن آرشیو قدیمی یا ۴۰۴ نرم (از قبل تصمیم بگیرید)</li>
+					<li>یک پرش؛ بدون زنجیره</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li><code>/product-tag/merck/</code> → ۳۰۱ → <code>/brand/merck/</code></li>
+					<li>لینک‌های داخلی قدیمی در محتوا (اگر ماندند) مقصد درست دارند</li>
+					<li>بنرهای هاردکد قدیمی هم با ۳۰۱ درست می‌شوند</li>
+				</ul>
+			</section>
+
+			<!-- Phase 9 -->
+			<section class="panel glass" id="p9">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۹ — ابزارهای ادمین</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>AI auto-submit: دراپ‌داون برند از <code>product_brand</code>؛ کوئری محصولات با همین taxonomy</li>
+					<li>لیست محصول AI / فیلتر برند: تعویض به <code>product_brand</code></li>
+					<li>Attribute Price Editor: اسکوپ برند از <code>product_brand</code></li>
+					<li>برچسب UI فارسی «برند» بماند</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>ثبت اتوماتیک محصولات یک برند را می‌آورد</li>
+					<li>ویرایشگر قیمت روی برند درست اسکوپ می‌شود</li>
+					<li>nonce و دسترسی OK</li>
+				</ul>
+			</section>
+
+			<!-- Phase 10 -->
+			<section class="panel glass" id="p10">
+				<span class="pill warn">ریسک متوسط · بعد از soak</span>
+				<h2>فاز ۱۰ — بازنشستگی تگ به‌عنوان برند</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>تأیید هیچ کدمسیری برند را اول از تگ نمی‌خواند</li>
+					<li>حذف ترم‌های تگِ برند از محصولات (یا حذف خود ترم‌ها) — فقط بعد از ۱–۲ هفته پایداری</li>
+					<li>حذف/غیرفعال کردن آرشیو لایت تگ به‌عنوان صفحه برند</li>
+					<li>پاکسازی فیلدهای لوگوی تگ بلااستفاده</li>
+					<li>جستجوی کد برای <code>/product-tag/</code> و <code>product_tag</code> در مسیرهای برند</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>فرانت و ادمین بدون fatal</li>
+					<li>۳۰۱ها هنوز کار می‌کنند</li>
+					<li>فیلتر و صفحه برند فقط از <code>product_brand</code></li>
+					<li>تگ خالی/حذف‌شده چیزی را نشکسته</li>
+				</ul>
+				<div class="warn-box">قبل از حذف انبوه تگ‌ها، یک خروجی CSV از نگاشت و اتصال‌ها نگه دارید.</div>
+			</section>
+
+			<!-- Phase 11 -->
+			<section class="panel glass" id="p11">
+				<span class="pill low">ریسک کم</span>
+				<h2>فاز ۱۱ — soak سئو</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>Yoast/sitemap: ایندکس <code>product_brand</code>؛ تگ برند دیگر در sitemap برند نباشد</li>
+					<li>عنوان و متای ترم‌های مهم برند</li>
+					<li>Schema در صورت نیاز: Brand / Organization روی آرشیو برند؛ brand روی Product</li>
+					<li>Search Console: URLهای <code>/brand/</code> و رصد ۴۰۴ تگ قدیمی</li>
+					<li>لینک‌های داخلی محتوا که هنوز به تگ می‌روند را در صورت امکان به‌روز کنید (۳۰۱ پشتیبان است)</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>نمونه تگ قدیمی → ۳۰۱</li>
+					<li>صفحات برند ایندکس می‌شوند</li>
+					<li>Rich Results / schema بدون خطای بحرانی (در صورت پیاده‌سازی)</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="done">
+				<span class="pill ok">تمام</span>
+				<h2>چه وقتی طرح هیبرید «تمام» است؟</h2>
+				<table>
+					<thead>
+						<tr><th>نشانه</th><th>معنی</th></tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>URL عمومی برند فقط <code>/brand/...</code> است</td>
+							<td>ریدایرکت و تمپلیت فعال‌اند</td>
+						</tr>
+						<tr>
+							<td>محصول و فیلتر از <code>product_brand</code> می‌خوانند</td>
+							<td>فرانت مهاجرت کرده</td>
+						</tr>
+						<tr>
+							<td>AI و Price Editor برند را از taxonomy جدید می‌گیرند</td>
+							<td>ادمین مهاجرت کرده</td>
+						</tr>
+						<tr>
+							<td>تگ دیگر منبع برند نیست</td>
+							<td>پاکسازی انجام شده</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="note">
+					برخلاف CPT + ACF، در این طرح <strong>فاز رابطه خالی ندارید</strong>:
+					اتصال محصول همان ترم است و از فاز ۳ گرید برند قابل ساخت است.
+				</div>
+				<p style="margin-top:14px;color:var(--muted);font-size:0.92rem">
+					مرتبط:
+					<a href="./brand-hybrid-vs-cpt-acf.html">هیبرید در برابر CPT + ACF</a>
+					·
+					<a href="./brand-category-vs-cpt.html">دسته در برابر CPT</a>
+					·
+					<a href="./brand-cpt-migration-plan.html">برنامه CPT (مسیر جایگزین)</a>
+				</p>
+			</section>
+
+			<footer>اسناد لوک‌آزما · برنامه کامل مهاجرت هیبرید برند · product_tag → product_brand</footer>
+		</main>
+	</div>
+
+	<script>
+		(function () {
+			var links = document.querySelectorAll("nav.toc a");
+			var sections = [];
+			links.forEach(function (a) {
+				var el = document.getElementById(a.getAttribute("href").slice(1));
+				if (el) sections.push({ el: el, a: a });
+			});
+			function sync() {
+				var y = window.scrollY + 80, current = sections[0];
+				sections.forEach(function (s) { if (s.el.offsetTop <= y) current = s; });
+				links.forEach(function (a) { a.classList.remove("active"); });
+				if (current) current.a.classList.add("active");
+			}
+			window.addEventListener("scroll", sync, { passive: true });
+			sync();
+		})();
+	</script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>خلاصه سئو: لوک‌آزما در برابر میلی‌مول</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--glass: rgba(255, 255, 255, 0.08);
+			--glass-strong: rgba(255, 255, 255, 0.14);
+			--glass-edge: rgba(255, 255, 255, 0.28);
+			--ink: rgba(246, 251, 255, 0.94);
+			--muted: rgba(214, 232, 240, 0.72);
+			--accent: #7ef0d8;
+			--accent-2: #9ecbff;
+			--warn: #fbbf24;
+			--poor: #fb7185;
+			--good: #6ee7b7;
+			--shadow: 0 24px 80px rgba(4, 18, 32, 0.38);
+			--radius: 28px;
+		}
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			color: var(--ink);
+			font-family: Vazirmatn, Tahoma, system-ui, sans-serif;
+			background:
+				radial-gradient(1100px 650px at 90% -8%, rgba(72, 214, 196, 0.28), transparent 55%),
+				radial-gradient(900px 560px at -8% 20%, rgba(86, 140, 255, 0.3), transparent 48%),
+				linear-gradient(165deg, #06141f 0%, #0b2a36 45%, #12313a 100%);
+			min-height: 100vh;
+			line-height: 1.85;
+		}
+		.orb {
+			position: fixed; border-radius: 50%; filter: blur(40px);
+			pointer-events: none; z-index: 0; opacity: 0.5;
+			animation: drift 18s ease-in-out infinite;
+		}
+		.orb-a { width: 300px; height: 300px; right: -70px; top: 15%; background: #2fd4b6; }
+		.orb-b { width: 240px; height: 240px; left: -50px; top: 55%; background: #4d8dff; animation-delay: -7s; }
+		@keyframes drift {
+			0%, 100% { transform: translate3d(0,0,0) scale(1); }
+			50% { transform: translate3d(-20px,-26px,0) scale(1.06); }
+		}
+		.wrap {
+			position: relative; z-index: 1;
+			max-width: 920px; margin: 0 auto;
+			padding: 36px 20px 72px;
+		}
+		.glass {
+			background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+			border: 1px solid var(--glass-edge);
+			box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.22);
+			backdrop-filter: blur(22px) saturate(160%);
+			-webkit-backdrop-filter: blur(22px) saturate(160%);
+			border-radius: var(--radius);
+		}
+		.hero { padding: 36px 40px 30px; margin-bottom: 18px; }
+		.kicker {
+			display: inline-flex; gap: 8px; padding: 6px 12px;
+			border-radius: 999px; border: 1px solid var(--glass-edge);
+			background: rgba(255,255,255,0.06); font-size: 12px; color: var(--accent);
+		}
+		h1 { font-size: clamp(1.55rem, 3.2vw, 2.35rem); margin: 14px 0 10px; font-weight: 700; line-height: 1.35; }
+		.lede { margin: 0; color: var(--muted); font-size: 1.02rem; }
+		.panel { padding: 28px 32px 32px; margin-bottom: 16px; }
+		h2 { margin: 0 0 10px; font-size: 1.28rem; font-weight: 700; }
+		h3 { margin: 22px 0 8px; font-size: 1.05rem; color: var(--accent-2); font-weight: 600; }
+		p { margin: 0 0 12px; }
+		ul, ol { margin: 0 0 12px; padding-right: 1.2em; padding-left: 0; }
+		li { margin: 0 0 6px; }
+		strong { color: #fff; }
+		a { color: var(--accent); }
+		.cards {
+			display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0 8px;
+		}
+		.card {
+			padding: 14px 16px; border-radius: 18px;
+			background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+		}
+		.card h3 { margin: 0 0 8px; color: var(--accent); font-size: 0.98rem; }
+		.card p { margin: 0; color: var(--muted); font-size: 0.94rem; }
+		table {
+			width: 100%; border-collapse: collapse; font-size: 0.9rem;
+			margin: 10px 0 14px; border-radius: 16px; overflow: hidden;
+		}
+		th, td {
+			text-align: right; padding: 9px 11px; vertical-align: top;
+			border-bottom: 1px solid rgba(255,255,255,0.1);
+		}
+		th { color: var(--accent); background: rgba(255,255,255,0.05); font-weight: 600; }
+		.note {
+			padding: 13px 15px; border-radius: 16px; margin: 12px 0 0;
+			border: 1px solid rgba(126, 240, 216, 0.28);
+			background: rgba(126, 240, 216, 0.08);
+		}
+		.warn-box {
+			padding: 13px 15px; border-radius: 16px; margin: 12px 0 14px;
+			border: 1px solid rgba(251, 113, 133, 0.35);
+			background: rgba(251, 113, 133, 0.1);
+		}
+		.pill {
+			display: inline-block; padding: 4px 10px; border-radius: 999px;
+			font-size: 12px; margin-left: 6px; margin-bottom: 6px;
+			border: 1px solid rgba(255,255,255,0.16); background: rgba(0,0,0,0.18);
+		}
+		.pill.poor { color: var(--poor); }
+		.pill.warn { color: var(--warn); }
+		.pill.good { color: var(--good); }
+		.actions li { margin-bottom: 8px; }
+		footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+		@media (max-width: 700px) {
+			.hero, .panel { padding: 22px 18px; }
+			.cards { grid-template-columns: 1fr; }
+		}
+	</style>
+</head>
+<body>
+	<div class="orb orb-a"></div>
+	<div class="orb orb-b"></div>
+
+	<div class="wrap">
+		<header class="hero glass">
+			<div class="kicker">لوک‌آزما · خلاصه سئو</div>
+			<h1>مقایسه سئو با میلی‌مول و نقاط ضعف لوک‌آزما</h1>
+			<p class="lede">
+				خلاصهٔ جمع‌بندی مقایسه با
+				<a href="https://milimol.com/" target="_blank" rel="noopener noreferrer">milimol.com</a>
+				و ضعف‌های اصلی سئوی لوک‌آزما — برای تصمیم‌گیری سریع تیم.
+			</p>
+		</header>
+
+		<section class="panel glass">
+			<h2>۱. تفاوت مدل کسب‌وکار (مهم)</h2>
+			<div class="cards">
+				<div class="card">
+					<h3>لوک‌آزما</h3>
+					<p>فروشگاه تأمین‌کننده (ecommerce): شما می‌فروشید. نیت اصلی کاربر = <strong>خرید</strong>.</p>
+				</div>
+				<div class="card">
+					<h3>میلی‌مول</h3>
+					<p>بازار B2B: تأمین‌کنندگان + خریداران + درخواست خرید. نیت اصلی = <strong>یافتن / مقایسه / استعلام</strong>.</p>
+				</div>
+			</div>
+			<div class="note">
+				میلی‌مول لزوماً «قالب بهتر» ندارد؛ انواع صفحهٔ ایندکس‌پذیر بیشتر و سرعت تولید URL تازه (UGC) دارد.
+				لوک‌آزما نباید کپی marketplace شود؛ باید الگوی صفحه و ریتم انتشار را بگیرد و در نیت <strong>خرید</strong> ببرد.
+			</div>
+		</section>
+
+		<section class="panel glass">
+			<h2>۲. میلی‌مول در سئو چه دارد که شما کمتر دارید؟</h2>
+			<ol>
+				<li><strong>جستجوی موجودیت‌محور:</strong> فارسی / انگلیسی / CAS در UI و کارت‌ها.</li>
+				<li><strong>دسته‌بندی عمیق به‌عنوان لندینگ تجاری</strong> (اسیدها، حلال‌ها، مواد دارویی و …).</li>
+				<li><strong>سرعت URL تازه:</strong> محصولات جدید، شرکت‌ها، درخواست‌ها، مقالات و اخبار.</li>
+				<li><strong>انواع صفحهٔ اضافه:</strong> صفحه شرکت، RFQ، راهنمای خریدار/تأمین‌کننده، هاب «پرجستجوترین‌ها».</li>
+				<li><strong>اثبات زنده در صفحهٔ اصلی:</strong> لیست‌های تازه به‌جای فقط متن درباره ما.</li>
+				<li><strong>عنوان SERP شفاف:</strong> بازار مواد شیمیایی | میلی‌مول.</li>
+			</ol>
+		</section>
+
+		<section class="panel glass">
+			<h2>۳. لوک‌آزما از قبل چه دارد؟</h2>
+			<ul>
+				<li>یکپارچگی Yoast برای سئوی دسته (عنوان / متا / کلمه کانونی) در افزونه AI</li>
+				<li>تولید AI برای توضیحات محصول، توضیحات دسته و فیلدهای سئو</li>
+				<li>قالب‌های سبک (بهبود بالقوه Core Web Vitals نسبت به Elementor سنگین)</li>
+				<li>باکس سئوی بلند صفحهٔ اصلی</li>
+				<li>اسکیمای Article روی مطالب، آرشیو دسته/برند، دیتاشیت و ویژگی‌ها</li>
+			</ul>
+			<p>پس مشکل اصلی «نبود ابزار» نیست؛ مشکل <strong>پوشش، یکتایی، لینک داخلی و ریتم انتشار</strong> است.</p>
+		</section>
+
+		<section class="panel glass">
+			<h2>۴. جدول مقایسه کوتاه</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>حوزه</th>
+						<th>میلی‌مول</th>
+						<th>لوک‌آزما</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>عمق دسته به‌عنوان لندینگ</td>
+						<td>قوی</td>
+						<td>متوسط (وابسته به تکمیل Yoast و توضیح یکتا)</td>
+					</tr>
+					<tr>
+						<td>موجودیت محصول (CAS، خلوص، گرید)</td>
+						<td>قوی روی کارت‌ها</td>
+						<td>داده هست؛ باید در title / H1 / اول صفحه دیده شود</td>
+					</tr>
+					<tr>
+						<td>سرعت URL تازه</td>
+						<td>بالا (UGC)</td>
+						<td>پایین‌تر</td>
+					</tr>
+					<tr>
+						<td>وبلاگ / مرجعیت موضوعی</td>
+						<td>فعال</td>
+						<td>ریتم ضعیف‌تر</td>
+					</tr>
+					<tr>
+						<td>صفحات RFQ / دایرکتوری شرکت</td>
+						<td>دارد</td>
+						<td>ندارد (نباید کپی شود؛ جایگزین: راهنما و هاب)</td>
+					</tr>
+					<tr>
+						<td>نیت تراکنشی Buy</td>
+						<td>متوسط</td>
+						<td><strong>قوی‌تر</strong> (سبد واقعی)</td>
+					</tr>
+					<tr>
+						<td>فنی / CWV</td>
+						<td>نامشخص</td>
+						<td>در حال بهبود با قالب‌های سبک</td>
+					</tr>
+					<tr>
+						<td>اسکیما</td>
+						<td>احتمالاً پایه</td>
+						<td>ناقص (تکمیل Product + Organization + Breadcrumb)</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+
+		<section class="panel glass">
+			<h2>۵. نقاط ضعف سئوی لوک‌آزما (خلاصه)</h2>
+			<div class="warn-box">
+				<span class="pill poor">ضعف اصلی</span>
+				زیربنای فروشگاهی خوب است، اما لندینگ تجاری یکتا و ریتم انتشار کافی برای رقابت با marketplace محتوایی مثل میلی‌مول هنوز کم است.
+			</div>
+			<ul>
+				<li>صفحات تازه و ایندکس‌پذیر کمتر از رقبا (بدون RFQ / دایرکتوری شرکت‌ها)</li>
+				<li>صفحات دسته اغلب کم‌بهینه (کپی یکتا یا Yoast ناقص)</li>
+				<li>سیگنال SERP محصول ضعیف وقتی CAS / گرید / خلوص در title–H1–بالای صفحه نیست</li>
+				<li>ریتم وبلاگ و راهنما برای مرجعیت موضوعی پایین است</li>
+				<li>لینک داخلی محصول ↔ دسته ↔ راهنما ناقص است</li>
+				<li>کنترل ایندکس فیلتر/تگ و اسکیمای کامل Product/Org هنوز نیاز به سفت‌کاری دارد</li>
+			</ul>
+		</section>
+
+		<section class="panel glass">
+			<h2>۶. اولویت اقدام (بالاترین ROI)</h2>
+			<ol class="actions">
+				<li>
+					<strong>بردن کوئری‌های خرید که marketplace کامل مالکشان نیست</strong>
+					— برای هر کلمه پولی: یک محصول/SKU اصلی + یک دسته + در صورت نیاز یک راهنما با لینک به خرید.
+				</li>
+				<li>
+					<strong>تکمیل سئوی دسته در مقیاس</strong>
+					— عنوان/متا/کلمه کانونی یکتا، توضیح HTML واقعی، لینک به محصولات برتر و یک راهنمای مرتبط.
+				</li>
+				<li>
+					<strong>محصول آماده SERP</strong>
+					— نام فارسی + انگلیسی، CAS، خلوص/گرید/برند، بسته‌بندی، لینک COA، توضیح یکتا.
+					الگوی عنوان نمونه: <code style="direction:ltr;display:inline-block">خرید [نام] | CAS […] | [گرید] | لوک آزما</code>
+				</li>
+				<li>
+					<strong>هاب‌های شبیه میلی‌مول بدون marketplace</strong>
+					— «پرجستجوترین مواد»، ستون آزمایشگاهی، ستون برند، ستون صنعت.
+				</li>
+				<li>
+					<strong>ریتم محتوا</strong>
+					— ۲–۴ مقاله مفید در ماه + رفرش فصلی ۲۰ صفحه تجاری برتر + انتشار سریع محصول جدید.
+				</li>
+				<li>
+					<strong>فنی و اسکیما</strong>
+					— Product (offer/brand/SKU)، Organization، Breadcrumb؛ کنترل ایندکس فیلتر؛ سرعت موبایل.
+				</li>
+				<li>
+					<strong>E-E-A-T تأمین‌کننده</strong>
+					— نویسنده نام‌دار، گواهی/COA، ارسال و مرجوعی، تماس واقعی، کیس‌استادی.
+				</li>
+			</ol>
+			<div class="note">
+				<strong>نتیجه یک‌خطی:</strong>
+				میلی‌مول در کشف و حجم صفحه جلوتر است؛ لوک‌آزما باید در
+				«خرید امن از تأمین‌کننده با مشخصات کامل»
+				ببرد — نه در RFQ و دایرکتوری چندفروشنده‌ای.
+			</div>
+		</section>
+
+		<footer>
+			اسناد لوک‌آزما · خلاصه مقایسه سئو با میلی‌مول ·
+			مرتبط با <a href="./seo-masterclass-2026.html">مسترکلاس سئو ۲۰۲۵–۲۰۲۶</a>
+		</footer>
+	</div>
+</body>
+</html>

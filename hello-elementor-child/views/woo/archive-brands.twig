@@ -1,0 +1,55 @@
+{% extends "woo/base-light-product.twig" %}
+
+{% block content %}
+{% if brands_archive %}
+<div class="lk-lpt lk-lpt-container lk-brands-page">
+	{% if brands_archive.breadcrumb_html %}
+		<nav class="lk-lpt-breadcrumb" aria-label="breadcrumb">
+			{{ brands_archive.breadcrumb_html|raw }}
+		</nav>
+	{% endif %}
+
+	<section class="lk-brands-hero" aria-label="{{ brands_archive.title }}">
+		<h1 class="lk-brands-hero__title">{{ brands_archive.title }}</h1>
+	</section>
+
+	<section class="lk-brands-grid-wrap" aria-label="{{ brands_archive.title }}">
+		{% if brands_archive.cards %}
+			<ul class="lk-brands-grid">
+				{% for brand in brands_archive.cards %}
+					<li class="lk-brands-grid__item">
+						<article class="lk-brand-card">
+							<a class="lk-brand-card__media" href="{{ brand.link }}" aria-label="{{ brand.title }}">
+								{% if brand.image_url %}
+									<img
+										src="{{ brand.image_url }}"
+										alt="{{ brand.image_alt|default(brand.title) }}"
+										width="200"
+										height="100"
+										loading="lazy"
+										decoding="async"
+									>
+								{% else %}
+									<span class="lk-brand-card__placeholder" aria-hidden="true"></span>
+								{% endif %}
+							</a>
+							<div class="lk-brand-card__body">
+								<h2 class="lk-brand-card__title">
+									<a href="{{ brand.link }}">{{ brand.title }}</a>
+								</h2>
+								{% if brand.excerpt %}
+									<p class="lk-brand-card__excerpt">{{ brand.excerpt }}</p>
+								{% endif %}
+								<a class="lk-brand-card__more" href="{{ brand.link }}">{{ brands_archive.more_label|default('مشاهده شرکت') }}</a>
+							</div>
+						</article>
+					</li>
+				{% endfor %}
+			</ul>
+		{% else %}
+			<p class="lk-brands-empty">برندی برای نمایش وجود ندارد.</p>
+		{% endif %}
+	</section>
+</div>
+{% endif %}
+{% endblock %}

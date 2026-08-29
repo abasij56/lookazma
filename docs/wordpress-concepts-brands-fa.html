@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>مفاهیم وردپرس آموخته‌شده — برند لوک‌آزما</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--glass: rgba(255, 255, 255, 0.08);
+			--glass-strong: rgba(255, 255, 255, 0.14);
+			--glass-edge: rgba(255, 255, 255, 0.28);
+			--ink: rgba(246, 251, 255, 0.94);
+			--muted: rgba(214, 232, 240, 0.72);
+			--accent: #7ef0d8;
+			--accent-2: #9ecbff;
+			--good: #6ee7b7;
+			--warn: #fbbf24;
+			--shadow: 0 24px 80px rgba(4, 18, 32, 0.38);
+			--radius: 28px;
+		}
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			color: var(--ink);
+			font-family: Vazirmatn, Tahoma, system-ui, sans-serif;
+			background:
+				radial-gradient(1100px 650px at 90% -8%, rgba(72, 214, 196, 0.28), transparent 55%),
+				radial-gradient(900px 560px at -8% 20%, rgba(86, 140, 255, 0.3), transparent 48%),
+				linear-gradient(165deg, #06141f 0%, #0b2a36 45%, #12313a 100%);
+			min-height: 100vh;
+			line-height: 1.85;
+		}
+		.orb {
+			position: fixed; border-radius: 50%; filter: blur(40px);
+			pointer-events: none; z-index: 0; opacity: 0.5;
+			animation: drift 18s ease-in-out infinite;
+		}
+		.orb-a { width: 300px; height: 300px; right: -70px; top: 12%; background: #2fd4b6; }
+		.orb-b { width: 240px; height: 240px; left: -50px; top: 52%; background: #4d8dff; animation-delay: -7s; }
+		@keyframes drift {
+			0%, 100% { transform: translate3d(0,0,0) scale(1); }
+			50% { transform: translate3d(-20px,-26px,0) scale(1.06); }
+		}
+		.shell {
+			position: relative; z-index: 1;
+			max-width: 1180px; margin: 0 auto;
+			padding: 28px 20px 72px;
+			display: grid;
+			grid-template-columns: 250px minmax(0, 1fr);
+			gap: 22px;
+		}
+		.glass {
+			background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+			border: 1px solid var(--glass-edge);
+			box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.22);
+			backdrop-filter: blur(22px) saturate(160%);
+			-webkit-backdrop-filter: blur(22px) saturate(160%);
+			border-radius: var(--radius);
+		}
+		nav.toc { position: sticky; top: 18px; align-self: start; padding: 20px 16px; max-height: calc(100vh - 40px); overflow: auto; }
+		nav.toc h2 { margin: 0 0 12px; font-size: 12px; color: var(--accent); font-weight: 600; }
+		nav.toc a {
+			display: block; color: var(--muted); text-decoration: none;
+			padding: 6px 10px; border-radius: 12px; font-size: 12.5px;
+		}
+		nav.toc a:hover, nav.toc a.active {
+			background: rgba(126, 240, 216, 0.12); color: #fff;
+		}
+		.hero { padding: 34px 38px 28px; margin-bottom: 16px; }
+		.kicker {
+			display: inline-flex; padding: 6px 12px; border-radius: 999px;
+			border: 1px solid var(--glass-edge); background: rgba(255,255,255,0.06);
+			font-size: 12px; color: var(--accent);
+		}
+		h1 { font-size: clamp(1.4rem, 3vw, 2.1rem); margin: 12px 0 10px; font-weight: 700; line-height: 1.4; }
+		.lede { margin: 0; color: var(--muted); }
+		.panel { padding: 26px 30px 30px; margin-bottom: 16px; }
+		h2 { margin: 0 0 12px; font-size: 1.2rem; font-weight: 700; }
+		h3 { margin: 18px 0 8px; font-size: 1.02rem; color: var(--accent-2); font-weight: 600; }
+		p { margin: 0 0 11px; }
+		ul, ol { margin: 0 0 12px; padding-right: 1.2em; padding-left: 0; }
+		li { margin: 0 0 6px; }
+		strong { color: #fff; }
+		a { color: var(--accent); }
+		code {
+			font-family: ui-monospace, Consolas, monospace; font-size: 0.85em;
+			background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.12);
+			padding: 1px 6px; border-radius: 6px; direction: ltr; display: inline-block;
+		}
+		pre {
+			direction: ltr; text-align: left;
+			background: rgba(0,0,0,0.35);
+			border: 1px solid rgba(255,255,255,0.12);
+			border-radius: 16px;
+			padding: 14px 16px;
+			overflow-x: auto;
+			font-family: ui-monospace, Consolas, monospace;
+			font-size: 12.5px;
+			line-height: 1.55;
+			margin: 0 0 14px;
+			color: #d7f7ef;
+		}
+		.pill {
+			display: inline-block; padding: 4px 10px; border-radius: 999px;
+			font-size: 12px; margin: 0 0 10px 6px;
+			border: 1px solid rgba(255,255,255,0.16); background: rgba(0,0,0,0.18);
+		}
+		.pill.ok { color: var(--good); }
+		.pill.warn { color: var(--warn); }
+		.grid2 {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 12px;
+			margin: 12px 0;
+		}
+		.card {
+			padding: 14px 16px;
+			border-radius: 18px;
+			background: rgba(0,0,0,0.18);
+			border: 1px solid rgba(255,255,255,0.1);
+		}
+		.card h4 { margin: 0 0 6px; font-size: 0.95rem; color: var(--accent); }
+		.card p { margin: 0; font-size: 0.92rem; color: var(--muted); }
+		table {
+			width: 100%; border-collapse: collapse; margin: 10px 0 14px;
+			font-size: 0.92rem;
+		}
+		th, td {
+			border: 1px solid rgba(255,255,255,0.12);
+			padding: 8px 10px; text-align: right; vertical-align: top;
+		}
+		th { background: rgba(0,0,0,0.25); color: var(--accent); font-weight: 600; }
+		td code { font-size: 0.8em; }
+		.flow {
+			display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+			margin: 12px 0 4px;
+		}
+		.flow span {
+			padding: 6px 12px; border-radius: 999px; font-size: 12px;
+			background: rgba(126, 240, 216, 0.12);
+			border: 1px solid rgba(126, 240, 216, 0.28);
+		}
+		.flow i { color: var(--muted); font-style: normal; }
+		.callout {
+			padding: 12px 14px; border-radius: 16px; margin: 12px 0;
+			border: 1px solid rgba(126, 240, 216, 0.25);
+			background: rgba(126, 240, 216, 0.08);
+			color: var(--muted); font-size: 0.94rem;
+		}
+		.callout strong { color: var(--accent); }
+		@media (max-width: 900px) {
+			.shell { grid-template-columns: 1fr; }
+			nav.toc { position: static; max-height: none; }
+			.grid2 { grid-template-columns: 1fr; }
+			.hero, .panel { padding: 22px 18px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="orb orb-a" aria-hidden="true"></div>
+	<div class="orb orb-b" aria-hidden="true"></div>
+
+	<div class="shell">
+		<nav class="toc glass" aria-label="فهرست">
+			<h2>فهرست</h2>
+			<a href="#overview">نمای کلی</a>
+			<a href="#cpt">پست‌تایپ سفارشی</a>
+			<a href="#rewrite">پیوند یکتا و ری‌رایت</a>
+			<a href="#page-vs-archive">صفحه در برابر آرشیو</a>
+			<a href="#templates">تمپلیت صفحه</a>
+			<a href="#taxonomy">تاکسونومی</a>
+			<a href="#tax-query">Tax Query</a>
+			<a href="#wp-query">WP_Query</a>
+			<a href="#oop">برنامه‌نویسی شی‌گرا</a>
+			<a href="#loop">لوپ و شرط‌ها</a>
+			<a href="#post-fields">فیلدهای پست</a>
+			<a href="#meta-options">متا و Options</a>
+			<a href="#child-theme">تم فرزند</a>
+			<a href="#hooks">هوک‌ها</a>
+			<a href="#api">APIهای وردپرس</a>
+			<a href="#assets-api">API اسکریپت و استایل</a>
+			<a href="#code-walk">پیاده‌روی روی کد برند</a>
+			<a href="#redirects">ریدایرکت و سئو</a>
+			<a href="#summary">جمع‌بندی</a>
+		</nav>
+
+		<main>
+			<header class="hero glass">
+				<span class="kicker">یادداشت آموزشی · پروژه برند لوک‌آزما</span>
+				<h1>مفاهیم وردپرس که تا اینجا کار کردیم</h1>
+				<p class="lede">
+					این صفحه مفاهیم CPT، <code>WP_Query</code>، OOP، تاکسونومی، <code>tax_query</code>، لوپ،
+					هوک‌ها و APIهای وردپرس را با مثال واقعی صفحات برند
+					(<code>/brands/</code> و <code>/brands/{slug}/</code>) توضیح می‌دهد.
+				</p>
+			</header>
+
+			<section class="panel glass" id="overview">
+				<h2>۱) نمای کلی معماری برند</h2>
+				<span class="pill ok">CPT + تگ ووکامرس</span>
+				<span class="pill">تمپلیت لایت</span>
+				<p>
+					<strong>برند</strong> یک پست‌تایپ مستقل است. محصولات همچنان با
+					<code>product_tag</code> مرتبط‌اند. صفحه تک‌برند محصولات را با
+					<code>tax_query</code> می‌گیرد. فهرست برندها یک <strong>برگه وردپرس</strong> با تمپلیت قابل‌تعویض است.
+				</p>
+				<div class="flow">
+					<span>برگه /brands/</span><i>←</i>
+					<span>CPT brand</span><i>←</i>
+					<span>product_tag</span><i>←</i>
+					<span>محصولات</span>
+				</div>
+				<div class="callout">
+					<strong>ایده کلیدی:</strong> برند = صفحه محتوایی؛ تگ = پل داده برای محصولات.
+				</div>
+			</section>
+
+			<section class="panel glass" id="cpt">
+				<h2>۲) پست‌تایپ سفارشی (Custom Post Type)</h2>
+				<p>
+					CPT یعنی نوع محتوای جدید جدا از نوشته و برگه. ما <code>brand</code> را ثبت کردیم تا
+					هر شرکت یک پست جدا با لوگو، چکیده، محتوا و URL خودش داشته باشد.
+				</p>
+				<table>
+					<thead>
+						<tr><th>گزینه ثبت</th><th>معنی</th><th>در پروژه ما</th></tr>
+					</thead>
+					<tbody>
+						<tr><td><code>public</code></td><td>قابل مشاهده در فرانت</td><td><code>true</code></td></tr>
+						<tr><td><code>has_archive</code></td><td>آرشیو خودکار CPT</td><td><code>false</code> (به‌جایش برگه)</td></tr>
+						<tr><td><code>rewrite.slug</code></td><td>پایه URL سینگل</td><td><code>brands</code></td></tr>
+						<tr><td><code>supports</code></td><td>فیلدهای ویرایشگر</td><td>title, editor, thumbnail, excerpt</td></tr>
+						<tr><td><code>taxonomies</code></td><td>تاکسونومی‌های متصل</td><td><code>product_cat</code>, <code>product_tag</code></td></tr>
+						<tr><td><code>query_var</code></td><td>نام متغیر کوئری</td><td><code>lk_brand</code> (جلوگیری از تداخل)</td></tr>
+					</tbody>
+				</table>
+			</section>
+
+			<section class="panel glass" id="rewrite">
+				<h2>۳) پیوند یکتا و ری‌رایت</h2>
+				<p>
+					وردپرس URLهای زیبا را با قوانین ری‌رایت به کوئری داخلی ترجمه می‌کند.
+					سینگل برند: <code>/brands/merck/</code> → پست‌تایپ <code>brand</code> با نام <code>merck</code>.
+				</p>
+				<ul>
+					<li>تغییر rewrite نیاز به <strong>Flush</strong> دارد (<code>flush_rewrite_rules</code>).</li>
+					<li>قوانین اضافه با <code>add_rewrite_rule</code> برای صفحه‌بندی سینگل امن‌تر شدند.</li>
+					<li>مسیر قدیمی <code>/brand/...</code> با ۳۰۱ به <code>/brands/...</code> می‌رود.</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="page-vs-archive">
+				<h2>۴) برگه در برابر آرشیو CPT</h2>
+				<div class="grid2">
+					<div class="card">
+						<h4>آرشیو CPT</h4>
+						<p>خودکار با <code>has_archive</code>. در ادیتور برگه قابل ویرایش نیست.</p>
+					</div>
+					<div class="card">
+						<h4>برگه + تمپلیت</h4>
+						<p>در Pages ساخته می‌شود؛ عنوان/اسلاگ/تصویر شاخص قابل‌ویرایش؛ تمپلیت قابل‌تعویض.</p>
+					</div>
+				</div>
+				<p>
+					ما <code>has_archive = false</code> گذاشتیم و فهرست را با برگه اسلاگ
+					<code>brands</code> + تمپلیت <strong>Light brands template</strong> ساختیم.
+				</p>
+			</section>
+
+			<section class="panel glass" id="templates">
+				<h2>۵) تمپلیت صفحه (Page Template)</h2>
+				<p>
+					تمپلیت یعنی فایل PHP که وردپرس برای رندر یک برگه استفاده می‌کند.
+					در ادمین: برگه ← ویژگی‌ها ← قالب.
+				</p>
+				<ul>
+					<li>ثبت با فیلتر <code>theme_page_templates</code></li>
+					<li>ذخیره در متا: <code>_wp_page_template</code></li>
+					<li>ورود رندر: <code>page-templates/light-brands.php</code> → <code>page-light-brands.php</code></li>
+					<li>خاموش کردن تمپلیت = برگشتن به قالب پیش‌فرض</li>
+				</ul>
+				<p>
+					برای سینگل برند هم تمپلیت لایت با <code>template_include</code> و
+					<code>template_redirect</code> اجبار می‌شود تا Elementor/Jet نگیرند.
+				</p>
+			</section>
+
+			<section class="panel glass" id="taxonomy">
+				<h2>۶) تاکسونومی (Taxonomy)</h2>
+				<p>
+					تاکسونومی سیستم دسته‌بندی پست‌هاست. در ووکامرس:
+					<code>product_cat</code> (دسته) و <code>product_tag</code> (برچسب/برند عملیاتی).
+				</p>
+				<ul>
+					<li><strong>Term</strong> = یک مقدار داخل تاکسونومی (مثل تگ <code>merck</code>)</li>
+					<li>برند CPT می‌تواند همان تگ‌ها را داشته باشد تا رابطه معنایی حفظ شود</li>
+					<li>محصولات همچنان روی تگ می‌مانند؛ صفحه برند فقط از تگ برای کوئری استفاده می‌کند</li>
+				</ul>
+				<div class="callout">
+					<strong>چرا تاکسونومی برند جدا نساختیم؟</strong>
+					چون محصولات از قبل تگ داشتند؛ ساخت تاکسونومی موازی یعنی مهاجرت داده و دوباره‌کاری فیلترها.
+				</div>
+			</section>
+
+			<section class="panel glass" id="tax-query">
+				<h2>۷) Tax Query — کوئری بر اساس تاکسونومی</h2>
+				<p>
+					<code>tax_query</code> آرگومان <code>WP_Query</code> است که می‌گوید:
+					«فقط پست‌هایی را بیاور که این termها را دارند.»
+				</p>
+				<h3>جریان در سینگل برند</h3>
+				<ol>
+					<li>پست برند <code>merck</code> لود می‌شود</li>
+					<li>تگ اصلی پیدا می‌شود (ترجیح اسلاگ یکسان)</li>
+					<li>کوئری محصول با <code>tax_query</code> روی همان تگ اجرا می‌شود</li>
+				</ol>
+<pre>// مفهومی — از single-brand-light.php
+$args = array(
+  'post_type'      => 'product',
+  'posts_per_page' => 12,
+  'tax_query'      => array(
+    array(
+      'taxonomy'         => 'product_tag',
+      'field'            => 'term_id',
+      'terms'            => array( $term_id ),
+      'include_children' => false,
+    ),
+  ),
+);
+$query = new WP_Query( $args );</pre>
+				<table>
+					<thead>
+						<tr><th>کلید</th><th>توضیح</th></tr>
+					</thead>
+					<tbody>
+						<tr><td><code>taxonomy</code></td><td>نام تاکسونومی هدف</td></tr>
+						<tr><td><code>field</code></td><td>نوع شناسایی term: <code>term_id</code> / <code>slug</code> / <code>name</code></td></tr>
+						<tr><td><code>terms</code></td><td>آرایه termهای مجاز</td></tr>
+						<tr><td><code>include_children</code></td><td>برای سلسله‌مراتبی؛ تگ تخت است → معمولاً false</td></tr>
+						<tr><td><code>relation</code></td><td>بین چند شرط: <code>AND</code> یا <code>OR</code></td></tr>
+					</tbody>
+				</table>
+				<p>
+					اگر تگ پیدا نشود، به‌جای برگرداندن همه محصولات از
+					<code>post__in => array(0)</code> استفاده می‌شود تا نتیجه خالی بماند.
+				</p>
+			</section>
+
+			<section class="panel glass" id="wp-query">
+				<h2>۸) WP_Query — موتور پرس‌وجوی وردپرس</h2>
+				<span class="pill ok">Query API</span>
+				<p>
+					<code>WP_Query</code> کلاس اصلی برای واکشی پست‌ها از دیتابیس است.
+					تقریباً هر لیست در وردپرس (آرشیو، جستجو، محصولات برند، کارت‌های صفحه شرکت‌ها)
+					در نهایت به یک کوئری می‌رسد.
+				</p>
+
+				<h3>کوئری یعنی چه؟</h3>
+				<p>
+					<strong>کوئری (Query)</strong> یعنی یک درخواست ساخت‌یافته به دیتابیس:
+					«کدام نوع پست؟ با چه شرطی؟ چند تا؟ به چه ترتیبی؟ کدام صفحه؟»
+					وردپرس این درخواست را به SQL ترجمه می‌کند، نتیجه را می‌گیرد و داخل یک آبجکت
+					<code>WP_Query</code> می‌گذارد تا تم بتواند روی آن لوپ بزند.
+				</p>
+				<div class="flow">
+					<span>URL / $args</span><i>→</i>
+					<span>WP_Query</span><i>→</i>
+					<span>SQL</span><i>→</i>
+					<span>WP_Post[]</span><i>→</i>
+					<span>تمپلیت / Twig</span>
+				</div>
+
+				<h3>چرخه زندگی یک درخواست صفحه</h3>
+				<ol>
+					<li>مرورگر URL می‌زند (مثلاً <code>/brands/merck/</code>)</li>
+					<li>Rewrite قانون را به query vars تبدیل می‌کند (<code>post_type=brand</code>, <code>name=merck</code>)</li>
+					<li>وردپرس <strong>Main Query</strong> را می‌سازد و پست برند را پیدا می‌کند</li>
+					<li>تمپلیت سینگل لود می‌شود</li>
+					<li>داخل تمپلیت یک <strong>کوئری دوم</strong> برای محصولات همان برند اجرا می‌شود</li>
+					<li>نتایج رندر می‌شوند (گرید محصول + صفحه‌بندی)</li>
+				</ol>
+
+				<h3>کوئری اصلی در برابر کوئری سفارشی</h3>
+				<div class="grid2">
+					<div class="card">
+						<h4>Main Query</h4>
+						<p>
+							کوئری‌ای که وردپرس از روی URL می‌سازد (مثلاً سینگل برند یا برگه <code>/brands/</code>).
+							در <code>global $wp_query</code> است و با <code>pre_get_posts</code> قابل تغییر است.
+							تمپلیت سلسله‌مراتب و تگ‌های شرطی معمولاً به همین کوئری نگاه می‌کنند.
+						</p>
+					</div>
+					<div class="card">
+						<h4>Secondary / Custom Query</h4>
+						<p>
+							کوئری جدا که خودتان می‌سازید:
+							<code>new WP_Query( $args )</code> — مثل لیست محصولات داخل صفحه برند.
+							روی URL اثر نمی‌گذارد؛ فقط داده اضافه برای همان صفحه می‌آورد.
+						</p>
+					</div>
+				</div>
+				<div class="callout">
+					<strong>اشتباه رایج:</strong>
+					تغییر Main Query برای «لیست محصولات داخل صفحه برند» باعث می‌شود وردپرس فکر کند
+					خود صفحه، آرشیو محصول است. برای همین محصولات را با کوئری دوم می‌گیریم.
+				</div>
+
+				<h3>ساختن کوئری: از آرگومان تا نتیجه</h3>
+				<ol>
+					<li>آرایه <code>$args</code> را می‌نویسید (قوانین فیلتر)</li>
+					<li><code>new WP_Query( $args )</code> یک نمونه (instance) می‌سازد</li>
+					<li>داخل سازنده، کوئری اجرا می‌شود و <code>$query->posts</code> پر می‌شود</li>
+					<li>با لوپ (<code>have_posts</code> / <code>the_post</code>) روی نتایج حرکت می‌کنید</li>
+					<li>از <code>found_posts</code> و <code>max_num_pages</code> برای شمارش و pagination استفاده می‌کنید</li>
+				</ol>
+
+				<h3>آرگومان‌های پرکاربرد</h3>
+				<table>
+					<thead>
+						<tr><th>آرگومان</th><th>معنی</th><th>مثال در پروژه</th></tr>
+					</thead>
+					<tbody>
+						<tr><td><code>post_type</code></td><td>نوع پست</td><td><code>product</code> یا <code>brand</code></td></tr>
+						<tr><td><code>post_status</code></td><td>وضعیت انتشار</td><td><code>publish</code></td></tr>
+						<tr><td><code>posts_per_page</code></td><td>تعداد در هر صفحه</td><td><code>12</code> یا <code>-1</code> (همه)</td></tr>
+						<tr><td><code>paged</code></td><td>شماره صفحه</td><td>صفحه‌بندی محصولات برند</td></tr>
+						<tr><td><code>orderby</code> / <code>order</code></td><td>مرتب‌سازی</td><td>کارت‌های برند: <code>title</code> / <code>ASC</code></td></tr>
+						<tr><td><code>name</code> / <code>p</code></td><td>اسلاگ یا ID یک پست</td><td>سینگل برند</td></tr>
+						<tr><td><code>tax_query</code></td><td>فیلتر تاکسونومی</td><td>محصولات یک تگ برند</td></tr>
+						<tr><td><code>meta_query</code></td><td>فیلتر متای پست</td><td>فیلترهای پیشرفته‌تر فروشگاه</td></tr>
+						<tr><td><code>post__in</code></td><td>فقط این IDها</td><td><code>array(0)</code> برای نتیجه خالی</td></tr>
+						<tr><td><code>ignore_sticky_posts</code></td><td>نادیده گرفتن پست سنجاق‌شده</td><td>در لیست محصول برند</td></tr>
+						<tr><td><code>suppress_filters</code></td><td>کمتر تحت تأثیر فیلترهای خارجی</td><td>در بعضی <code>get_posts</code>های کمکی</td></tr>
+					</tbody>
+				</table>
+
+<pre>// سینگل برند: کوئری سفارشی محصولات
+$query = new WP_Query( array(
+  'post_type'      => 'product',
+  'post_status'    => 'publish',
+  'posts_per_page' => 12,
+  'paged'          => $paged,
+  'tax_query'      => array( /* product_tag برند */ ),
+) );
+
+// صفحه شرکت‌ها: همه برندها
+$posts = get_posts( array(
+  'post_type'      => 'brand',
+  'post_status'    => 'publish',
+  'posts_per_page' => -1,
+  'orderby'        => 'title',
+  'order'          => 'ASC',
+) );</pre>
+
+				<h3>صفحه‌بندی داخل کوئری</h3>
+				<p>
+					<code>posts_per_page = 12</code> یعنی هر صفحه ۱۲ نتیجه.
+					<code>paged = 2</code> یعنی صفحه دوم.
+					تعداد کل صفحات ≈ <code>ceil( found_posts / posts_per_page )</code> و در
+					<code>$query->max_num_pages</code> آماده است.
+					URL سینگل برند برای صفحه ۲ چیزی شبیه
+					<code>/brands/merck/page/2/</code> است.
+				</p>
+
+				<h3><code>get_posts</code> در برابر <code>WP_Query</code></h3>
+				<ul>
+					<li><code>get_posts()</code> لایه نازک روی <code>WP_Query</code> است و معمولاً آرایه پست برمی‌گرداند.</li>
+					<li><code>new WP_Query()</code> آبجکت کامل می‌دهد: صفحه‌بندی، <code>found_posts</code>، <code>max_num_pages</code>، متدهای لوپ.</li>
+					<li>برای لیست ساده کارت‌ها <code>get_posts</code> کافی است؛ برای آرشیو محصول با pagination معمولاً <code>WP_Query</code> بهتر است.</li>
+				</ul>
+
+				<h3>خواص و متدهای مهم آبجکت کوئری</h3>
+				<table>
+					<thead>
+						<tr><th>خاصیت / متد</th><th>کاربرد</th></tr>
+					</thead>
+					<tbody>
+						<tr><td><code>have_posts()</code></td><td>آیا هنوز پستی برای نمایش هست؟</td></tr>
+						<tr><td><code>the_post()</code></td><td>پست فعلی را در لوپ آماده می‌کند (<code>global $post</code>)</td></tr>
+						<tr><td><code>get( $key )</code> / <code>set( $key, $value )</code></td><td>خواندن/نوشتن query varها (در <code>pre_get_posts</code> خیلی مهم)</td></tr>
+						<tr><td><code>found_posts</code></td><td>تعداد کل نتایج (مثلاً شمارش محصولات برند)</td></tr>
+						<tr><td><code>max_num_pages</code></td><td>تعداد صفحات برای pagination</td></tr>
+						<tr><td><code>posts</code></td><td>آرایه خام آبجکت‌های <code>WP_Post</code></td></tr>
+						<tr><td><code>post_count</code></td><td>تعداد پست در همین صفحه نتیجه</td></tr>
+						<tr><td><code>is_single</code> / <code>is_archive</code> / …</td><td>پرچم‌های نوع صفحه در کوئری اصلی</td></tr>
+					</tbody>
+				</table>
+
+				<h3><code>pre_get_posts</code> — دست‌کاری قبل از اجرا</h3>
+				<p>
+					قبل از اینکه Main Query به دیتابیس برود، هوک <code>pre_get_posts</code> اجرا می‌شود.
+					اینجا می‌توانید آرگومان‌ها را عوض کنید؛ مثلاً در آرشیو دسته/تگ محصول فقط
+					<code>post_type = product</code> بماند تا پست‌های برند قاطی نشوند.
+				</p>
+<pre>public static function keep_product_tax_archives_on_products( WP_Query $query ): void {
+  if ( is_admin() || ! $query->is_main_query() ) {
+    return;
+  }
+  if ( ! $query->is_tax( array( 'product_cat', 'product_tag' ) ) ) {
+    return;
+  }
+  $query->set( 'post_type', 'product' );
+}</pre>
+				<p>
+					نکته: همیشه با <code>$query->is_main_query()</code> چک کنید تا کوئری‌های فرعی تم/ویجت خراب نشوند.
+				</p>
+
+				<h3>چند کوئری در یک صفحه — تصویر ذهنی برند</h3>
+				<table>
+					<thead>
+						<tr><th>کوئری</th><th>چه می‌پرسد؟</th><th>نتیجه</th></tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Main</td>
+							<td>URL <code>/brands/merck/</code> کدام پست است؟</td>
+							<td>یک <code>WP_Post</code> از نوع <code>brand</code></td>
+						</tr>
+						<tr>
+							<td>Custom #1</td>
+							<td>محصولات با تگ هم‌اسلاگ کدام‌اند؟</td>
+							<td>لیست <code>product</code> + صفحه‌بندی</td>
+						</tr>
+						<tr>
+							<td>(اختیاری) فیلترها</td>
+							<td>همان محصولات با شرط اضافه کاربر</td>
+							<td>همان کوئری محصول با <code>tax_query</code>/<code>meta_query</code> غنی‌شده</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<h3>رابطه با SQL (بدون ترس)</h3>
+				<p>
+					شما معمولاً SQL خام نمی‌نویسید. <code>WP_Query</code> برای شما چیزی شبیه این می‌سازد:
+				</p>
+<pre>SELECT wp_posts.*
+FROM wp_posts
+INNER JOIN wp_term_relationships ON ...
+WHERE post_type = 'product'
+  AND post_status = 'publish'
+  AND term_taxonomy_id IN ( /* id تگ merck */ )
+LIMIT 12 OFFSET 0;</pre>
+				<p>
+					<code>tax_query</code> همان JOIN و شرط term است.
+					<code>paged=2</code> با <code>OFFSET</code> پیاده می‌شود.
+					لایه پایین‌تر هسته <code>$wpdb</code> است؛ برای لیست پست‌ها همان <code>WP_Query</code> امن‌تر و خواناتر است.
+				</p>
+
+				<div class="callout">
+					<strong>در پروژه ما:</strong>
+					کوئری اصلی = خود پست برند یا برگه فهرست؛
+					کوئری دوم = محصولات همان برند با <code>tax_query</code>.
+					این جداسازی مهم است تا URL برند با لیست محصول قاطی نشود.
+				</div>
+			</section>
+
+			<section class="panel glass" id="oop">
+				<h2>۹) برنامه‌نویسی شی‌گرا (OOP) در این پروژه</h2>
+				<span class="pill">Class · Object · Method</span>
+				<p>
+					کد برند را به‌جای توابع پراکنده، داخل <strong>کلاس</strong>ها نوشتیم.
+					OOP کمک می‌کند منطق مرتبط را کنار هم نگه داریم، هوک‌ها را منظم ثبت کنیم،
+					و با نام‌های واضح از تداخل با افزونه‌ها جلوگیری کنیم.
+				</p>
+
+				<h3>مفاهیم پایه</h3>
+				<table>
+					<thead>
+						<tr><th>مفهوم</th><th>توضیح ساده</th><th>مثال وردپرس / پروژه</th></tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><strong>Class (کلاس)</strong></td>
+							<td>قالب/نقشه یک مفهوم: چه داده‌هایی دارد و چه کارهایی می‌تواند بکند</td>
+							<td><code>WP_Query</code>، <code>Hello_Elementor_Child_Brand_Cpt</code></td>
+						</tr>
+						<tr>
+							<td><strong>Object / Instance</strong></td>
+							<td>یک نمونه واقعی ساخته‌شده از کلاس با <code>new</code></td>
+							<td><code>$query = new WP_Query( $args )</code></td>
+						</tr>
+						<tr>
+							<td><strong>Property</strong></td>
+							<td>داده داخل آبجکت</td>
+							<td><code>$query->found_posts</code>، <code>$query->posts</code></td>
+						</tr>
+						<tr>
+							<td><strong>Method</strong></td>
+							<td>تابع متعلق به کلاس/آبجکت</td>
+							<td><code>$query->have_posts()</code>، <code>$query->set()</code></td>
+						</tr>
+						<tr>
+							<td><strong>static</strong></td>
+							<td>متد/خاصیت متعلق به خود کلاس؛ بدون <code>new</code> صدا زده می‌شود</td>
+							<td><code>Brand_Cpt::init()</code>، <code>Custom_Brand_Single::is_enabled()</code></td>
+						</tr>
+						<tr>
+							<td><strong>final class</strong></td>
+							<td>کلاس قابل ارث‌بری نیست (قفل طراحی)</td>
+							<td>کلاس‌های تم ما اغلب <code>final</code> هستند</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<h3>چرا کلاس‌های تم ما بیشتر static هستند؟</h3>
+				<p>
+					برای قابلیت‌هایی مثل «ثبت CPT» یا «اجبار تمپلیت»، معمولاً به یک نمونه با state طولانی نیاز نداریم.
+					یک کلاس = یک ماژول. متدهای <code>static</code> مثل namespace مرتب برای توابع مرتبط‌اند:
+				</p>
+<pre>final class Hello_Elementor_Child_Brand_Cpt {
+  public static function init(): void {
+    add_action( 'init', array( __CLASS__, 'register_post_type' ), 99 );
+    add_action( 'template_redirect', array( __CLASS__, 'redirect_tags_to_brand' ), 0 );
+  }
+
+  public static function register_post_type(): void { /* ... */ }
+}
+
+// بوت تم:
+Hello_Elementor_Child_Brand_Cpt::init();</pre>
+				<p>
+					<code>array( __CLASS__, 'register_post_type' )</code> یعنی:
+					«وقتی هوک آتش شد، همین متد استاتیک کلاس را صدا بزن.»
+					این همان اتصال OOP به Plugin API وردپرس است.
+				</p>
+
+				<h3>WP_Query خودش یک آبجکت است</h3>
+				<p>
+					وقتی می‌نویسید <code>new WP_Query( $args )</code>:
+				</p>
+				<ol>
+					<li>یک <strong>instance</strong> جدید از کلاس ساخته می‌شود</li>
+					<li>سازنده (constructor) آرگومان‌ها را می‌گیرد و کوئری را اجرا می‌کند</li>
+					<li>نتیجه داخل propertyهایی مثل <code>posts</code> و <code>found_posts</code> می‌نشیند</li>
+					<li>متدهایی مثل <code>have_posts()</code> روی همان instance کار می‌کنند</li>
+				</ol>
+<pre>$query_a = new WP_Query( array( 'post_type' => 'brand' ) );
+$query_b = new WP_Query( array( 'post_type' => 'product' ) );
+// دو آبجکت مستقل؛ نتایج همدیگر را خراب نمی‌کنند</pre>
+				<p>
+					این دقیقاً فایده OOP است: چند کوئری همزمان، هر کدام state خودشان را دارند.
+				</p>
+
+				<h3>WP_Post هم آبجکت است</h3>
+				<p>
+					هر ردیف نتیجه معمولاً یک <code>WP_Post</code> است با propertyهایی مثل
+					<code>ID</code>، <code>post_title</code>، <code>post_name</code>، <code>post_content</code>.
+					توابع کمکی (<code>get_permalink( $post )</code>) روی همین آبجکت کار می‌کنند.
+				</p>
+
+				<h3>نقشه‌ی کلاس‌های برند در تم</h3>
+				<table>
+					<thead>
+						<tr><th>کلاس</th><th>مسئولیت (تک‌وظیفه‌ای)</th></tr>
+					</thead>
+					<tbody>
+						<tr><td><code>Hello_Elementor_Child_Brand_Cpt</code></td><td>ثبت CPT، rewrite، ریدایرکت تگ/URL قدیمی</td></tr>
+						<tr><td><code>Hello_Elementor_Child_Custom_Brand_Single</code></td><td>تمپلیت لایت سینگل، دارایی‌ها، بردکرامب</td></tr>
+						<tr><td><code>Hello_Elementor_Child_Light_Brands_Template</code></td><td>تمپلیت برگه فهرست شرکت‌ها و کارت‌ها</td></tr>
+						<tr><td><code>Hello_Elementor_Child_Theme</code></td><td>لود فایل‌ها و صدا زدن <code>::init()</code> همه‌ی ماژول‌ها</td></tr>
+					</tbody>
+				</table>
+				<div class="callout">
+					<strong>ایده طراحی:</strong>
+					هر کلاس یک حوزه دارد (Separation of Concerns).
+					هوک‌ها در <code>init</code> ثبت می‌شوند؛ منطق سنگین در متدهای جدا.
+					<code>WP_Query</code> ابزار داده است؛ کلاس‌های تم orchestrator رفتار صفحه هستند.
+				</div>
+
+				<h3>مقایسه سریع: procedural در برابر OOP</h3>
+				<div class="grid2">
+					<div class="card">
+						<h4>سبک تابعی (procedural)</h4>
+						<p>
+							تابع‌های جدا در <code>functions.php</code>:
+							<code>lk_register_brand()</code>، <code>lk_enqueue_brand()</code>.
+							برای پروژه کوچک خوب است؛ با رشد کد نام‌ها قاطی و نگهداری سخت می‌شود.
+						</p>
+					</div>
+					<div class="card">
+						<h4>سبک شی‌گرا (آنچه ما داریم)</h4>
+						<p>
+							هر قابلیت یک کلاس + <code>init()</code>.
+							نام‌ها زیر namespace کلاس می‌مانند؛ هوک‌ها یکجا ثبت می‌شوند؛ مسئولیت‌ها جداست.
+						</p>
+					</div>
+				</div>
+
+				<h3>Encapsulation و سطح دسترسی</h3>
+				<ul>
+					<li><code>public</code> — از بیرون قابل صدا زدن (هوک‌ها باید public باشند).</li>
+					<li><code>private</code> — فقط داخل همان کلاس (مثلاً <code>map_brand_card</code> یا تشخیص اسلاگ از URL).</li>
+					<li><code>self::method()</code> — صدا زدن متد دیگر همان کلاس.</li>
+					<li><code>__CLASS__</code> — نام کلاس فعلی؛ برای ثبت callable هوک مفید است.</li>
+				</ul>
+<pre>// هوک باید متد public ببیند:
+add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_light_assets' ), 5 );
+
+// منطق داخلی می‌تواند private بماند:
+private static function map_brand_card( WP_Post $brand ): ?array { /* ... */ }</pre>
+
+				<h3>Type hint = قرارداد OOP با وردپرس</h3>
+				<p>
+					وقتی می‌نویسیم <code>function keep...( WP_Query $query )</code> به PHP می‌گوییم:
+					این پارامتر باید آبجکت از کلاس <code>WP_Query</code> باشد.
+					همین‌طور <code>WP_Post $brand</code> در متدهای کارت برند.
+					این هم خوانایی است هم خطای زودهنگام اگر چیز اشتباه پاس شود.
+				</p>
+			</section>
+
+			<section class="panel glass" id="loop">
+				<h2>۱۰) لوپ (The Loop) و تگ‌های شرطی</h2>
+
+				<h3>The Loop</h3>
+				<p>
+					الگوی استاندارد وردپرس برای پیمایش نتایج کوئری:
+				</p>
+<pre>if ( $query->have_posts() ) {
+  while ( $query->have_posts() ) {
+    $query->the_post();
+    // the_title(), get_the_ID(), get_permalink() ...
+  }
+  wp_reset_postdata(); // برگرداندن global $post به حالت قبل
+}</pre>
+				<p>
+					بعد از لوپ سفارشی، <code>wp_reset_postdata()</code> مهم است تا قالب/هدر با پست اشتباه کار نکند.
+				</p>
+
+				<h3>تگ‌های شرطی (Conditional Tags)</h3>
+				<p>
+					توابعی که می‌گویند «الان چه نوع صفحه‌ای هستیم؟» و معمولاً روی کوئری اصلی کار می‌کنند:
+				</p>
+				<table>
+					<thead>
+						<tr><th>تابع</th><th>معنی</th><th>کاربرد ما</th></tr>
+					</thead>
+					<tbody>
+						<tr><td><code>is_singular('brand')</code></td><td>سینگل یک برند</td><td>فعال‌سازی تمپلیت لایت برند</td></tr>
+						<tr><td><code>is_page()</code></td><td>برگه</td><td>صفحه فهرست شرکت‌ها</td></tr>
+						<tr><td><code>is_post_type_archive('brand')</code></td><td>آرشیو CPT</td><td>ریدایرکت به برگه (آرشیو خاموش است)</td></tr>
+						<tr><td><code>is_product_tag()</code></td><td>آرشیو تگ محصول</td><td>۳۰۱ به سینگل برند</td></tr>
+						<tr><td><code>is_admin()</code></td><td>پیشخوان</td><td>جلوگیری از اجرای فرانت‌هوک‌ها در ادمین</td></tr>
+						<tr><td><code>wp_doing_ajax()</code></td><td>درخواست AJAX</td><td>خروج زودهنگام از بعضی چک‌ها</td></tr>
+					</tbody>
+				</table>
+
+				<h3>Query Vars</h3>
+				<p>
+					متغیرهایی مثل <code>name</code>، <code>paged</code>، <code>post_type</code>، یا سفارشی
+					<code>lk_brand</code> که از URL/کوئری‌استرینگ خوانده می‌شوند
+					(<code>get_query_var('paged')</code>).
+				</p>
+			</section>
+
+			<section class="panel glass" id="post-fields">
+				<h2>۱۱) فیلدهای پست و توابع محتوا</h2>
+				<p>
+					هر پست یک آبجکت <code>WP_Post</code> است. فیلدهای اصلی که برای برند استفاده کردیم:
+				</p>
+				<table>
+					<thead>
+						<tr><th>فیلد / مفهوم</th><th>توضیح</th><th>در UI کارت/سینگل</th></tr>
+					</thead>
+					<tbody>
+						<tr><td><code>post_title</code></td><td>عنوان</td><td>نام شرکت روی کارت و H1</td></tr>
+						<tr><td><code>post_name</code></td><td>اسلاگ URL</td><td><code>/brands/merck/</code></td></tr>
+						<tr><td><code>post_excerpt</code></td><td>چکیده دستی</td><td>جمله اول روی کارت</td></tr>
+						<tr><td><code>post_content</code></td><td>محتوای ویرایشگر</td><td>تب مشخصات برند</td></tr>
+						<tr><td><code>post_status</code></td><td>publish / draft / private …</td><td>فقط منتشرشده‌ها در لیست</td></tr>
+						<tr><td>Featured Image</td><td>تصویر شاخص (thumbnail)</td><td>لوگوی برند</td></tr>
+					</tbody>
+				</table>
+				<ul>
+					<li><code>get_permalink( $post )</code> — لینک عمومی</li>
+					<li><code>get_post_thumbnail_id()</code> / <code>wp_get_attachment_image_url()</code> — لوگو</li>
+					<li><code>get_the_terms( $id, 'product_tag' )</code> — تگ‌های متصل به برند</li>
+					<li><code>get_term_by( 'slug', $slug, 'product_tag' )</code> — پیدا کردن تگ با اسلاگ</li>
+					<li><code>apply_filters( 'the_content', $html )</code> — اجرای شورتکد/بلوک قبل از نمایش مشخصات</li>
+				</ul>
+				<div class="callout">
+					<strong>excerpt در برابر content:</strong>
+					چکیده برای پیش‌نمایش کوتاه (کارت) است؛ محتوا برای متن بلند (مشخصات).
+					اگر چکیده خالی باشد، از ابتدای محتوا به‌عنوان پشتیبان استفاده می‌کنیم.
+				</div>
+			</section>
+
+			<section class="panel glass" id="meta-options">
+				<h2>۱۲) Post Meta، Options و تمپلیت برگه</h2>
+				<div class="grid2">
+					<div class="card">
+						<h4>Post Meta</h4>
+						<p>
+							داده اضافه برای یک پست: <code>get_post_meta</code> / <code>update_post_meta</code>.
+							مثلاً alt تصویر پیوست، یا فیلدهای ACF روی برند/تگ.
+						</p>
+					</div>
+					<div class="card">
+						<h4>Options API</h4>
+						<p>
+							تنظیم سراسری سایت: <code>get_option</code> / <code>update_option</code>.
+							ما فلگ flush ری‌رایت را اینجا نگه می‌داریم تا فقط یک‌بار اجرا شود.
+						</p>
+					</div>
+				</div>
+				<p>
+					<strong>Page template meta:</strong> برگه فهرست، مسیر تمپلیت را در
+					<code>_wp_page_template = page-templates/light-brands.php</code> ذخیره می‌کند.
+					با خواندن این متا می‌فهمیم کدام برگه «شرکت‌ها» است.
+				</p>
+			</section>
+
+			<section class="panel glass" id="child-theme">
+				<h2>۱۳) تم فرزند، ثابت‌ها و بارگذاری کلاس‌ها</h2>
+				<p>
+					کار ما داخل <strong>child theme</strong> است (<code>hello-elementor-child</code>) تا آپدیت تم والد کد سفارشی را پاک نکند.
+				</p>
+				<ul>
+					<li><code>HELLO_ELEMENTOR_CHILD_PATH</code> / <code>URI</code> — مسیر و آدرس فایل‌های تم</li>
+					<li><code>class-theme.php</code> — <code>require_once</code> کلاس‌ها و فراخوانی <code>::init()</code></li>
+					<li>هر قابلیت (CPT، سینگل برند، تمپلیت برگه) کلاس جدا با متد <code>init</code> برای ثبت هوک‌ها</li>
+					<li>تمپلیت‌های PHP ورودی + ویوهای Twig برای HTML</li>
+				</ul>
+				<div class="flow">
+					<span>functions / Theme::init</span><i>→</i>
+					<span>load classes</span><i>→</i>
+					<span>Class::init hooks</span><i>→</i>
+					<span>request</span>
+				</div>
+			</section>
+
+			<section class="panel glass" id="hooks">
+				<h2>۱۴) هوک‌ها (Hooks)</h2>
+				<p>
+					هوک نقطه اتصال تم/افزونه به هسته وردپرس است بدون ویرایش هسته.
+					دو نوع اصلی دارد:
+				</p>
+				<div class="grid2">
+					<div class="card">
+						<h4>Action</h4>
+						<p>در لحظه مشخص کاری انجام بده. مقدار برنمی‌گرداند. مثال: <code>add_action('init', ...)</code></p>
+					</div>
+					<div class="card">
+						<h4>Filter</h4>
+						<p>یک مقدار را بگیر، تغییر بده، برگردان. مثال: <code>add_filter('body_class', ...)</code></p>
+					</div>
+				</div>
+				<h3>اولویت (Priority)</h3>
+				<p>
+					عدد سوم در <code>add_action</code> / <code>add_filter</code> اولویت است.
+					عدد کوچک‌تر زودتر اجرا می‌شود. <code>PHP_INT_MAX</code> یعنی «آخرین نفر باش و ببر».
+				</p>
+				<table>
+					<thead>
+						<tr><th>هوک</th><th>نوع</th><th>کار در پروژه برند</th></tr>
+					</thead>
+					<tbody>
+						<tr><td><code>init</code></td><td>action</td><td>ثبت CPT، تاکسونومی، rewrite</td></tr>
+						<tr><td><code>pre_get_posts</code></td><td>action</td><td>اصلاح کوئری اصلی (آرشیو دسته فقط محصول)</td></tr>
+						<tr><td><code>template_redirect</code></td><td>action</td><td>۳۰۱، اجبار تمپلیت لایت، قطع Elementor</td></tr>
+						<tr><td><code>template_include</code></td><td>filter</td><td>انتخاب فایل PHP نهایی</td></tr>
+						<tr><td><code>woocommerce_get_breadcrumb</code></td><td>filter</td><td>خانه → فروشگاه → شرکت‌ها → برند</td></tr>
+						<tr><td><code>wp_enqueue_scripts</code></td><td>action</td><td>لود/حذف CSS و JS</td></tr>
+						<tr><td><code>body_class</code></td><td>filter</td><td>کلاس‌هایی مثل <code>lk-light-brand</code></td></tr>
+						<tr><td><code>theme_page_templates</code></td><td>filter</td><td>اضافه کردن تمپلیت به لیست برگه</td></tr>
+					</tbody>
+				</table>
+				<div class="flow">
+					<span>init</span><i>→</i>
+					<span>parse request</span><i>→</i>
+					<span>template_redirect</span><i>→</i>
+					<span>enqueue</span><i>→</i>
+					<span>render</span>
+				</div>
+			</section>
+
+			<section class="panel glass" id="api">
+				<h2>۱۵) APIهای وردپرس مرتبط</h2>
+				<p>
+					در وردپرس «API» معمولاً یعنی مجموعه توابع و هوک‌های رسمی برای یک حوزه مشخص —
+					نه لزوماً REST. مهم‌ترین‌هایی که در این پروژه لمس کردیم:
+				</p>
+
+				<h3>Plugin API (هوک‌ها)</h3>
+				<p>
+					همان <code>add_action</code> / <code>add_filter</code> / <code>do_action</code> / <code>apply_filters</code>.
+					قلب توسعه تم و افزونه.
+				</p>
+
+				<h3>Rewrite API</h3>
+				<p>
+					<code>add_rewrite_rule</code>، <code>flush_rewrite_rules</code>، تنظیمات
+					<code>rewrite</code> داخل <code>register_post_type</code>.
+					مسئول URLهای <code>/brands/...</code>.
+				</p>
+
+				<h3>HTTP / Redirect API</h3>
+				<p>
+					<code>wp_safe_redirect( $url, 301 )</code> برای انتقال دائمی URLهای قدیمی به جدید.
+					روی هوک <code>template_redirect</code> اجرا می‌شود.
+				</p>
+
+				<h3>Query API</h3>
+				<p>
+					<code>WP_Query</code>، <code>get_posts</code>، <code>pre_get_posts</code>،
+					آرگومان‌هایی مثل <code>tax_query</code> و <code>meta_query</code>.
+				</p>
+
+				<h3>Template API / Hierarchy</h3>
+				<p>
+					<code>template_include</code>، <code>single_template</code>،
+					<code>get_page_template_slug</code>، سلسله‌مراتب فایل‌های تم.
+				</p>
+
+				<h3>Options API</h3>
+				<p>
+					<code>get_option</code> / <code>update_option</code> برای فلگ یک‌باره flush
+					مثل <code>hello_elementor_child_brand_cpt_flush_v4</code>.
+				</p>
+
+				<h3>REST API (زمینه)</h3>
+				<p>
+					با <code>show_in_rest => true</code> روی CPT، برند در Gutenberg/REST قابل دسترسی است.
+					صفحات لایت ما عمدتاً با تمپلیت PHP/Timber رندر می‌شوند، نه کلاینت REST.
+				</p>
+			</section>
+
+			<section class="panel glass" id="assets-api">
+				<h2>۱۶) Script/Style API — لود و حذف دارایی‌ها</h2>
+				<p>
+					وردپرس برای CSS/JS یک API رسمی دارد تا وابستگی‌ها، ترتیب و نسخه فایل‌ها کنترل شود.
+					این همان بخشی است که در <code>class-custom-brand-single.php</code> می‌بینید.
+				</p>
+
+				<h3>توابع کلیدی</h3>
+				<table>
+					<thead>
+						<tr><th>تابع</th><th>نقش</th></tr>
+					</thead>
+					<tbody>
+						<tr><td><code>wp_enqueue_style</code></td><td>صف‌بندی CSS برای چاپ در صفحه</td></tr>
+						<tr><td><code>wp_enqueue_script</code></td><td>صف‌بندی JS (با وابستگی و footer)</td></tr>
+						<tr><td><code>wp_add_inline_style</code></td><td>CSS کوچک بعد از یک handle ثبت‌شده</td></tr>
+						<tr><td><code>wp_dequeue_style/script</code></td><td>خارج کردن از صف چاپ</td></tr>
+						<tr><td><code>wp_deregister_style/script</code></td><td>حذف ثبت کامل handle</td></tr>
+						<tr><td><code>wp_style_is</code></td><td>بررسی اینکه استایل registered/enqueued هست یا نه</td></tr>
+						<tr><td><code>filemtime</code></td><td>نسخه‌گذاری فایل برای کش‌باستیگ</td></tr>
+					</tbody>
+				</table>
+
+				<h3>پارامترهای enqueue</h3>
+<pre>wp_enqueue_style(
+  $handle,   // نام یکتا مثل 'lk-light-product'
+  $src,      // URL فایل
+  $deps,     // آرایه handleهایی که باید قبلش لود شوند
+  $ver,      // نسخه (اینجا filemtime یا ثابت تم)
+);</pre>
+
+				<h3>چرا هم enqueue هم dequeue؟</h3>
+				<ul>
+					<li><strong>enqueue</strong>: استایل/اسکریپت لایت خودمان را بیاور (کارت شاپ، تگ، دسته، تب‌ها).</li>
+					<li><strong>dequeue</strong>: Elementor/Jet و دارایی‌های سنگین لیستینگ را بردار تا با تمپلیت لایت قاطی نشوند.</li>
+				</ul>
+				<div class="callout">
+					<strong>نکته اولویت:</strong>
+					<code>enqueue_light_assets</code> روی اولویت ۵ لود می‌شود؛
+					<code>dequeue_listing_assets</code> روی ۱۰۰ تا بعد از ثبت افزونه‌ها حذف کند.
+				</div>
+			</section>
+
+			<section class="panel glass" id="code-walk">
+				<h2>۱۷) پیاده‌روی روی کد انتخاب‌شده</h2>
+				<p>بخش <code>disable_jet_archive_template</code> تا <code>dequeue_listing_assets</code> در سینگل برند:</p>
+
+				<h3>الف) خاموش‌کردن تمپلیت Jet</h3>
+<pre>public static function disable_jet_archive_template( $template_id ) {
+  return self::is_brand_request() ? 0 : $template_id;
+}</pre>
+				<p>
+					این یک <strong>فیلتر</strong> است. اگر درخواست صفحه برند باشد، به‌جای ID تمپلیت Jet عدد
+					<code>0</code> برمی‌گرداند (= بدون تمپلیت سفارشی Jet). وگرنه مقدار قبلی دست‌نخورده می‌ماند.
+				</p>
+
+				<h3>ب) صف‌بندی دارایی‌های لایت</h3>
+				<ol>
+					<li>اگر برند نیست → خروج زودهنگام (<code>is_brand_request</code>)</li>
+					<li>لود فیلترهای آرشیو محصول در صورت وجود کلاس</li>
+					<li>CSS کارت شاپ با وابستگی فونت وزیرمتن</li>
+					<li>زنجیره وابستگی: فونت → فیلتر → کارت → light-product → tag → category</li>
+					<li><code>wp_add_inline_style</code>: متغیر ستون‌ها برای برند (<code>--lk-lpt-cols:4</code>)</li>
+					<li>اسکریپت‌های ووکامرس (سبد) + کروم لایت + تب‌های مشخصات</li>
+				</ol>
+
+				<h3>ج) حذف دارایی‌های مزاحم</h3>
+				<p>
+					لیست handleهای Elementor / Jet / لیستینگ قدیمی با
+					<code>wp_dequeue_*</code> و <code>wp_deregister_*</code> پاک می‌شود.
+					سپس صف باقیمانده هم برای نام‌های شامل <code>elementor</code> / <code>jet</code> اسکن می‌شود.
+				</p>
+				<div class="callout">
+					<strong>الگوی دفاعی تم لایت:</strong>
+					۱) تمپلیت خودمان را اجبار کن → ۲) CSS/JS خودمان را enqueue کن → ۳) دارایی‌های رقیب را dequeue کن.
+				</div>
+			</section>
+
+			<section class="panel glass" id="redirects">
+				<h2>۱۸) ریدایرکت و سئو</h2>
+				<ul>
+					<li><code>/product-tag/{slug}/</code> → <code>/brands/{slug}/</code> وقتی پست برند منتشر شده باشد</li>
+					<li><code>/brand/{slug}/</code> → <code>/brands/{slug}/</code> (میراث URL قبلی)</li>
+					<li>کد وضعیت <strong>301</strong> = انتقال دائمی برای حفظ ارزش سئو</li>
+					<li>لینک‌های استریپ هوم‌پیج مستقیماً به URL جدید اشاره می‌کنند</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="summary">
+				<h2>۱۹) جمع‌بندی یک‌خطی</h2>
+				<table>
+					<thead>
+						<tr><th>مفهوم</th><th>یک جمله</th></tr>
+					</thead>
+					<tbody>
+						<tr><td>CPT</td><td>نوع محتوای جدید برای هر برند</td></tr>
+						<tr><td>Rewrite</td><td>شکل URL و نیاز به flush</td></tr>
+						<tr><td>برگه + تمپلیت</td><td>فهرست برندها قابل‌ویرایش و قابل‌تعویض</td></tr>
+						<tr><td>Taxonomy</td><td>برچسب‌گذاری مشترک محصولات و برند</td></tr>
+						<tr><td>tax_query</td><td>فیلتر کوئری بر اساس term</td></tr>
+						<tr><td>WP_Query</td><td>کلاس/آبجکت واکشی پست‌ها از روی $args</td></tr>
+						<tr><td>Main vs Secondary</td><td>کوئری URL در برابر کوئری اضافه داخل تمپلیت</td></tr>
+						<tr><td>OOP</td><td>کلاس، نمونه، متد؛ ماژول‌های static تم + آبجکت WP_Query</td></tr>
+						<tr><td>The Loop</td><td>پیمایش نتایج با have_posts / the_post</td></tr>
+						<tr><td>Conditional Tags</td><td>تشخیص نوع صفحه فعلی</td></tr>
+						<tr><td>WP_Post fields</td><td>عنوان، اسلاگ، چکیده، محتوا، تصویر شاخص</td></tr>
+						<tr><td>Post Meta / Options</td><td>داده اضافه پست یا تنظیم سراسری</td></tr>
+						<tr><td>Child Theme</td><td>کد سفارشی امن در برابر آپدیت والد</td></tr>
+						<tr><td>Hooks</td><td>نقطه اتصال بدون دست‌کاری هسته</td></tr>
+						<tr><td>Script/Style API</td><td>کنترل رسمی لود و حذف CSS/JS</td></tr>
+						<tr><td>Redirect API</td><td>حفظ سئو هنگام تغییر URL</td></tr>
+					</tbody>
+				</table>
+				<p class="lede" style="margin-top:14px">
+					فایل‌های مرتبط:
+					<code>class-brand-cpt.php</code> ·
+					<code>class-custom-brand-single.php</code> ·
+					<code>class-light-brands-template.php</code> ·
+					<code>single-brand-light.php</code>
+				</p>
+			</section>
+		</main>
+	</div>
+
+	<script>
+		(function () {
+			var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+			var map = links.map(function (a) {
+				var id = (a.getAttribute('href') || '').replace('#', '');
+				return { a: a, el: document.getElementById(id) };
+			}).filter(function (x) { return x.el; });
+
+			function sync() {
+				var y = window.scrollY + 90;
+				var current = map[0];
+				for (var i = 0; i < map.length; i++) {
+					if (map[i].el.offsetTop <= y) current = map[i];
+				}
+				links.forEach(function (a) { a.classList.remove('active'); });
+				if (current) current.a.classList.add('active');
+			}
+			window.addEventListener('scroll', sync, { passive: true });
+			sync();
+		})();
+	</script>
+</body>
+</html>

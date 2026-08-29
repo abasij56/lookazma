@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>برنامه نهایی مهاجرت برند — CPT</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--glass: rgba(255, 255, 255, 0.08);
+			--glass-strong: rgba(255, 255, 255, 0.14);
+			--glass-edge: rgba(255, 255, 255, 0.28);
+			--ink: rgba(246, 251, 255, 0.94);
+			--muted: rgba(214, 232, 240, 0.72);
+			--accent: #7ef0d8;
+			--accent-2: #9ecbff;
+			--good: #6ee7b7;
+			--warn: #fbbf24;
+			--poor: #fb7185;
+			--shadow: 0 24px 80px rgba(4, 18, 32, 0.38);
+			--radius: 28px;
+		}
+		* { box-sizing: border-box; }
+		html { scroll-behavior: smooth; }
+		body {
+			margin: 0;
+			color: var(--ink);
+			font-family: Vazirmatn, Tahoma, system-ui, sans-serif;
+			background:
+				radial-gradient(1100px 650px at 90% -8%, rgba(72, 214, 196, 0.28), transparent 55%),
+				radial-gradient(900px 560px at -8% 20%, rgba(86, 140, 255, 0.3), transparent 48%),
+				linear-gradient(165deg, #06141f 0%, #0b2a36 45%, #12313a 100%);
+			min-height: 100vh;
+			line-height: 1.85;
+		}
+		.orb {
+			position: fixed; border-radius: 50%; filter: blur(40px);
+			pointer-events: none; z-index: 0; opacity: 0.5;
+			animation: drift 18s ease-in-out infinite;
+		}
+		.orb-a { width: 300px; height: 300px; right: -70px; top: 12%; background: #2fd4b6; }
+		.orb-b { width: 240px; height: 240px; left: -50px; top: 52%; background: #4d8dff; animation-delay: -7s; }
+		@keyframes drift {
+			0%, 100% { transform: translate3d(0,0,0) scale(1); }
+			50% { transform: translate3d(-20px,-26px,0) scale(1.06); }
+		}
+		.shell {
+			position: relative; z-index: 1;
+			max-width: 1180px; margin: 0 auto;
+			padding: 28px 20px 72px;
+			display: grid;
+			grid-template-columns: 250px minmax(0, 1fr);
+			gap: 22px;
+		}
+		.glass {
+			background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+			border: 1px solid var(--glass-edge);
+			box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.22);
+			backdrop-filter: blur(22px) saturate(160%);
+			-webkit-backdrop-filter: blur(22px) saturate(160%);
+			border-radius: var(--radius);
+		}
+		nav.toc { position: sticky; top: 18px; align-self: start; padding: 20px 16px; max-height: calc(100vh - 40px); overflow: auto; }
+		nav.toc h2 { margin: 0 0 12px; font-size: 12px; color: var(--accent); font-weight: 600; }
+		nav.toc a {
+			display: block; color: var(--muted); text-decoration: none;
+			padding: 6px 10px; border-radius: 12px; font-size: 12.5px;
+		}
+		nav.toc a:hover, nav.toc a.active {
+			background: rgba(126, 240, 216, 0.12); color: #fff;
+		}
+		.hero { padding: 34px 38px 28px; margin-bottom: 16px; }
+		.kicker {
+			display: inline-flex; padding: 6px 12px; border-radius: 999px;
+			border: 1px solid var(--glass-edge); background: rgba(255,255,255,0.06);
+			font-size: 12px; color: var(--accent);
+		}
+		h1 { font-size: clamp(1.4rem, 3vw, 2.1rem); margin: 12px 0 10px; font-weight: 700; line-height: 1.4; }
+		.lede { margin: 0; color: var(--muted); }
+		.panel { padding: 26px 30px 30px; margin-bottom: 16px; }
+		h2 { margin: 0 0 10px; font-size: 1.2rem; font-weight: 700; }
+		h3 { margin: 16px 0 8px; font-size: 1.02rem; color: var(--accent-2); font-weight: 600; }
+		p { margin: 0 0 11px; }
+		ul, ol { margin: 0 0 12px; padding-right: 1.2em; padding-left: 0; }
+		li { margin: 0 0 6px; }
+		strong { color: #fff; }
+		a { color: var(--accent); }
+		code {
+			font-family: ui-monospace, Consolas, monospace; font-size: 0.85em;
+			background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.12);
+			padding: 1px 6px; border-radius: 6px; direction: ltr; display: inline-block;
+		}
+		.pill {
+			display: inline-block; padding: 4px 10px; border-radius: 999px;
+			font-size: 12px; margin: 0 0 10px 6px;
+			border: 1px solid rgba(255,255,255,0.16); background: rgba(0,0,0,0.18);
+		}
+		.pill.ok { color: var(--good); }
+		.pill.warn { color: var(--warn); }
+		.pill.low { color: var(--accent-2); }
+		.note {
+			padding: 13px 15px; border-radius: 16px; margin: 12px 0 0;
+			border: 1px solid rgba(126, 240, 216, 0.28);
+			background: rgba(126, 240, 216, 0.08);
+		}
+		.warn-box {
+			padding: 13px 15px; border-radius: 16px; margin: 12px 0 14px;
+			border: 1px solid rgba(251, 191, 36, 0.4);
+			background: rgba(251, 191, 36, 0.1);
+		}
+		.check li { list-style: none; padding-right: 0; }
+		.check li::before { content: "☐ "; color: var(--accent); }
+		.example {
+			padding: 12px 14px; border-radius: 14px; margin: 10px 0 12px;
+			background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.12);
+			font-size: 0.88rem; direction: ltr; text-align: left;
+			font-family: ui-monospace, Consolas, monospace; white-space: pre-wrap;
+		}
+		.grid {
+			display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;
+		}
+		.card {
+			padding: 14px 15px; border-radius: 18px;
+			background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+		}
+		.card h3 { margin: 0 0 8px; color: var(--accent); font-size: 0.95rem; }
+		.card p { margin: 0; color: var(--muted); font-size: 0.94rem; }
+		table {
+			width: 100%; border-collapse: collapse; font-size: 0.86rem;
+			margin: 10px 0 8px; overflow: hidden; border-radius: 16px;
+		}
+		th, td {
+			text-align: right; padding: 9px 10px; vertical-align: top;
+			border-bottom: 1px solid rgba(255,255,255,0.1);
+		}
+		th { color: var(--accent); background: rgba(255,255,255,0.05); }
+		footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+		@media (max-width: 900px) {
+			.shell { grid-template-columns: 1fr; }
+			nav.toc { position: relative; top: 0; max-height: none; }
+			.grid { grid-template-columns: 1fr; }
+			.hero, .panel { padding: 22px 18px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="orb orb-a"></div>
+	<div class="orb orb-b"></div>
+
+	<div class="shell">
+		<nav class="toc glass" aria-label="فهرست">
+			<h2>فهرست</h2>
+			<a href="#hero">خلاصه نهایی</a>
+			<a href="#locked">تصمیم‌های قفل‌شده</a>
+			<a href="#naming">نام: brand نه company</a>
+			<a href="#tax">تگ و دسته ووکامرس</a>
+			<a href="#relation">اتصال محصول</a>
+			<a href="#now">وضعیت فعلی</a>
+			<a href="#target">هدف نهایی</a>
+			<a href="#p0">فاز ۰ — آماده‌سازی</a>
+			<a href="#p1">فاز ۱ — ثبت CPT</a>
+			<a href="#p2">فاز ۲ — مهاجرت محتوا</a>
+			<a href="#p3">فاز ۳ — تمپلیت جدید</a>
+			<a href="#p4">فاز ۴ — گرید محصول</a>
+			<a href="#p5">فاز ۵ — فرانت محصول/کارت</a>
+			<a href="#p6">فاز ۶ — جستجو و فیلتر</a>
+			<a href="#p7">فاز ۷ — هوم‌پیج</a>
+			<a href="#p8">فاز ۸ — ریدایرکت</a>
+			<a href="#p9">فاز ۹ — ابزار ادمین</a>
+			<a href="#p10">فاز ۱۰ — پاکسازی</a>
+			<a href="#p11">فاز ۱۱ — سئو</a>
+			<a href="#done">تعریف تمام</a>
+		</nav>
+
+		<main>
+			<header class="hero glass" id="hero">
+				<div class="kicker">لوک‌آزما · برنامه نهایی برند</div>
+				<h1>CPT برند + تگ/دسته ووکامرس + صفحه سینگل شبیه آرشیو فعلی</h1>
+				<p class="lede">
+					بر اساس تصمیم تیم لید و جمع‌بندی گفتگو:
+					پست‌تایپ <code>brand</code>، URL به شکل <code>/brand/{slug}/</code>،
+					تمپلیت <strong>جدید</strong> با ظاهر صفحه برند فعلی،
+					بدون تاکسونومی اختصاصی — از همان <code>product_cat</code> و <code>product_tag</code> ووکامرس استفاده می‌شود.
+				</p>
+			</header>
+
+			<section class="panel glass" id="locked">
+				<span class="pill ok">قفل‌شده</span>
+				<h2>تصمیم‌های نهایی</h2>
+				<table>
+					<thead>
+						<tr><th>موضوع</th><th>تصمیم</th></tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>نوع موجودیت</td>
+							<td>Custom Post Type — نه دسته محصول، نه تاکسونومی اختصاصی <code>product_brand</code></td>
+						</tr>
+						<tr>
+							<td>نام فنی CPT</td>
+							<td><code>brand</code> (نه <code>company</code>)</td>
+						</tr>
+						<tr>
+							<td>برچسب ادمین فارسی</td>
+							<td>«برندها» (در صورت نیاز در متن می‌توان «شرکت» هم گفت)</td>
+						</tr>
+						<tr>
+							<td>URL</td>
+							<td><code>/brand/{slug}/</code> مثلاً <code>/brand/merck/</code></td>
+						</tr>
+						<tr>
+							<td>صفحه سینگل</td>
+							<td>ظاهر دقیقاً مثل صفحه برند فعلی؛ فایل تمپلیت فعلی تگ <strong>استفاده نشود</strong> — تمپلیت جدید کپی ظاهری</td>
+						</tr>
+						<tr>
+							<td>تاکسونومی CPT</td>
+							<td>تاکسونومی مخصوص برند ساخته نشود. CPT به تگ و دسته <strong>موجود ووکامرس</strong> وصل شود</td>
+						</tr>
+						<tr>
+							<td>ریدایرکت</td>
+							<td><code>/product-tag/{slug}/</code> → ۳۰۱ → <code>/brand/{slug}/</code></td>
+						</tr>
+						<tr>
+							<td>تگ‌های فعلی</td>
+							<td>همه <code>product_tag</code>های فعلی = برند</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="example">CPT: brand
+Rewrite: /brand/{slug}/
+Taxonomies on CPT: product_cat, product_tag  (Woo existing — not custom)
+Template: NEW single-brand (visual clone of current tag archive)
+Redirect: /product-tag/{slug}/ → /brand/{slug}/</div>
+			</section>
+
+			<section class="panel glass" id="naming">
+				<h2>چرا <code>brand</code> نه <code>company</code>؟</h2>
+				<div class="grid">
+					<div class="card">
+						<h3>brand</h3>
+						<p>با فیلتر «برند»، بج «نام برند»، اسکیمای Product brand و جستجوی خرید هم‌خوان است. URL کوتاه و واضح.</p>
+					</div>
+					<div class="card">
+						<h3>company</h3>
+						<p>بیشتر مناسب پروفایل شرکت است. جستجوی سایت «شرکت‌ها» می‌گوید؛ فیلتر فروشگاه «برند» می‌گوید. برای کاتالوگ ضعیف‌تر است.</p>
+					</div>
+				</div>
+				<div class="note">کد و URL = <code>brand</code>. لیبل فارسی می‌تواند «برند / شرکت» باشد ولی موجودیت اصلی یکی بماند.</div>
+			</section>
+
+			<section class="panel glass" id="tax">
+				<span class="pill ok">الزام تیم لید</span>
+				<h2>تگ و دسته: همان ووکامرس، نه تاکسونومی اختصاصی</h2>
+				<p>نقل تصمیم:</p>
+				<div class="warn-box">
+					پست‌تایپ قابلیت انتخاب تگ و کتگوری داشته باشد؛ خودش تاکسونومی خاص نداشته باشد.
+					از همان تگ و تاکسونومی ووکامرس / تگ ژنرال استفاده کند و قابل استفاده باشد.
+				</div>
+				<h3>یعنی در عمل</h3>
+				<ol>
+					<li>ثبت CPT با <code>taxonomies => array( 'product_cat', 'product_tag' )</code> (و در صورت نیاز تگ عمومی وردپرس — فقط اگر لید صریحاً بخواهد)</li>
+					<li>در ویرایش پست برند: باکس دسته محصول و باکس تگ محصول ووکامرس دیده شود</li>
+					<li>تاکسونومی جدید مثل <code>product_brand</code> یا <code>brand_cat</code> ساخته نشود</li>
+				</ol>
+				<div class="warn-box">
+					توجه فنی: اگر پست برند داخل <code>product_cat</code> برود، باید مطمئن شوید آرشیو دسته فقط محصولات را نشان می‌دهد نه پست برند
+					(یا برند را از کوئری آرشیو محصول خارج کنید). این در فاز ۱ تست می‌شود.
+				</div>
+			</section>
+
+			<section class="panel glass" id="relation">
+				<span class="pill warn">مدل اتصال محصول (طبق تصمیم لید)</span>
+				<h2>محصول چطور به صفحه برند وصل می‌شود؟</h2>
+				<p>محصول‌ها امروز با <code>product_tag</code> به برند وصل‌اند. پست برند هم همان تگ را می‌گیرد. پس گرید صفحه برند = محصولات با همان تگ(ها)ی اختصاص‌داده‌شده به آن پست.</p>
+				<div class="example">Brand post "Merck"
+  └── assigned product_tag: merck
+
+Products tagged merck
+  └── listed on /brand/merck/
+
+Optional: brand post also assigned product_cat
+  └── can highlight / filter those categories on the brand page</div>
+				<ul>
+					<li><strong>منبع لیست محصول روی سینگل برند:</strong> <code>tax_query</code> روی تگ‌هایی که به پست برند وصل شده‌اند (حداقل تگ اصلی هم‌slug)</li>
+					<li><strong>بج روی صفحه محصول:</strong> هنوز از تگ محصول خوانده می‌شود تا لینک به CPT با نگاشت slug ساخته شود — یا بعداً لینک مستقیم به پست برند</li>
+					<li>فیلد ACF relationship جدا لازم نیست مگر بعداً بخواهید اتصال را از تگ جدا کنید</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="now">
+				<h2>وضعیت فعلی</h2>
+				<ul>
+					<li>برند = <code>product_tag</code>؛ آرشیو لایت تگ = صفحه برند</li>
+					<li>تمپلیت: <code>taxonomy-product_tag-light.php</code> + کلاس آرشیو تگ</li>
+					<li>محصول/کارت: اولین تگ = نام و لینک برند</li>
+					<li>هوم‌پیج: لینک هاردکد <code>/product-tag/...</code></li>
+					<li>جستجو و فیلتر برند: تگ</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="target">
+				<h2>هدف نهایی</h2>
+				<div class="grid">
+					<div class="card">
+						<h3>کاربر</h3>
+						<p><code>/brand/merck/</code> با همان ظاهر امروز: هیرو، لوگو، توضیح، فیلتر، گرید کارت. لینک‌های برند به CPT می‌روند.</p>
+					</div>
+					<div class="card">
+						<h3>ادمین</h3>
+						<p>منوی «برندها»؛ ویرایش پست با Gutenberg/فیلدها؛ انتخاب دسته و تگ ووکامرس روی همان پست.</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="panel glass" id="p0">
+				<span class="pill low">ریسک خیلی کم</span>
+				<h2>فاز ۰ — آماده‌سازی</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>لیست همه تگ‌ها: id، نام، slug، تعداد محصول، لوگو، توضیح</li>
+					<li>نگاشت <code>tag_slug → brand_post_slug</code></li>
+					<li>اسکرین‌شات / چک‌لیست UI صفحه برند فعلی برای تطبیق ظاهری تمپلیت جدید</li>
+					<li>بک‌آپ دیتابیس و فایل‌ها</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>لیست تگ کامل است</li>
+					<li>برندهای مهم (Merck، مجللی، نوترون، …) مشخص‌اند</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="p1">
+				<span class="pill ok">ریسک خیلی کم</span>
+				<h2>فاز ۱ — ثبت CPT <code>brand</code></h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>ثبت پست‌تایپ: public، has_archive اختیاری، rewrite slug = <code>brand</code>، supports: title, editor, thumbnail, excerpt</li>
+					<li><code>taxonomies</code>: <code>product_cat</code> و <code>product_tag</code> — بدون taxonomy جدید</li>
+					<li>در صورت نیاز <code>register_taxonomy_for_object_type</code> برای همان دو تاکسونومی ووکامرس</li>
+					<li>برچسب منو: «برندها»</li>
+					<li>هنوز ریدایرکت نباشد؛ تمپلیت تگ دست نخورد</li>
+					<li>Save Permalinks</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>منوی برندها در ادمین هست</li>
+					<li>پست پیش‌نویس؛ URL <code>/brand/test-slug/</code></li>
+					<li>روی پست برند می‌توان تگ و دسته ووکامرس انتخاب کرد</li>
+					<li>آرشیو دسته محصول هنوز فقط محصول نشان می‌دهد (پست برند قاطی نشده)</li>
+					<li>صفحات فعلی تگ/فروشگاه بدون fatal</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="p2">
+				<span class="pill ok">ریسک کم</span>
+				<h2>فاز ۲ — مهاجرت محتوا تگ → پست برند</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>ابزار ادمین یک‌بارمصرف: برای هر تگ یک پست <code>brand</code> (publish)</li>
+					<li>نام → title، slug → slug، توضیح → content، لوگو → تصویر شاخص</li>
+					<li>همان تگ را به پست برند assign کنید (تگ Merck روی پست Merck)</li>
+					<li>اختیاری: دسته‌های پرکاربرد آن برند را اگر داده دارید assign کنید</li>
+					<li>متای نگاشت: <code>_lk_source_tag_id</code>، <code>_lk_source_tag_slug</code></li>
+					<li>تگ‌ها و اتصال محصولات به تگ را حذف نکنید</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>تعداد پست برند ≈ تعداد تگ</li>
+					<li>۱۰ برند: محتوا، لوگو، تگ درست روی پست</li>
+					<li>محصول‌ها هنوز فقط از تگ برند می‌گیرند</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="p3">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۳ — تمپلیت سینگل جدید (ظاهر فعلی، فایل جدید)</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>تمپلیت جدید مثلاً <code>single-brand.php</code> / Timber — <strong>include نکردن</strong> <code>taxonomy-product_tag-light.php</code></li>
+					<li>کپی ظاهری: هیرو، لوگو، توضیح، فیلتر، گرید کارت، صفحه‌بندی، کروم لایت</li>
+					<li>CSS می‌تواند از استایل آرشیو تگ/شاپ کارت استفاده کند؛ منطق کوئری جداست</li>
+					<li>تا گرید کامل شود می‌توان بخش محصول را موقت با همان کوئری تگ پست پر کرد</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li><code>/brand/merck/</code> از نظر ظاهر با <code>/product-tag/merck/</code> یکی است (کنار هم مقایسه)</li>
+					<li>موبایل / دسکتاپ</li>
+					<li>تمپلیت تگ قدیمی هنوز کار می‌کند (تا ریدایرکت)</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="p4">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۴ — گرید محصول روی سینگل برند</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>کوئری: محصولات publish با <code>tax_query</code> روی تگ‌های assignشده به پست برند</li>
+					<li>اگر چند تگ روی پست باشد: تصمیم از قبل (همه تگ‌ها OR، یا فقط تگ هم‌slug)</li>
+					<li>فیلترهای آرشیو را در صورت امکان روی همین اسکوپ سوار کنید</li>
+					<li>صفحه خالی اگر تگی روی پست نباشد — پیام مشخص</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>لیست <code>/brand/merck/</code> ≈ لیست تگ Merck</li>
+					<li>صفحه‌بندی و فیلتر (گرید، خلوص، …) در صورت اتصال</li>
+					<li>پست برند بدون تگ، fatal نمی‌دهد</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="p5">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۵ — بج و لینک فرانت به CPT</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>صفحه محصول و کارت: لینک برند → پست CPT با نگاشت slug/متا (نه <code>get_term_link</code> تگ)</li>
+					<li>نام و لوگو می‌تواند همچنان از تگ/ترمینولوژی فعلی بیاید تا داده یکی باشد</li>
+					<li>Fallback: اگر پست برند نبود، لینک تگ قدیمی</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>کلیک بج → <code>/brand/...</code></li>
+					<li>کارت‌های فروشگاه/دسته</li>
+					<li>برند بدون پست CPT نمی‌شکند</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="p6">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۶ — جستجو و فیلتر «برند»</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>جستجوی «شرکت‌ها»: نتایج از CPT <code>brand</code> با لینک سینگل</li>
+					<li>فاست برند در آرشیو محصول: می‌تواند همچنان تگ را فیلتر کند (محصول هنوز تگ دارد) ولی لینک «صفحه برند» به CPT برود</li>
+					<li>روی سینگل برند فاست برند را مثل امروز روی آرشیو تگ مخفی کنید</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>جستجوی نام برند → <code>/brand/...</code></li>
+					<li>فیلتر برند محصولات درست را می‌آورد</li>
+					<li>جستجوی محصول خراب نشده</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="p7">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۷ — نوار برند هوم‌پیج</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>به‌جای آرایه هاردکد: کوئری پست‌های <code>brand</code></li>
+					<li>لینک به سینگل CPT؛ لوگو از تصویر شاخص</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>لوگوها و لینک‌ها به <code>/brand/...</code></li>
+					<li>برند بدون تصویر OK</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="p8">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۸ — ریدایرکت تگ → CPT</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li><code>is_product_tag()</code> → پیدا کردن پست برند از نگاشت / slug → ۳۰۱</li>
+					<li>یک پرش؛ تگ بدون پست: تصمیم از قبل</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li><code>/product-tag/merck/</code> → ۳۰۱ → <code>/brand/merck/</code></li>
+					<li>بدون زنجیره ریدایرکت</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="p9">
+				<span class="pill warn">ریسک متوسط</span>
+				<h2>فاز ۹ — ابزار ادمین</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>AI auto-submit: انتخاب برند از پست‌های CPT؛ محصولات همچنان با تگ متناظر (از متای نگاشت) کوئری شوند</li>
+					<li>Price Editor: اسکوپ برند از CPT → تگ منبع</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>ثبت اتوماتیک محصولات همان برند</li>
+					<li>قیمت‌گذاری اسکوپ درست</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="p10">
+				<span class="pill warn">بعد از soak</span>
+				<h2>فاز ۱۰ — پاکسازی کنترل‌شده</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>تگ را به‌عنوان «صفحه برند» بازنشسته کنید (ریدایرکت کافی است)</li>
+					<li>تگ را از محصولات <strong>عجولانه حذف نکنید</strong> — هنوز اتصال گرید و فیلتر است</li>
+					<li>حذف تمپلیت لایت تگ به‌عنوان صفحه عمومی برند، بعد از پایدار شدن ۳۰۱</li>
+					<li>جستجوی کد برای لینک‌های <code>/product-tag/</code> باقی‌مانده</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>سینگل CPT و فیلتر و بج سالم‌اند</li>
+					<li>۳۰۱ها زنده‌اند</li>
+				</ul>
+				<div class="warn-box">حذف تگ از محصولات فقط وقتی منطقی است که اتصال محصول↔برند را عوض کرده باشید. در این طرح نهایی، تگ هنوز رابطه است — نگهش دارید مگر لید خلافش را بگوید.</div>
+			</section>
+
+			<section class="panel glass" id="p11">
+				<span class="pill low">ریسک کم</span>
+				<h2>فاز ۱۱ — سئو</h2>
+				<h3>تغییرات</h3>
+				<ol>
+					<li>Yoast برای CPT برند؛ sitemap پست‌های برند</li>
+					<li>کنونیکال سینگل <code>/brand/...</code></li>
+					<li>عنوان/متای هر برند</li>
+					<li>Search Console: ۳۰۱ تگ قدیمی، ایندکس URL جدید</li>
+					<li>Schema در صورت نیاز: Brand / Organization روی سینگل؛ brand روی Product</li>
+				</ol>
+				<h3>تست</h3>
+				<ul class="check">
+					<li>تگ قدیمی → ۳۰۱</li>
+					<li>صفحات برند ایندکس می‌شوند</li>
+					<li>صفحه نازک بدون محصول به عمد ایندکس نشود</li>
+				</ul>
+			</section>
+
+			<section class="panel glass" id="done">
+				<span class="pill ok">تمام</span>
+				<h2>چه وقت این برنامه تمام است؟</h2>
+				<ul>
+					<li>URL عمومی برند = <code>/brand/{slug}/</code></li>
+					<li>ظاهر سینگل = صفحه برند فعلی، با تمپلیت جدید</li>
+					<li>روی پست برند، تگ و دسته ووکامرس قابل انتخاب است</li>
+					<li>گرید محصول از تگ‌های همان پست می‌آید</li>
+					<li>بج، خانه، جستجو به CPT لینک می‌دهند</li>
+					<li>تگ قدیمی ۳۰۱ می‌شود</li>
+				</ul>
+				<div class="note">
+					این برنامه جایگزین مسیر هیبرید <code>product_brand</code> و مسیر «دسته محصول به‌جای برند» است.
+					تصمیم لید: CPT + تاکسونومی‌های موجود ووکامرس.
+				</div>
+				<p style="margin-top:14px;color:var(--muted);font-size:0.92rem">
+					اسناد مرتبط (پس‌زمینه، نه این تصمیم):
+					<a href="./brand-hybrid-vs-cpt-acf.html">هیبرید در برابر CPT</a>
+					·
+					<a href="./brand-category-vs-cpt.html">دسته در برابر CPT</a>
+				</p>
+			</section>
+
+			<footer>اسناد لوک‌آزما · برنامه نهایی CPT برند · تصمیم تیم لید + نام brand برای سئو</footer>
+		</main>
+	</div>
+
+	<script>
+		(function () {
+			var links = document.querySelectorAll("nav.toc a");
+			var sections = [];
+			links.forEach(function (a) {
+				var el = document.getElementById(a.getAttribute("href").slice(1));
+				if (el) sections.push({ el: el, a: a });
+			});
+			function sync() {
+				var y = window.scrollY + 80, current = sections[0];
+				sections.forEach(function (s) { if (s.el.offsetTop <= y) current = s; });
+				links.forEach(function (a) { a.classList.remove("active"); });
+				if (current) current.a.classList.add("active");
+			}
+			window.addEventListener("scroll", sync, { passive: true });
+			sync();
+		})();
+	</script>
+</body>
+</html>
