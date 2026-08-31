@@ -337,6 +337,12 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			return false;
 		}
 
+		if ( class_exists( 'Hello_Elementor_Child_Light_Compare_Template' )
+			&& Hello_Elementor_Child_Light_Compare_Template::is_enabled()
+		) {
+			return false;
+		}
+
 		if ( class_exists( 'Hello_Elementor_Child_Light_404_Template' )
 			&& Hello_Elementor_Child_Light_404_Template::is_enabled()
 		) {
@@ -851,6 +857,10 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			$search_mobile  = Hello_Elementor_Child_Lookazma_Search::render_markup( '', 'lk-lpt-search-mobile' );
 		}
 
+		$compare_url = class_exists( 'Hello_Elementor_Child_Light_Compare_Template' )
+			? Hello_Elementor_Child_Light_Compare_Template::get_page_url()
+			: home_url( '/compare/' );
+
 		return array(
 			'home_url'        => trailingslashit( home_url( '/' ) ),
 			'site_name'       => get_bloginfo( 'name' ),
@@ -859,6 +869,7 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			'footer_menu'     => self::render_menu_html( array( 'lk_light_product_footer' ), 'lz-site-footer__links' ),
 			'search_desktop'  => $search_desktop,
 			'search_mobile'   => $search_mobile,
+			'compare_url'       => $compare_url,
 			'cart_url'          => $cart_url,
 			'cart_count'        => $cart['count'],
 			'cart_total'        => $cart['total'],

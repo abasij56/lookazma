@@ -52,6 +52,9 @@ final class Hello_Elementor_Child_Theme {
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-brand-cpt.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-custom-brand-single.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-brands-template.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-product-specs.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-product-compare.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-compare-template.php';
 	}
 
 	/**
@@ -82,5 +85,7 @@ final class Hello_Elementor_Child_Theme {
 		Hello_Elementor_Child_Brand_Cpt::init();
 		Hello_Elementor_Child_Custom_Brand_Single::init();
 		Hello_Elementor_Child_Light_Brands_Template::init();
+		Hello_Elementor_Child_Product_Compare::init();
+		Hello_Elementor_Child_Light_Compare_Template::init();
 	}
 }

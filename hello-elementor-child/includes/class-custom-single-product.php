@@ -253,6 +253,10 @@ final class Hello_Elementor_Child_Custom_Single_Product {
 				wp_enqueue_script( 'wc-add-to-cart-variation' );
 			}
 		}
+
+		if ( class_exists( 'Hello_Elementor_Child_Product_Compare' ) ) {
+			Hello_Elementor_Child_Product_Compare::enqueue_assets( false );
+		}
 	}
 
 	/**

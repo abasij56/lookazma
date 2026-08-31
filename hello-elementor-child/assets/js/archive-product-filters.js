@@ -559,6 +559,7 @@
 				if (cfg.isShop) {
 					markShopGrid();
 					shopCardsLoaded = true;
+					document.dispatchEvent(new CustomEvent('lk-shop-cards-updated'));
 				}
 				if (json.data && typeof json.data.pagination !== 'undefined') {
 					updatePagination(json.data.pagination);
@@ -950,6 +951,7 @@
 			markShopGrid();
 			bindShopAddToCartFeedback();
 			document.documentElement.classList.add('lk-shop-filters-ready');
+			document.dispatchEvent(new CustomEvent('lk-shop-cards-updated'));
 			if (isNativeListingTemplate()) {
 				shopCardsLoaded = true;
 				ensurePaginationContainer();
