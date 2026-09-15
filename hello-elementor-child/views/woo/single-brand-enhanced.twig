@@ -1,0 +1,276 @@
+{% extends "woo/base-light-product.twig" %}
+
+{% block content %}
+{% if brand_data %}
+<div class="lk-lpt lk-lpt-container lk-brand-enhanced-page">
+	{% if brand_data.breadcrumb_html %}
+		<nav class="lk-lpt-breadcrumb" aria-label="breadcrumb">
+			{{ brand_data.breadcrumb_html|raw }}
+		</nav>
+	{% endif %}
+
+	<section class="lk-brand-enhanced-hero" aria-label="{{ brand_data.title }}">
+		{% if brand_data.logo %}
+			<figure class="lk-brand-enhanced-hero__logo">
+				<img
+					src="{{ brand_data.logo.url }}"
+					alt="{{ brand_data.logo.alt|default(brand_data.name) }}"
+					width="120"
+					height="64"
+					loading="eager"
+				>
+			</figure>
+		{% endif %}
+		<div class="lk-brand-enhanced-hero__copy">
+			<h1 class="lk-brand-enhanced-hero__title">
+				<span class="lk-brand-enhanced-hero__name">{{ brand_data.title }}</span>
+				{% if brand_data.english_name %}
+					<span class="lk-brand-enhanced-hero__english">{{ brand_data.english_name }}</span>
+				{% endif %}
+			</h1>
+			{% if brand_data.excerpt %}
+				<p class="lk-brand-enhanced-hero__excerpt">{{ brand_data.excerpt }}</p>
+			{% endif %}
+			<div class="lk-brand-enhanced-hero__actions">
+				<a class="lk-brand-enhanced-btn lk-brand-enhanced-btn--primary lk-brand-enhanced-btn--hero-primary" href="#lk-brand-products">
+					<svg class="lk-brand-enhanced-btn__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z"/></svg>
+					<span>مشاهده محصولات</span>
+				</a>
+				{% if brand_data.catalog_url %}
+					<a class="lk-brand-enhanced-btn lk-brand-enhanced-btn--ghost" href="{{ brand_data.catalog_url }}" download>
+						<svg class="lk-brand-enhanced-btn__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 4h14v2H5v-2z"/></svg>
+						<span>دانلود کاتالوگ</span>
+					</a>
+				{% endif %}
+				{% if brand_data.website_url %}
+					<a class="lk-brand-enhanced-btn lk-brand-enhanced-btn--ghost" href="{{ brand_data.website_url }}" target="_blank" rel="noopener noreferrer">
+						<svg class="lk-brand-enhanced-btn__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zm7.93 9h-3.17a15.65 15.65 0 0 0-1.2-5.02A8.03 8.03 0 0 1 19.93 11zM12 4c.95 1.6 1.63 3.4 1.9 5.3H10.1C10.37 7.4 11.05 5.6 12 4z"/></svg>
+						<span>سایت رسمی برند</span>
+					</a>
+				{% endif %}
+			</div>
+		</div>
+		{% if brand_data.hero_image %}
+			<figure class="lk-brand-enhanced-hero__media">
+				<img
+					src="{{ brand_data.hero_image.url }}"
+					alt="{{ brand_data.hero_image.alt|default(brand_data.name) }}"
+					width="520"
+					height="360"
+					loading="eager"
+				>
+			</figure>
+		{% endif %}
+	</section>
+
+	{% if brand_data.stats %}
+		<section class="lk-brand-enhanced-stats" aria-label="آمار برند">
+			{% for stat in brand_data.stats %}
+				{% set icon_file = 'stats-products.svg' %}
+				{% if stat.icon == 'calendar' %}
+					{% set icon_file = 'stats-calendar.svg' %}
+				{% elseif stat.icon == 'globe' %}
+					{% set icon_file = 'stats-globe.svg' %}
+				{% elseif stat.icon == 'flask' %}
+					{% set icon_file = 'stats-flask.svg' %}
+				{% endif %}
+				<article class="lk-brand-enhanced-stat">
+					<div class="lk-brand-enhanced-stat__icon" aria-hidden="true">
+						<img src="{{ brand_data.icons_url }}{{ icon_file }}" alt="" width="22" height="22" loading="lazy" decoding="async">
+					</div>
+					<div class="lk-brand-enhanced-stat__body">
+						<span class="lk-brand-enhanced-stat__label">{{ stat.label }}</span>
+						<strong class="lk-brand-enhanced-stat__value">{{ stat.value }}</strong>
+					</div>
+				</article>
+			{% endfor %}
+		</section>
+	{% endif %}
+
+	<section class="lk-brand-enhanced-products" id="lk-brand-products" aria-label="محصولات برند">
+		<div class="lk-brand-enhanced-products__toolbar">
+			<form class="lk-brand-enhanced-products__sort" method="get" action="">
+				<label class="lk-brand-enhanced-products__sort-label" for="lk-brand-orderby">مرتب‌سازی</label>
+				<div class="lk-brand-enhanced-products__sort-field">
+					<select id="lk-brand-orderby" class="lk-brand-orderby" name="orderby" onchange="this.form.submit()">
+						{% for opt in brand_data.orderby_options %}
+							<option value="{{ opt.value }}"{% if brand_data.orderby == opt.value %} selected{% endif %}>{{ opt.label }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</form>
+		</div>
+
+		<div class="lk-lpt-shop lk-brand-enhanced-shop">
+			<aside class="lk-lpt-shop__filters lk-brand-enhanced-shop__filters" aria-label="فیلترها">
+				{{ brand_data.filters_html|raw }}
+			</aside>
+			<div class="lk-lpt-shop__main lk-brand-enhanced-shop__main">
+				<div class="lk-lpt-shop__products">
+					<div
+						class="lk-archive-products__grid lk-shop-products-grid"
+						id="lk-archive-products"
+						role="list"
+						data-lk-native-grid="1"
+						style="--lk-lpt-cols: 4"
+					>
+						{{ brand_data.products_html|raw }}
+					</div>
+				</div>
+				<nav class="lk-archive-products__pagination lk-shop-pagination lk-brand-enhanced-pagination" id="lk-archive-products-pagination" aria-label="صفحه‌بندی">
+					{{ brand_data.pagination_html|raw }}
+				</nav>
+			</div>
+		</div>
+	</section>
+
+	{% if brand_data.why_buy %}
+		<section class="lk-brand-enhanced-why" aria-labelledby="lk-brand-why-title">
+			<h2 class="lk-brand-enhanced-section-title" id="lk-brand-why-title">{{ brand_data.why_buy_title }}</h2>
+			<div class="lk-brand-enhanced-why__grid">
+				{% for item in brand_data.why_buy %}
+					<article class="lk-brand-enhanced-why__item" data-lk-why-icon="{{ item.icon }}">
+						<div class="lk-brand-enhanced-why__icon" aria-hidden="true">
+							{% if item.icon == 'truck' %}
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M18 18.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM6 18.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4zM6 6h9v4H6V6zm12.5 7H17v-2h2.5l1.5 2z"/></svg>
+							{% elseif item.icon == 'consult' %}
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-3.33 0-10 1.67-10 5v1h20v-1c0-3.33-6.67-5-10-5z"/></svg>
+							{% elseif item.icon == 'invoice' %}
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm1 9h-4v2h4v-2zm0 4h-4v2h4v-2z"/></svg>
+							{% else %}
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14-4-4 1.41-1.41L11 12.17l5.59-5.59L18 8l-7 7z"/></svg>
+							{% endif %}
+						</div>
+						<h3 class="lk-brand-enhanced-why__title">{{ item.title }}</h3>
+						<p class="lk-brand-enhanced-why__text">{{ item.text }}</p>
+					</article>
+				{% endfor %}
+			</div>
+		</section>
+	{% endif %}
+
+	{% if brand_data.about_teaser or brand_data.about_image %}
+		<section class="lk-brand-enhanced-about" aria-labelledby="lk-brand-about-title">
+			<div class="lk-brand-enhanced-about__copy">
+				<h2 class="lk-brand-enhanced-section-title" id="lk-brand-about-title">{{ brand_data.about_title }}</h2>
+				<div class="lk-brand-enhanced-about__content">
+					{{ brand_data.about_teaser|raw }}
+				</div>
+				{% if brand_data.about_has_more %}
+					<div class="lk-brand-enhanced-about__more" id="lk-brand-about-more" hidden>
+						{{ brand_data.about_rest|raw }}
+					</div>
+					<button type="button" class="lk-brand-enhanced-about__toggle" data-lk-brand-about-toggle aria-expanded="false">
+						مشاهده بیشتر
+					</button>
+				{% endif %}
+			</div>
+			{% if brand_data.about_image %}
+				<figure class="lk-brand-enhanced-about__media">
+					<img src="{{ brand_data.about_image.url }}" alt="{{ brand_data.about_image.alt|default(brand_data.name) }}" width="520" height="360" loading="lazy">
+				</figure>
+			{% endif %}
+		</section>
+	{% endif %}
+
+	{% set section_count = (brand_data.faqs ? 1 : 0) + (brand_data.articles ? 1 : 0) + (brand_data.similar_brands ? 1 : 0) %}
+	{% if section_count > 0 %}
+		<section class="lk-brand-enhanced-trio lk-brand-enhanced-trio--count-{{ section_count }}" aria-label="محتوای تکمیلی">
+			{% if brand_data.faqs %}
+				<div class="lk-brand-enhanced-trio__col lk-brand-enhanced-faq">
+					<h2 class="lk-brand-enhanced-trio__title">{{ brand_data.faq_title }}</h2>
+					<div class="lk-brand-enhanced-faq__list">
+						{% for item in brand_data.faqs %}
+							<details class="lk-brand-enhanced-faq__item">
+								<summary class="lk-brand-enhanced-faq__summary">
+									<span class="lk-brand-enhanced-faq__question">{{ item.question }}</span>
+									<span class="lk-archive-filters__trigger" aria-hidden="true"></span>
+								</summary>
+								<div class="lk-brand-enhanced-faq__answer">{{ item.answer|nl2br }}</div>
+							</details>
+						{% endfor %}
+					</div>
+				</div>
+			{% endif %}
+
+			{% if brand_data.articles %}
+				<div class="lk-brand-enhanced-trio__col lk-brand-enhanced-articles">
+					<h2 class="lk-brand-enhanced-trio__title">{{ brand_data.articles_title }}</h2>
+					<div class="lk-brand-enhanced-articles__wrap" data-lk-brand-carousel>
+						<button type="button" class="lk-brand-enhanced-carousel__btn lk-brand-enhanced-carousel__btn--prev" data-lk-carousel-prev aria-label="قبلی">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+						</button>
+						<div class="lk-brand-enhanced-articles__track">
+							<ul class="lk-brand-enhanced-articles__list">
+								{% for article in brand_data.articles %}
+									<li class="lk-brand-enhanced-articles__slide">
+										<a class="lk-brand-enhanced-articles__card" href="{{ article.url }}">
+											{% if article.image %}
+												<span class="lk-brand-enhanced-articles__thumb">
+													<img src="{{ article.image }}" alt="" width="200" height="120" loading="lazy">
+												</span>
+											{% else %}
+												<span class="lk-brand-enhanced-articles__thumb lk-brand-enhanced-articles__thumb--placeholder" aria-hidden="true"></span>
+											{% endif %}
+											<span class="lk-brand-enhanced-articles__title">{{ article.title }}</span>
+										</a>
+									</li>
+								{% endfor %}
+							</ul>
+						</div>
+						<button type="button" class="lk-brand-enhanced-carousel__btn lk-brand-enhanced-carousel__btn--next" data-lk-carousel-next aria-label="بعدی">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+						</button>
+					</div>
+				</div>
+			{% endif %}
+
+			{% if brand_data.similar_brands %}
+				<div class="lk-brand-enhanced-trio__col lk-brand-enhanced-similar">
+					<h2 class="lk-brand-enhanced-trio__title">{{ brand_data.similar_title }}</h2>
+					<div class="lk-brand-enhanced-similar__wrap" data-lk-brand-carousel>
+						<button type="button" class="lk-brand-enhanced-carousel__btn lk-brand-enhanced-carousel__btn--prev" data-lk-carousel-prev aria-label="قبلی">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+						</button>
+						<div class="lk-brand-enhanced-similar__track">
+							<ul class="lk-brand-enhanced-similar__list">
+								{% for brand in brand_data.similar_brands %}
+									<li class="lk-brand-enhanced-similar__slide">
+										<a class="lk-brand-enhanced-similar__card" href="{{ brand.url }}">
+											<span class="lk-brand-enhanced-similar__logo">
+												{% if brand.image %}
+													<img src="{{ brand.image }}" alt="{{ brand.title }}" width="72" height="72" loading="lazy">
+												{% else %}
+													<span class="lk-brand-enhanced-similar__logo-placeholder" aria-hidden="true"></span>
+												{% endif %}
+											</span>
+											<span class="lk-brand-enhanced-similar__name">{{ brand.title }}</span>
+										</a>
+									</li>
+								{% endfor %}
+							</ul>
+						</div>
+						<button type="button" class="lk-brand-enhanced-carousel__btn lk-brand-enhanced-carousel__btn--next" data-lk-carousel-next aria-label="بعدی">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+						</button>
+					</div>
+				</div>
+			{% endif %}
+		</section>
+	{% endif %}
+
+	<section class="lk-brand-enhanced-cta" aria-label="{{ brand_data.cta_title }}">
+		<div class="lk-brand-enhanced-cta__inner">
+			<div class="lk-brand-enhanced-cta__copy">
+				<h2 class="lk-brand-enhanced-cta__title">{{ brand_data.cta_title }}</h2>
+				<p class="lk-brand-enhanced-cta__text">{{ brand_data.cta_text }}</p>
+			</div>
+			<a class="lk-brand-enhanced-btn lk-brand-enhanced-btn--cta" href="{{ brand_data.contact_url }}">
+				<svg class="lk-brand-enhanced-btn__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.07 21 3 13.93 3 5a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.46.57 3.58a1 1 0 0 1-.25 1.01l-2.2 2.2z"/></svg>
+				<span>{{ brand_data.contact_label }}</span>
+			</a>
+		</div>
+	</section>
+</div>
+{% endif %}
+{% endblock %}

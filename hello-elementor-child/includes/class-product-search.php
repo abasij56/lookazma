@@ -1,6 +1,6 @@
 <?php
 /**
- * Limit front-end product search to title + SKU (ignore long description content).
+ * Limit front-end product search to title, SKU, CAS, and matching categories.
  *
  * Fixes FiboSearch Enter → WP/Elementor results showing unrelated products
  * that only mention the query inside AI-generated descriptions.
@@ -95,7 +95,7 @@ final class Hello_Elementor_Child_Product_Search {
 	}
 
 	/**
-	 * Replace default search SQL (title/content/excerpt) with title + SKU only.
+	 * Replace default search SQL with title, SKU, CAS, and category-aware matching.
 	 *
 	 * @param string   $search Search SQL fragment.
 	 * @param WP_Query $query  Query.
@@ -115,15 +115,40 @@ final class Hello_Elementor_Child_Product_Search {
 
 		$parts = array();
 		foreach ( $terms as $term ) {
-			$like    = '%' . $wpdb->esc_like( $term ) . '%';
-			$parts[] = $wpdb->prepare(
+			$like      = '%' . $wpdb->esc_like( $term ) . '%';
+			$slug_like = '%' . $wpdb->esc_like( sanitize_title( $term ) ) . '%';
+			$parts[]   = $wpdb->prepare(
 				"({$wpdb->posts}.post_title LIKE %s OR EXISTS (
 					SELECT 1 FROM {$wpdb->postmeta} pm
 					WHERE pm.post_id = {$wpdb->posts}.ID
 					AND pm.meta_key = '_sku'
 					AND pm.meta_value LIKE %s
+				) OR EXISTS (
+					SELECT 1 FROM {$wpdb->postmeta} pm
+					WHERE pm.post_id = {$wpdb->posts}.ID
+					AND pm.meta_key = 'cas_no'
+					AND pm.meta_value LIKE %s
+				) OR EXISTS (
+					SELECT 1 FROM {$wpdb->term_relationships} tr
+					INNER JOIN {$wpdb->term_taxonomy} tt
+						ON tr.term_taxonomy_id = tt.term_taxonomy_id AND tt.taxonomy = 'product_cat'
+					INNER JOIN {$wpdb->terms} t ON tt.term_id = t.term_id
+					LEFT JOIN {$wpdb->termmeta} tm ON t.term_id = tm.term_id
+					WHERE tr.object_id = {$wpdb->posts}.ID
+					AND (
+						t.name LIKE %s
+						OR t.slug LIKE %s
+						OR (tm.meta_key IN ('en-cat', 'en_cat') AND tm.meta_value LIKE %s)
+						OR (tm.meta_key = %s AND tm.meta_value LIKE %s)
+					)
 				))",
 				$like,
+				$like,
+				$like,
+				$like,
+				$slug_like,
+				$like,
+				'مترادف',
 				$like
 			);
 		}

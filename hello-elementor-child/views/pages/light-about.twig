@@ -1,5 +1,21 @@
 {% extends "woo/base-light-product.twig" %}
 
+{% macro about_icon(name) %}
+	{% if name == 'truck' %}
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M3 4h11v9h2.6l2.2-3H22v8h-1.1a2.9 2.9 0 0 1-5.8 0H10a2.9 2.9 0 0 1-5.8 0H3V4zm2.1 13.5A1.4 1.4 0 1 0 6.5 16a1.4 1.4 0 0 0-1.4 1.5zm11 0A1.4 1.4 0 1 0 17.5 16a1.4 1.4 0 0 0-1.4 1.5zM5 6v8h8V6H5z"/></svg>
+	{% elseif name == 'consult' %}
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M12 3a7 7 0 0 0-7 7v4a3 3 0 0 0 3 3h1v-6H7a5 5 0 0 1 10 0h-2v6h1a3 3 0 0 0 3-3v-4a7 7 0 0 0-7-7zm-3 16h6v2H9v-2z"/></svg>
+	{% elseif name == 'price' %}
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M12 2 3.5 6.5v5.3C3.5 17 7.3 21.2 12 22c4.7-.8 8.5-5 8.5-10.2V6.5L12 2zm0 4.2c1.9 0 3.4.6 3.4 2.1 0 1.3-1 1.9-2.6 2.2l-.8.2v.9h1.7v1.5h-1.7V14h-2v-1.1H8.8V11h1.2v-.8c-1.5-.4-2.4-1.3-2.4-2.8C7.6 5.8 9.4 5 12 4.8zm0 1.6c-.9 0-1.5.3-1.5.8s.6.8 1.6.9c.9-.1 1.5-.4 1.5-.8s-.6-.9-1.6-.9z"/></svg>
+	{% elseif name == 'quality' %}
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M12 2 4 5v6.5c0 4.8 3.2 8.9 8 10 4.8-1.1 8-5.2 8-10V5l-8-3zm-1.1 13.2-3.1-3.1 1.4-1.4 1.7 1.7 4.2-4.2 1.4 1.4-5.6 5.6z"/></svg>
+	{% else %}
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M9 3h6v2h-1v3.2A6 6 0 0 1 18 14c0 2.4-1.4 4.4-3.5 5.4V21h-5v-1.6A6 6 0 0 1 6 14c0-2.3 1.3-4.3 3-5.3V5H9V3zm3 5a4 4 0 0 0-4 4c0 1.8 1.2 3.3 2.8 3.8l.7.2V19h1v-1.9l.7-.2A4 4 0 0 0 16 13a4 4 0 0 0-4-4z"/></svg>
+	{% endif %}
+{% endmacro %}
+
+{% import _self as icons %}
+
 {% block content %}
 {% if about %}
 <div class="lk-lpt lk-lpt-container lk-about-page">
@@ -9,59 +25,67 @@
 		</nav>
 	{% endif %}
 
-	<section class="lk-about-intro" aria-labelledby="lk-about-title">
-		<div class="lk-about-intro__copy">
-			<h1 class="lk-about-intro__title" id="lk-about-title">{{ about.title }}</h1>
-			{% if about.lead %}
-				<p class="lk-about-intro__lead">{{ about.lead }}</p>
+	<h1 class="lk-about-page__title">{{ about.title }}</h1>
+
+	<section class="lk-about-split" aria-label="{{ about.story_title }}">
+		<article class="lk-about-story">
+			{% if about.intro_image_url %}
+				<figure class="lk-about-story__media">
+					<img src="{{ about.intro_image_url }}" alt="{{ about.intro_image_alt }}" width="720" height="420" loading="eager" decoding="async">
+				</figure>
 			{% endif %}
-			{% if about.body %}
-				<p class="lk-about-intro__body">{{ about.body }}</p>
+			<h2 class="lk-about-story__title">{{ about.story_title }}</h2>
+			{% if about.story_text %}
+				<p class="lk-about-story__text">{{ about.story_text }}</p>
 			{% endif %}
-		</div>
-		{% if about.intro_image_url %}
-			<figure class="lk-about-intro__media">
-				<img src="{{ about.intro_image_url }}" alt="{{ about.intro_image_alt }}" width="540" height="540" loading="eager" decoding="async">
-			</figure>
+			{% if about.checklist %}
+				<ul class="lk-about-checklist">
+					{% for item in about.checklist %}
+						<li>{{ item }}</li>
+					{% endfor %}
+				</ul>
+			{% endif %}
+		</article>
+
+		{% if about.commitments %}
+			<aside class="lk-about-commit" aria-labelledby="lk-about-commit-title">
+				<h2 class="lk-about-commit__title" id="lk-about-commit-title">{{ about.commitments_title }}</h2>
+				<ul class="lk-about-commit__list">
+					{% for item in about.commitments %}
+						<li class="lk-about-commit__item">
+							<div class="lk-about-commit__icon" aria-hidden="true">
+								{{ icons.about_icon(item.icon|default('quality')) }}
+							</div>
+							<div>
+								<h3 class="lk-about-commit__name">{{ item.title }}</h3>
+								<p class="lk-about-commit__text">{{ item.text }}</p>
+							</div>
+						</li>
+					{% endfor %}
+				</ul>
+			</aside>
 		{% endif %}
 	</section>
 
 	{% if about.features %}
-		<section class="lk-about-features" aria-label="ویژگی‌ها">
-			{% for item in about.features %}
-				<article class="lk-about-feature">
-					{% if item.image %}
-						<img class="lk-about-feature__icon" src="{{ item.image }}" alt="" width="72" height="72" loading="lazy" decoding="async">
-					{% endif %}
-					<h2 class="lk-about-feature__title">{{ item.title }}</h2>
-					<p class="lk-about-feature__text">{{ item.text }}</p>
-				</article>
-			{% endfor %}
-		</section>
-	{% endif %}
-
-	{% if about.highlights %}
-		<section class="lk-about-highlights" aria-label="مزایا">
-			{% for item in about.highlights %}
-				<article class="lk-about-highlight" data-lk-about-icon="{{ item.icon }}">
-					<div class="lk-about-highlight__icon" aria-hidden="true">
-						{% if item.icon == 'consult' %}
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" focusable="false"><path fill="currentColor" d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-3.33 0-10 1.67-10 5v1h20v-1c0-3.33-6.67-5-10-5z"/></svg>
-						{% else %}
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" focusable="false"><path fill="currentColor" d="M2 21h4V9H2v12zm19.6-9.8c.3-.5.4-1.1.2-1.7-.3-.8-1.1-1.3-2-1.3h-5.2l.8-3.8.1-.8c0-.4-.2-.8-.4-1.1L13.8 2 7.9 7.9C7.6 8.2 7.4 8.6 7.4 9v10c0 1.1.9 2 2 2h7.4c.8 0 1.5-.5 1.8-1.2l3.1-7.2c.2-.4.3-.8.3-1.2v-.2z"/></svg>
-						{% endif %}
-					</div>
-					<div class="lk-about-highlight__body">
-						<h2 class="lk-about-highlight__title">{{ item.title }}</h2>
-						<p class="lk-about-highlight__text">{{ item.text }}</p>
-					</div>
-				</article>
-			{% endfor %}
+		<section class="lk-about-why" aria-labelledby="lk-about-why-title">
+			<h2 class="lk-about-why__title" id="lk-about-why-title">{{ about.why_title }}</h2>
+			<div class="lk-about-features">
+				{% for item in about.features %}
+					<article class="lk-about-feature">
+						<div class="lk-about-feature__icon" aria-hidden="true">
+							{{ icons.about_icon(item.icon|default('flask')) }}
+						</div>
+						<h3 class="lk-about-feature__title">{{ item.title }}</h3>
+						<p class="lk-about-feature__text">{{ item.text }}</p>
+					</article>
+				{% endfor %}
+			</div>
 		</section>
 	{% endif %}
 
 	{% if about.faqs %}
-		<section class="lk-about-faq" aria-labelledby="lk-about-faq-title">
+		<section class="lk-about-faq" id="lk-about-faq" aria-labelledby="lk-about-faq-title">
 			{% if about.faq_image_url %}
 				<figure class="lk-about-faq__media">
 					<img src="{{ about.faq_image_url }}" alt="{{ about.faq_image_alt }}" width="540" height="540" loading="lazy" decoding="async">

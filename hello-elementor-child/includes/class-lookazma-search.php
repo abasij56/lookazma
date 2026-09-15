@@ -235,7 +235,7 @@ final class Hello_Elementor_Child_Lookazma_Search {
 	}
 
 	/**
-	 * Search product_cat or product_tag by name.
+	 * Search product_cat or product_tag by name, slug, and (categories) ACF fields.
 	 *
 	 * @param string $q        Query.
 	 * @param string $taxonomy Taxonomy.
@@ -247,34 +247,209 @@ final class Hello_Elementor_Child_Lookazma_Search {
 			return array();
 		}
 
-		$terms = get_terms(
-			array(
-				'taxonomy'   => $taxonomy,
-				'hide_empty' => true,
-				'number'     => $limit,
-				'name__like' => $q,
-				'orderby'    => 'name',
-				'order'      => 'ASC',
-			)
-		);
-
-		if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
+		$q = trim( $q );
+		if ( '' === $q ) {
 			return array();
 		}
 
+		$term_ids = 'product_cat' === $taxonomy
+			? self::query_product_cat_term_ids( $q, $limit )
+			: self::query_taxonomy_term_ids( $q, $taxonomy, $limit );
+
+		return self::format_term_search_results( $term_ids, $taxonomy );
+	}
+
+	/**
+	 * Product category IDs matching name, slug, en-cat, or synonym fields.
+	 *
+	 * @param string $q     Query.
+	 * @param int    $limit Max results.
+	 * @return array<int, int> Ordered term IDs.
+	 */
+	private static function query_product_cat_term_ids( string $q, int $limit ): array {
+		global $wpdb;
+
+		$like       = '%' . $wpdb->esc_like( $q ) . '%';
+		$slug_exact = sanitize_title( $q );
+		$slug_like  = '%' . $wpdb->esc_like( $slug_exact ) . '%';
+		$limit      = max( 1, $limit );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table names from $wpdb.
+		$sql = $wpdb->prepare(
+			"SELECT DISTINCT t.term_id,
+				MAX(
+					CASE
+						WHEN t.slug = %s THEN 30
+						WHEN t.name LIKE %s THEN 25
+						WHEN t.slug LIKE %s THEN 20
+						WHEN tm.meta_key IN ('en-cat', 'en_cat') AND tm.meta_value LIKE %s THEN 18
+						WHEN tm.meta_key = %s AND tm.meta_value LIKE %s THEN 16
+						WHEN t.name LIKE %s THEN 12
+						WHEN tm.meta_value LIKE %s THEN 8
+						ELSE 0
+					END
+				) AS relevance
+			FROM {$wpdb->terms} t
+			INNER JOIN {$wpdb->term_taxonomy} tt
+				ON t.term_id = tt.term_id AND tt.taxonomy = 'product_cat'
+			LEFT JOIN {$wpdb->termmeta} tm
+				ON t.term_id = tm.term_id
+			WHERE tt.count > 0
+				AND (
+					t.name LIKE %s
+					OR t.slug LIKE %s
+					OR (tm.meta_key IN ('en-cat', 'en_cat', %s) AND tm.meta_value LIKE %s)
+					OR (tm.meta_key LIKE %s AND tm.meta_value LIKE %s)
+				)
+			GROUP BY t.term_id
+			HAVING relevance > 0
+			ORDER BY relevance DESC, t.name ASC
+			LIMIT %d",
+			$slug_exact,
+			$like,
+			$slug_like,
+			$like,
+			'مترادف',
+			$like,
+			$like,
+			$like,
+			$like,
+			$slug_like,
+			'مترادف',
+			$like,
+			'en-cat%',
+			$like,
+			$limit
+		);
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$rows = $wpdb->get_col( $sql );
+		if ( ! is_array( $rows ) || array() === $rows ) {
+			return self::query_taxonomy_term_ids( $q, 'product_cat', $limit );
+		}
+
+		return array_map( 'intval', $rows );
+	}
+
+	/**
+	 * Term IDs for a taxonomy (name + slug).
+	 *
+	 * @param string $q        Query.
+	 * @param string $taxonomy Taxonomy.
+	 * @param int    $limit    Max results.
+	 * @return array<int, int>
+	 */
+	private static function query_taxonomy_term_ids( string $q, string $taxonomy, int $limit ): array {
+		$limit   = max( 1, $limit );
+		$scored  = array();
+		$queries = array(
+			array(
+				'search' => $q,
+				'score'  => 20,
+			),
+			array(
+				'name__like' => $q,
+				'score'      => 15,
+			),
+		);
+
+		foreach ( $queries as $query ) {
+			$score = (int) $query['score'];
+			unset( $query['score'] );
+
+			$terms = get_terms(
+				array_merge(
+					array(
+						'taxonomy'   => $taxonomy,
+						'hide_empty' => true,
+						'number'     => $limit * 2,
+						'orderby'    => 'name',
+						'order'      => 'ASC',
+						'fields'     => 'ids',
+					),
+					$query
+				)
+			);
+
+			if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
+				continue;
+			}
+
+			foreach ( $terms as $term_id ) {
+				$term_id = (int) $term_id;
+				if ( $term_id <= 0 ) {
+					continue;
+				}
+				if ( ! isset( $scored[ $term_id ] ) || $score > $scored[ $term_id ] ) {
+					$scored[ $term_id ] = $score;
+				}
+			}
+		}
+
+		$slug_term = get_term_by( 'slug', sanitize_title( $q ), $taxonomy );
+		if ( $slug_term instanceof WP_Term ) {
+			$scored[ (int) $slug_term->term_id ] = 30;
+		}
+
+		if ( array() === $scored ) {
+			return array();
+		}
+
+		arsort( $scored, SORT_NUMERIC );
+
+		return array_slice( array_map( 'intval', array_keys( $scored ) ), 0, $limit );
+	}
+
+	/**
+	 * Build autocomplete rows for term IDs.
+	 *
+	 * @param array<int, int> $term_ids Ordered term IDs.
+	 * @param string          $taxonomy Taxonomy.
+	 * @return array<int, array{name:string,url:string,image:string}>
+	 */
+	private static function format_term_search_results( array $term_ids, string $taxonomy ): array {
 		$out = array();
-		foreach ( $terms as $term ) {
-			if ( ! $term instanceof WP_Term ) {
+
+		foreach ( $term_ids as $term_id ) {
+			$term_id = (int) $term_id;
+			if ( $term_id <= 0 ) {
 				continue;
 			}
+
+			$term = get_term( $term_id, $taxonomy );
+			if ( ! $term instanceof WP_Term || is_wp_error( $term ) ) {
+				continue;
+			}
+
 			$link = get_term_link( $term );
-			if ( is_wp_error( $link ) ) {
+			if ( is_wp_error( $link ) || ! is_string( $link ) || '' === $link ) {
 				continue;
 			}
+
+			$name = $term->name;
+			if ( 'product_cat' === $taxonomy ) {
+				$english = '';
+				if ( function_exists( 'get_field' ) ) {
+					$raw = get_field( 'en-cat', 'product_cat_' . $term_id );
+					if ( is_scalar( $raw ) ) {
+						$english = trim( (string) $raw );
+					}
+				}
+				if ( '' === $english ) {
+					$meta = get_term_meta( $term_id, 'en-cat', true );
+					if ( is_scalar( $meta ) ) {
+						$english = trim( (string) $meta );
+					}
+				}
+				if ( '' !== $english && 0 !== strcasecmp( $english, $name ) ) {
+					$name = $name . ' (' . $english . ')';
+				}
+			}
+
 			$out[] = array(
-				'name'  => $term->name,
+				'name'  => $name,
 				'url'   => $link,
-				'image' => self::term_thumbnail_url( (int) $term->term_id ),
+				'image' => self::term_thumbnail_url( $term_id ),
 			);
 		}
 

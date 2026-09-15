@@ -130,15 +130,34 @@ final class Hello_Elementor_Child_Custom_Brand_Single {
 	}
 
 	/**
-	 * Light template PHP path (prefer light entry, fall back to hierarchy wrapper).
+	 * Light template PHP path (prefer enhanced when enabled, then light entry).
 	 */
 	public static function get_light_template_path(): string {
+		$brand = self::get_brand_post();
+		if ( $brand instanceof WP_Post
+			&& class_exists( 'Hello_Elementor_Child_Brand_Enhanced_Single' )
+			&& Hello_Elementor_Child_Brand_Enhanced_Single::is_enabled_for( $brand )
+		) {
+			$enhanced = HELLO_ELEMENTOR_CHILD_PATH . 'single-brand-enhanced.php';
+			if ( file_exists( $enhanced ) ) {
+				return $enhanced;
+			}
+		}
+
 		$light = HELLO_ELEMENTOR_CHILD_PATH . 'single-brand-light.php';
 		if ( file_exists( $light ) ) {
 			return $light;
 		}
 		$native = HELLO_ELEMENTOR_CHILD_PATH . 'single-brand.php';
 		return file_exists( $native ) ? $native : $light;
+	}
+
+	/**
+	 * Whether the current brand uses lk_brand product meta (enhanced template).
+	 */
+	public static function uses_lk_brand_products(): bool {
+		return class_exists( 'Hello_Elementor_Child_Brand_Enhanced_Single' )
+			&& Hello_Elementor_Child_Brand_Enhanced_Single::is_active();
 	}
 
 	/**
@@ -154,7 +173,7 @@ final class Hello_Elementor_Child_Custom_Brand_Single {
 		return array_values(
 			array_unique(
 				array_merge(
-					array( 'single-brand-light.php', 'single-brand.php' ),
+					array( 'single-brand-enhanced.php', 'single-brand-light.php', 'single-brand.php' ),
 					$templates
 				)
 			)
@@ -576,6 +595,9 @@ final class Hello_Elementor_Child_Custom_Brand_Single {
 		$classes[] = 'lk-light-product';
 		$classes[] = 'lk-light-tag';
 		$classes[] = 'lk-light-brand';
+		if ( self::uses_lk_brand_products() ) {
+			$classes[] = 'lk-brand-enhanced';
+		}
 		$classes[] = 'lk-shop-cards-archive';
 		$classes[] = 'lz-chrome';
 

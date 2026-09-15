@@ -38,6 +38,7 @@ final class Hello_Elementor_Child_Light_About_Template {
 		add_action( 'wp_print_styles', array( __CLASS__, 'dequeue_listing_assets' ), 100 );
 		add_action( 'wp_print_scripts', array( __CLASS__, 'dequeue_listing_assets' ), 100 );
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
+		add_action( 'acf/init', array( __CLASS__, 'register_acf_fields' ) );
 	}
 
 	/**
@@ -412,29 +413,29 @@ final class Hello_Elementor_Child_Light_About_Template {
 			$title = __( 'درباره لوک آزما', 'hello-elementor-child' );
 		}
 
-		$intro_image = apply_filters(
-			'lk_light_about_intro_image_url',
-			content_url( 'uploads/2023/08/woman-lab2.webp' )
-		);
+		$intro_image = self::resolve_story_image( $page_id );
 		$faq_image   = apply_filters(
 			'lk_light_about_faq_image_url',
 			content_url( 'uploads/2023/08/man-in-lab.webp' )
 		);
 
 		$content = array(
-			'title'           => $title,
-			'lead'            => __( 'لوک آزما به دنبال راهکاری برای حل مشکلات از دل صنعت مواد شیمایی متولد شده است تا تخصصی در زمینه مواد شیمیایی به شما کمک کند تا قیمت و اطلاعات مواد شیمیایی در دستان شما باشد.', 'hello-elementor-child' ),
-			'body'            => __( 'تمایل مشتریان برای خریدهای غیرحضوری و اینترنتی، ما را ترغیب کرد که یک سایت جامع ای با هدف تامین کلیه نیازهای مواد شیمیایی صنعتی، آزمایشگاهی و همچنین آنالیز مواد شیمیایی راه‌اندازی کنیم.', 'hello-elementor-child' ),
-			'intro_image_url' => is_string( $intro_image ) ? $intro_image : '',
-			'intro_image_alt' => __( 'خرید مواد شیمیایی', 'hello-elementor-child' ),
-			'features'        => self::get_features(),
-			'highlights'      => self::get_highlights(),
-			'faq_title'       => __( 'پرسش‌های متداول', 'hello-elementor-child' ),
-			'faq_subtitle'    => __( 'راهنمای جامع سوالات رایج شما در یک نگاه', 'hello-elementor-child' ),
-			'faq_image_url'   => is_string( $faq_image ) ? $faq_image : '',
-			'faq_image_alt'   => __( 'مواد شیمیایی آزمایشگاهی', 'hello-elementor-child' ),
-			'faqs'            => self::get_faqs(),
-			'breadcrumb_html' => function_exists( 'hello_elementor_child_get_breadcrumb_html' )
+			'title'             => $title,
+			'why_title'         => __( 'چرا لوک آزما؟', 'hello-elementor-child' ),
+			'story_title'       => __( 'لوک آزما، تأمین هوشمند برای صنعتی پیشرو', 'hello-elementor-child' ),
+			'story_text'        => __( 'لوک آزما با شبکه تامین تخصصی و همکاری با برندهای معتبر بین‌المللی، مواد شیمیایی آزمایشگاهی و صنعتی را با کیفیت قابل اطمینان در اختیار آزمایشگاه‌ها و صنایع قرار می‌دهد.', 'hello-elementor-child' ),
+			'intro_image_url'   => $intro_image['url'],
+			'intro_image_alt'   => $intro_image['alt'],
+			'features'          => self::get_features(),
+			'checklist'         => self::get_checklist(),
+			'commitments_title' => __( 'تعهد ما، رضایت شماست', 'hello-elementor-child' ),
+			'commitments'       => self::get_commitments(),
+			'faq_title'         => __( 'پرسش‌های متداول', 'hello-elementor-child' ),
+			'faq_subtitle'      => __( 'راهنمای جامع سوالات رایج شما در یک نگاه', 'hello-elementor-child' ),
+			'faq_image_url'     => is_string( $faq_image ) ? $faq_image : '',
+			'faq_image_alt'     => __( 'مواد شیمیایی آزمایشگاهی', 'hello-elementor-child' ),
+			'faqs'              => self::get_faqs(),
+			'breadcrumb_html'   => function_exists( 'hello_elementor_child_get_breadcrumb_html' )
 				? hello_elementor_child_get_breadcrumb_html()
 				: '',
 		);
@@ -443,32 +444,137 @@ final class Hello_Elementor_Child_Light_About_Template {
 	}
 
 	/**
-	 * Feature image boxes.
+	 * ACF fields on the About page (Light about template).
+	 */
+	public static function register_acf_fields(): void {
+		if ( ! function_exists( 'acf_add_local_field_group' ) ) {
+			return;
+		}
+
+		acf_add_local_field_group(
+			array(
+				'key'                   => 'group_lk_about_page',
+				'title'                 => __( 'تصویر صفحه درباره ما', 'hello-elementor-child' ),
+				'fields'                => array(
+					array(
+						'key'           => 'field_lk_about_story_image',
+						'label'         => __( 'تصویر بخش معرفی', 'hello-elementor-child' ),
+						'name'          => 'about_story_image',
+						'type'          => 'image',
+						'return_format' => 'array',
+						'preview_size'  => 'medium',
+						'library'       => 'all',
+					),
+				),
+				'location'              => array(
+					array(
+						array(
+							'param'    => 'page_template',
+							'operator' => '==',
+							'value'    => self::TEMPLATE_FILE,
+						),
+					),
+					array(
+						array(
+							'param'    => 'page_template',
+							'operator' => '==',
+							'value'    => 'light-about.php',
+						),
+					),
+				),
+				'menu_order'            => 0,
+				'position'              => 'side',
+				'style'                 => 'default',
+				'label_placement'       => 'top',
+				'instruction_placement' => 'label',
+				'active'                => true,
+			)
+		);
+	}
+
+	/**
+	 * Story image from ACF, then featured image, then default.
 	 *
-	 * @return array<int, array{title:string,text:string,image:string}>
+	 * @param int $page_id About page ID.
+	 * @return array{url:string,alt:string}
+	 */
+	private static function resolve_story_image( int $page_id ): array {
+		$default_url = content_url( 'uploads/2023/08/woman-lab2.webp' );
+		$alt         = __( 'لوک آزما', 'hello-elementor-child' );
+		$url         = '';
+
+		if ( $page_id > 0 && function_exists( 'get_field' ) ) {
+			$field = get_field( 'about_story_image', $page_id );
+			if ( is_array( $field ) && ! empty( $field['url'] ) ) {
+				$url = (string) $field['url'];
+				if ( ! empty( $field['alt'] ) ) {
+					$alt = (string) $field['alt'];
+				}
+			} elseif ( is_numeric( $field ) && (int) $field > 0 ) {
+				$maybe = wp_get_attachment_image_url( (int) $field, 'large' );
+				if ( is_string( $maybe ) && '' !== $maybe ) {
+					$url = $maybe;
+				}
+				$meta_alt = (string) get_post_meta( (int) $field, '_wp_attachment_image_alt', true );
+				if ( '' !== $meta_alt ) {
+					$alt = $meta_alt;
+				}
+			}
+		}
+
+		if ( '' === $url && $page_id > 0 ) {
+			$thumb_id = (int) get_post_thumbnail_id( $page_id );
+			if ( $thumb_id > 0 ) {
+				$maybe = wp_get_attachment_image_url( $thumb_id, 'large' );
+				if ( is_string( $maybe ) && '' !== $maybe ) {
+					$url = $maybe;
+				}
+			}
+		}
+
+		if ( '' === $url ) {
+			$url = $default_url;
+		}
+
+		$filtered = apply_filters( 'lk_light_about_intro_image_url', $url, $page_id );
+
+		return array(
+			'url' => is_string( $filtered ) ? $filtered : $url,
+			'alt' => $alt,
+		);
+	}
+
+	/**
+	 * Why Lookazma feature cards.
+	 *
+	 * @return array<int, array{icon:string,title:string,text:string}>
 	 */
 	private static function get_features(): array {
-		$base = content_url( 'uploads/2024/04/' );
 		$items = array(
 			array(
-				'title' => __( 'تضمین کیفیت', 'hello-elementor-child' ),
-				'text'  => __( 'همواره کیفیت و اصالت مواد شیمیایی جزو دغدغه های خریداران دربازار مواد شیمیایی این است تمامی مواد شیمیایی در لوک آزما دارای برگه آنالیز می باشند و از منابع معتبر تهیه و تضمین می گردد.', 'hello-elementor-child' ),
-				'image' => $base . 'technical.png',
-			),
-			array(
-				'title' => __( 'پشتیبانی مسئولانه', 'hello-elementor-child' ),
-				'text'  => __( 'پس از خرید از پشتیبانی همه روزه مسولانه ما برخوردار خواهید بود.', 'hello-elementor-child' ),
-				'image' => $base . 'support.png',
-			),
-			array(
+				'icon'  => 'truck',
 				'title' => __( 'ارسال سریع و مطمئن', 'hello-elementor-child' ),
-				'text'  => __( 'تمامی تلاش بر این است که همه محصولات ما در ساده ترین شکل ممکن و سریع ترین زمان بدست شما برسانیم.', 'hello-elementor-child' ),
-				'image' => $base . 'delivery-1.png',
+				'text'  => __( 'پوشش ارسال به سراسر کشور', 'hello-elementor-child' ),
 			),
 			array(
-				'title' => __( 'قیمت های رقابتی', 'hello-elementor-child' ),
-				'text'  => __( 'سعی شده با درج قیمت و تنوع در منبع های متنوع تامین کننده های معتبر و با تمرکز بر ارائه مواد شیمیایی با مناسبترین قیمت رضایت مشتریان را جلب کنیم', 'hello-elementor-child' ),
-				'image' => $base . 'price-tag.png',
+				'icon'  => 'consult',
+				'title' => __( 'مشاوره تخصصی', 'hello-elementor-child' ),
+				'text'  => __( 'پشتیبانی قبل و بعد از خرید', 'hello-elementor-child' ),
+			),
+			array(
+				'icon'  => 'price',
+				'title' => __( 'قیمت رقابتی', 'hello-elementor-child' ),
+				'text'  => __( 'شفافیت قیمت و استعلام سریع', 'hello-elementor-child' ),
+			),
+			array(
+				'icon'  => 'quality',
+				'title' => __( 'تضمین کیفیت', 'hello-elementor-child' ),
+				'text'  => __( 'اصالت کالا و برگه آنالیز', 'hello-elementor-child' ),
+			),
+			array(
+				'icon'  => 'flask',
+				'title' => __( 'تنوع بالا', 'hello-elementor-child' ),
+				'text'  => __( 'برندها و گریدهای تخصصی', 'hello-elementor-child' ),
 			),
 		);
 
@@ -476,25 +582,51 @@ final class Hello_Elementor_Child_Light_About_Template {
 	}
 
 	/**
-	 * Secondary highlight cards.
+	 * Story checklist.
 	 *
-	 * @return array<int, array{title:string,text:string,icon:string}>
+	 * @return array<int, string>
 	 */
-	private static function get_highlights(): array {
+	private static function get_checklist(): array {
+		$items = array(
+			__( 'تجربه همکاری با صنایع بزرگ و شرکت‌های پژوهشی', 'hello-elementor-child' ),
+			__( 'تضمین کیفیت، اصالت و انطباق با استانداردهای جهانی', 'hello-elementor-child' ),
+			__( 'پشتیبانی حرفه‌ای در انتخاب و مصرف مواد', 'hello-elementor-child' ),
+			__( 'راه‌حل‌های تخصصی متناسب با نیاز صنایع مختلف', 'hello-elementor-child' ),
+		);
+
+		return apply_filters( 'lk_light_about_checklist', $items );
+	}
+
+	/**
+	 * Commitments sidebar.
+	 *
+	 * @return array<int, array{icon:string,title:string,text:string}>
+	 */
+	private static function get_commitments(): array {
 		$items = array(
 			array(
-				'title' => __( 'رضایت و اعتماد مشتریان', 'hello-elementor-child' ),
-				'text'  => __( 'با صداقت و مسئولیت پذیری همواره در کسب رضایت و اعتماد شما کوشا هستیم', 'hello-elementor-child' ),
-				'icon'  => 'trust',
+				'icon'  => 'quality',
+				'title' => __( 'کیفیت تضمین‌شده', 'hello-elementor-child' ),
+				'text'  => __( 'تامین از منابع معتبر با برگه آنالیز', 'hello-elementor-child' ),
 			),
 			array(
-				'title' => __( 'مشاوره در خرید', 'hello-elementor-child' ),
-				'text'  => __( 'کارشناسان مجرب ما آماده پاسخ گویی و مشاوره به خریداران محترم در زمینه خرید مواد شیمیایی مورد نظر می باشند.', 'hello-elementor-child' ),
+				'icon'  => 'price',
+				'title' => __( 'شفافیت قیمت', 'hello-elementor-child' ),
+				'text'  => __( 'استعلام سریع بدون ابهام در هزینه', 'hello-elementor-child' ),
+			),
+			array(
 				'icon'  => 'consult',
+				'title' => __( 'پشتیبانی تخصصی', 'hello-elementor-child' ),
+				'text'  => __( 'همراهی در انتخاب گرید و کاربرد مناسب', 'hello-elementor-child' ),
+			),
+			array(
+				'icon'  => 'truck',
+				'title' => __( 'ارسال سریع', 'hello-elementor-child' ),
+				'text'  => __( 'تحویل مطمئن به سراسر کشور', 'hello-elementor-child' ),
 			),
 		);
 
-		return apply_filters( 'lk_light_about_highlights', $items );
+		return apply_filters( 'lk_light_about_commitments', $items );
 	}
 
 	/**

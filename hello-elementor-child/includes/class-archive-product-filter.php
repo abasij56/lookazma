@@ -201,10 +201,33 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		if ( is_tax( 'product_cat' ) ) {
 			return 'product_cat';
 		}
+		if ( self::is_enhanced_brand_scope() ) {
+			return class_exists( 'Hello_Elementor_Child_Brand_Enhanced_Single' )
+				? Hello_Elementor_Child_Brand_Enhanced_Single::SCOPE_TAXONOMY
+				: 'lk_brand';
+		}
 		if ( self::is_brand_singular_context() ) {
 			return 'product_tag';
 		}
 		return '';
+	}
+
+	/**
+	 * Enhanced brand single uses lk_brand meta instead of product_tag.
+	 */
+	public static function is_enhanced_brand_scope(): bool {
+		return class_exists( 'Hello_Elementor_Child_Brand_Enhanced_Single' )
+			&& Hello_Elementor_Child_Brand_Enhanced_Single::is_active();
+	}
+
+	/**
+	 * Brand CPT post ID when enhanced template scopes products.
+	 */
+	public static function get_scope_brand_id(): int {
+		if ( ! self::is_enhanced_brand_scope() ) {
+			return 0;
+		}
+		return Hello_Elementor_Child_Brand_Enhanced_Single::get_scope_brand_id();
 	}
 
 	/**
@@ -346,6 +369,10 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	 * Current category/tag term for scoping counts/options.
 	 */
 	private static function get_scope_term(): ?WP_Term {
+		if ( self::is_enhanced_brand_scope() ) {
+			return null;
+		}
+
 		if ( self::is_brand_singular_context()
 			&& class_exists( 'Hello_Elementor_Child_Custom_Brand_Single' )
 		) {
@@ -387,11 +414,21 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 	 * @return array<int, int>
 	 */
 	private static function get_scoped_product_ids( ?int $term_id = null, ?array $selected = null, string $taxonomy = '', string $search = '' ): array {
-		$term = null;
+		$term      = null;
+		$brand_id  = 0;
+		$taxonomy  = sanitize_key( $taxonomy );
+
 		if ( null !== $term_id && $term_id > 0 ) {
-			$term = self::resolve_scope_term( $term_id, $taxonomy );
+			if ( 'lk_brand' === $taxonomy && class_exists( 'Hello_Elementor_Child_Brand_Enhanced_Single' ) ) {
+				$brand_id = $term_id;
+			} else {
+				$term = self::resolve_scope_term( $term_id, $taxonomy );
+			}
 		} else {
 			$term = self::get_scope_term();
+			if ( ! $term ) {
+				$brand_id = self::get_scope_brand_id();
+			}
 		}
 
 		$args = array(
@@ -413,6 +450,8 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 					'include_children' => ( 'product_cat' === $term->taxonomy ),
 				),
 			);
+		} elseif ( $brand_id > 0 && class_exists( 'Hello_Elementor_Child_Brand_Enhanced_Single' ) ) {
+			$args = Hello_Elementor_Child_Brand_Enhanced_Single::apply_product_scope( $args, $brand_id );
 		}
 
 		if ( null !== $selected ) {
@@ -445,8 +484,8 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 				continue;
 			}
 
-			// On a brand (product_tag) archive, brand facet is redundant.
-			if ( 'brand' === $key && 'product_tag' === $taxonomy ) {
+			// On a brand archive, brand facet is redundant.
+			if ( 'brand' === $key && in_array( $taxonomy, array( 'product_tag', 'lk_brand' ), true ) ) {
 				continue;
 			}
 
@@ -755,6 +794,7 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 
 		$term         = self::get_scope_term();
 		$taxonomy     = self::get_scope_taxonomy();
+		$scope_brand  = self::get_scope_brand_id();
 		$use_shop_ui  = self::uses_shop_cards_ui();
 		$is_search    = self::is_product_search_context();
 		$search_query = $is_search ? trim( (string) get_search_query( false ) ) : '';
@@ -802,7 +842,7 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
 				'action'         => 'lk_archive_filter_products',
 				'nonce'          => wp_create_nonce( 'lk_archive_filter' ),
-				'termId'         => $term ? (int) $term->term_id : 0,
+				'termId'         => $term ? (int) $term->term_id : ( $scope_brand > 0 ? $scope_brand : 0 ),
 				'taxonomy'       => $taxonomy,
 				'isShop'         => $use_shop_ui,
 				'isSearch'       => $is_search,
@@ -821,6 +861,10 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 						class_exists( 'Hello_Elementor_Child_Custom_Brand_Single' )
 						&& Hello_Elementor_Child_Custom_Brand_Single::is_enabled()
 					),
+				'panelsOpenDefault' => (
+					class_exists( 'Hello_Elementor_Child_Brand_Enhanced_Single' )
+					&& Hello_Elementor_Child_Brand_Enhanced_Single::is_active()
+				),
 				'perPage'        => (
 					class_exists( 'Hello_Elementor_Child_Light_Product_Template' )
 					&& Hello_Elementor_Child_Light_Product_Template::is_enabled()
@@ -1016,6 +1060,11 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		) {
 			return;
 		}
+		if ( class_exists( 'Hello_Elementor_Child_Brand_Enhanced_Single' )
+			&& Hello_Elementor_Child_Brand_Enhanced_Single::is_active()
+		) {
+			return;
+		}
 
 		// Always provide HTML for JS placement (even if shortcode already printed elsewhere).
 		$html = self::render_filters_html();
@@ -1099,9 +1148,18 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 
 	/**
 	 * Render filter form HTML (checkbox panels + search).
+	 *
+	 * @param array<string, mixed> $options Optional: scope_brand_id, panels_open, max_visible_items.
 	 */
-	public static function render_filters_html(): string {
+	public static function render_filters_html( array $options = array() ): string {
 		$GLOBALS['lk_archive_filters_rendered'] = true;
+
+		$panels_open       = ! empty( $options['panels_open'] );
+		$max_visible_items = isset( $options['max_visible_items'] ) ? max( 0, (int) $options['max_visible_items'] ) : 0;
+		$scope_brand_id    = isset( $options['scope_brand_id'] ) ? (int) $options['scope_brand_id'] : 0;
+		if ( $scope_brand_id <= 0 ) {
+			$scope_brand_id = self::get_scope_brand_id();
+		}
 
 		$search_query = self::is_product_search_context()
 			? trim( (string) get_search_query( false ) )
@@ -1113,19 +1171,38 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		$term        = self::get_scope_term();
 		$taxonomy    = self::get_scope_taxonomy();
 
-		// Brand archive already scopes by tag — hide brand filter panel.
-		if ( 'product_tag' === $taxonomy ) {
+		$term_id_attr = $term ? (int) $term->term_id : 0;
+		if ( $scope_brand_id > 0 ) {
+			$taxonomy     = class_exists( 'Hello_Elementor_Child_Brand_Enhanced_Single' )
+				? Hello_Elementor_Child_Brand_Enhanced_Single::SCOPE_TAXONOMY
+				: 'lk_brand';
+			$term_id_attr = $scope_brand_id;
+		}
+
+		// Brand archive already scopes by tag/meta — hide brand filter panel.
+		if ( in_array( $taxonomy, array( 'product_tag', 'lk_brand' ), true ) ) {
 			unset( $defs['brand'] );
+		}
+
+		$filters_class = 'lk-archive-filters';
+		if ( $panels_open ) {
+			$filters_class .= ' lk-archive-filters--panels-open';
+		}
+		if ( $max_visible_items > 0 ) {
+			$filters_class .= ' lk-archive-filters--compact';
 		}
 
 		ob_start();
 		?>
 		<div
-			class="lk-archive-filters"
+			class="<?php echo esc_attr( $filters_class ); ?>"
 			id="lk-archive-filters"
 			data-lk-custom-filters="1"
-			data-term-id="<?php echo esc_attr( $term ? (string) $term->term_id : '0' ); ?>"
+			data-term-id="<?php echo esc_attr( (string) $term_id_attr ); ?>"
 			data-taxonomy="<?php echo esc_attr( $taxonomy ); ?>"
+			<?php if ( $max_visible_items > 0 ) : ?>
+				data-max-visible-items="<?php echo esc_attr( (string) $max_visible_items ); ?>"
+			<?php endif; ?>
 		>
 			<div class="lk-archive-filters__head">
 				<strong class="lk-archive-filters__title"><?php esc_html_e( 'فیلترها', 'hello-elementor-child' ); ?></strong>
@@ -1138,9 +1215,9 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 				<?php foreach ( $defs as $key => $def ) : ?>
 					<?php if ( 'price' === $def['type'] ) : ?>
 						<?php
-						$sel_min     = $selected[ $key ]['min'] ?? null;
-						$sel_max     = $selected[ $key ]['max'] ?? null;
-						$price_open  = null !== $sel_min || null !== $sel_max;
+						$sel_min    = $selected[ $key ]['min'] ?? null;
+						$sel_max    = $selected[ $key ]['max'] ?? null;
+						$price_open = $panels_open || null !== $sel_min || null !== $sel_max;
 						?>
 						<details class="lk-archive-filters__panel" data-lk-filter-price="1" <?php echo $price_open ? 'open' : ''; ?>>
 							<summary class="lk-archive-filters__summary">
@@ -1165,10 +1242,19 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 						if ( array() === $options ) {
 							continue;
 						}
-						$sel      = $selected[ $key ] ?? array();
-						$has_sel  = array() !== $sel;
+						$sel     = $selected[ $key ] ?? array();
+						$has_sel = array() !== $sel;
+						$open    = $panels_open || $has_sel;
+						$panel_visible = 0;
+						if ( $max_visible_items > 0 ) {
+							$panel_visible = ( 'packaging' === $key ) ? 2 : $max_visible_items;
+						}
+						$list_class = 'lk-archive-filters__list';
+						if ( $panel_visible > 0 ) {
+							$list_class .= ' lk-archive-filters__list--scroll';
+						}
 						?>
-						<details class="lk-archive-filters__panel" data-lk-filter-key="<?php echo esc_attr( $key ); ?>" <?php echo $has_sel ? 'open' : ''; ?>>
+						<details class="lk-archive-filters__panel" data-lk-filter-key="<?php echo esc_attr( $key ); ?>" <?php echo $open ? 'open' : ''; ?>>
 							<summary class="lk-archive-filters__summary">
 								<span class="lk-archive-filters__summary-text"><?php echo esc_html( $def['label'] ); ?></span>
 								<span class="lk-archive-filters__trigger" aria-hidden="true"></span>
@@ -1180,7 +1266,14 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 									placeholder="<?php esc_attr_e( 'جستجو…', 'hello-elementor-child' ); ?>"
 									autocomplete="off"
 								>
-								<ul class="lk-archive-filters__list" role="list">
+								<ul
+									class="<?php echo esc_attr( $list_class ); ?>"
+									role="list"
+									<?php if ( $panel_visible > 0 ) : ?>
+										data-max-visible-items="<?php echo esc_attr( (string) $panel_visible ); ?>"
+										style="<?php echo esc_attr( '--lk-filter-visible-rows: ' . (int) $panel_visible . ';' ); ?>"
+									<?php endif; ?>
+								>
 									<?php foreach ( $options as $opt ) : ?>
 										<li class="lk-archive-filters__item" data-lk-slug="<?php echo esc_attr( $opt['slug'] ); ?>" data-lk-label="<?php echo esc_attr( mb_strtolower( $opt['name'] ) ); ?>" data-lk-available="1">
 											<label class="lk-archive-filters__check">
@@ -1215,9 +1308,9 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		$term_id  = isset( $_POST['term_id'] ) ? absint( $_POST['term_id'] ) : 0;
 		$page     = isset( $_POST['page'] ) ? max( 1, absint( $_POST['page'] ) ) : 1;
 		$taxonomy = isset( $_POST['taxonomy'] ) ? sanitize_key( (string) wp_unslash( $_POST['taxonomy'] ) ) : '';
-		if ( $term_id > 0 ) {
+		if ( $term_id > 0 && 'lk_brand' !== $taxonomy ) {
 			$taxonomy = self::resolve_taxonomy_for_term( $term_id, $taxonomy );
-		} else {
+		} elseif ( $term_id <= 0 ) {
 			$taxonomy = '';
 		}
 
@@ -1231,7 +1324,7 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 
 		$layout = isset( $_POST['layout'] ) ? sanitize_key( (string) wp_unslash( $_POST['layout'] ) ) : '';
 		if ( 'shop' !== $layout && 'archive' !== $layout ) {
-			$layout = ( in_array( $taxonomy, array( 'product_tag', 'product_cat' ), true ) || 0 === $term_id ) ? 'shop' : 'archive';
+			$layout = ( in_array( $taxonomy, array( 'product_tag', 'product_cat', 'lk_brand' ), true ) || 0 === $term_id ) ? 'shop' : 'archive';
 		}
 
 		$per_page = 12;
@@ -1250,10 +1343,9 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		) {
 			$per_page = Hello_Elementor_Child_Custom_Tag_Archive::get_per_page();
 		} elseif ( class_exists( 'Hello_Elementor_Child_Custom_Brand_Single' )
-			&& 'product_tag' === $taxonomy
+			&& in_array( $taxonomy, array( 'product_tag', 'lk_brand' ), true )
 			&& $term_id > 0
 		) {
-			// AJAX from /brands/{slug}/ sends the mapped product_tag id.
 			$per_page = Hello_Elementor_Child_Custom_Brand_Single::get_per_page();
 		} elseif ( class_exists( 'Hello_Elementor_Child_Custom_Category_Archive' ) ) {
 			$per_page = Hello_Elementor_Child_Custom_Category_Archive::get_per_page();
@@ -1272,14 +1364,18 @@ final class Hello_Elementor_Child_Archive_Product_Filter {
 		}
 
 		if ( $term_id > 0 && '' !== $taxonomy ) {
-			$args['tax_query'] = array(
-				array(
-					'taxonomy'         => $taxonomy,
-					'field'            => 'term_id',
-					'terms'            => array( $term_id ),
-					'include_children' => ( 'product_cat' === $taxonomy ),
-				),
-			);
+			if ( 'lk_brand' === $taxonomy && class_exists( 'Hello_Elementor_Child_Brand_Enhanced_Single' ) ) {
+				$args = Hello_Elementor_Child_Brand_Enhanced_Single::apply_product_scope( $args, $term_id );
+			} else {
+				$args['tax_query'] = array(
+					array(
+						'taxonomy'         => $taxonomy,
+						'field'            => 'term_id',
+						'terms'            => array( $term_id ),
+						'include_children' => ( 'product_cat' === $taxonomy ),
+					),
+				);
+			}
 		}
 
 		$args  = self::apply_fragments_to_args( $args, $selected, true );

@@ -50,6 +50,9 @@ final class Hello_Elementor_Child_Theme {
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-lookazma-search.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-site-snippets.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-brand-cpt.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-product-brand-migration.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-brand-enhanced-single.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-brand-schema.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-custom-brand-single.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-brands-template.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-product-specs.php';
@@ -83,6 +86,9 @@ final class Hello_Elementor_Child_Theme {
 		Hello_Elementor_Child_Lookazma_Search::init();
 		Hello_Elementor_Child_Site_Snippets::init();
 		Hello_Elementor_Child_Brand_Cpt::init();
+		Hello_Elementor_Child_Product_Brand_Migration::init();
+		Hello_Elementor_Child_Brand_Enhanced_Single::init();
+		Hello_Elementor_Child_Brand_Schema::init();
 		Hello_Elementor_Child_Custom_Brand_Single::init();
 		Hello_Elementor_Child_Light_Brands_Template::init();
 		Hello_Elementor_Child_Product_Compare::init();

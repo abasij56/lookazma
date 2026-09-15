@@ -407,8 +407,10 @@
 	}
 
 	function syncPanelOpenState(root) {
+		var keepOpen = cfg.panelsOpenDefault
+			|| (root && root.classList.contains('lk-archive-filters--panels-open'));
 		qsa('.lk-archive-filters__panel', root).forEach(function (panel) {
-			panel.open = panelHasSelection(panel);
+			panel.open = keepOpen || panelHasSelection(panel);
 		});
 	}
 
@@ -484,11 +486,11 @@
 
 	function resolveTaxonomy(root) {
 		var fromDom = root ? String(root.getAttribute('data-taxonomy') || '').trim() : '';
-		if (fromDom === 'product_cat' || fromDom === 'product_tag') {
+		if (fromDom === 'product_cat' || fromDom === 'product_tag' || fromDom === 'lk_brand') {
 			return fromDom;
 		}
 		var fromCfg = String(cfg.taxonomy || '').trim();
-		if (fromCfg === 'product_cat' || fromCfg === 'product_tag') {
+		if (fromCfg === 'product_cat' || fromCfg === 'product_tag' || fromCfg === 'lk_brand') {
 			return fromCfg;
 		}
 		return '';
