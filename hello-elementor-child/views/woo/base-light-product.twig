@@ -4,74 +4,65 @@
 <head>
 	<meta charset="{{ site.charset }}">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	{# data-no-async / data-no-optimize: keep chrome CSS render-blocking under LiteSpeed #}
 	{% if card_css_url %}
-		<link rel="stylesheet" href="{{ card_css_url }}?v={{ card_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ card_css_url }}?v={{ card_css_ver }}">
 	{% endif %}
 	{% if light_css_url %}
-		<link rel="stylesheet" href="{{ light_css_url }}?v={{ light_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ light_css_url }}?v={{ light_css_ver }}">
 	{% endif %}
 	{% if cat_css_url %}
-		<link rel="stylesheet" href="{{ cat_css_url }}?v={{ cat_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ cat_css_url }}?v={{ cat_css_ver }}">
 	{% endif %}
 	{% if tag_css_url %}
-		<link rel="stylesheet" href="{{ tag_css_url }}?v={{ tag_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ tag_css_url }}?v={{ tag_css_ver }}">
 	{% endif %}
 	{% if brands_css_url %}
-		<link rel="stylesheet" href="{{ brands_css_url }}?v={{ brands_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ brands_css_url }}?v={{ brands_css_ver }}">
 	{% endif %}
 	{% if compare_css_url %}
-		<link rel="stylesheet" href="{{ compare_css_url }}?v={{ compare_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" data-no-ucss="1" href="{{ compare_css_url }}?v={{ compare_css_ver }}">
 	{% endif %}
 	{% if brand_enhanced_css_url %}
-		<link rel="stylesheet" href="{{ brand_enhanced_css_url }}?v={{ brand_enhanced_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ brand_enhanced_css_url }}?v={{ brand_enhanced_css_ver }}">
 	{% endif %}
 	{% if contact_css_url %}
-		<link rel="stylesheet" href="{{ contact_css_url }}?v={{ contact_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ contact_css_url }}?v={{ contact_css_ver }}">
 	{% endif %}
 	{% if about_css_url %}
-		<link rel="stylesheet" href="{{ about_css_url }}?v={{ about_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ about_css_url }}?v={{ about_css_ver }}">
 	{% endif %}
 	{% if account_css_url %}
-		<link rel="stylesheet" href="{{ account_css_url }}?v={{ account_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ account_css_url }}?v={{ account_css_ver }}">
 	{% endif %}
 	{% if cart_page_css_url %}
-		<link rel="stylesheet" href="{{ cart_page_css_url }}?v={{ cart_page_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ cart_page_css_url }}?v={{ cart_page_css_ver }}">
 	{% endif %}
 	{% if checkout_page_css_url %}
-		<link rel="stylesheet" href="{{ checkout_page_css_url }}?v={{ checkout_page_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ checkout_page_css_url }}?v={{ checkout_page_css_ver }}">
 	{% endif %}
 	{% if content_page_css_url %}
-		<link rel="stylesheet" href="{{ content_page_css_url }}?v={{ content_page_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ content_page_css_url }}?v={{ content_page_css_ver }}">
 	{% endif %}
 	{% if article_css_url %}
-		<link rel="stylesheet" href="{{ article_css_url }}?v={{ article_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ article_css_url }}?v={{ article_css_ver }}">
 	{% endif %}
 	{% if single_post_css_url %}
-		<link rel="stylesheet" href="{{ single_post_css_url }}?v={{ single_post_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ single_post_css_url }}?v={{ single_post_css_ver }}">
 	{% endif %}
 	{% if homepage_css_url %}
-		<link rel="stylesheet" href="{{ homepage_css_url }}?v={{ homepage_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ homepage_css_url }}?v={{ homepage_css_ver }}">
 	{% endif %}
 	{% if error404_css_url %}
-		<link rel="stylesheet" href="{{ error404_css_url }}?v={{ error404_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ error404_css_url }}?v={{ error404_css_ver }}">
+	{% endif %}
+	{% if login_css_url %}
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ login_css_url }}?v={{ login_css_ver }}">
 	{% endif %}
 	{% if spl_css_url %}
-		<link rel="stylesheet" href="{{ spl_css_url }}?v={{ spl_css_ver }}">
+		<link rel="stylesheet" data-no-async="1" data-no-optimize="1" href="{{ spl_css_url }}?v={{ spl_css_ver }}">
 	{% endif %}
 	{{ function('wp_head') }}
-	<style id="lk-lpt-chrome-fix">
-		html:has(body.lk-light-product){overflow-x:clip;transform:none!important}
-		body.lk-light-product{overflow-x:clip;transform:none!important;padding-top:var(--lz-header-h)}
-		body.lk-light-product > .lz-site-header,
-		body.lk-light-product.search .lz-site-header,
-		body.lk-light-product.search-results .lz-site-header{
-			position:fixed!important;
-			top:0!important;
-			left:0!important;right:0!important;
-			z-index:10050!important;width:100%!important;
-			transform:none!important
-		}
-	</style>
 </head>
 <body class="{{ body_class }}">
 {{ function('wp_body_open') }}
@@ -83,6 +74,10 @@
 </main>
 
 {% include 'partials/light-product-footer.twig' %}
+
+{% if compare_chrome_html %}
+	{{ compare_chrome_html|raw }}
+{% endif %}
 
 {% if spl_js_url %}
 	<script src="{{ spl_js_url }}?v={{ spl_js_ver }}" defer></script>

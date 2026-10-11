@@ -122,6 +122,9 @@ final class Hello_Elementor_Child_Light_Homepage_Template {
 		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return false;
 		}
+		if ( isset( $_GET['login'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
 		return self::page_uses_template( self::get_context_page_id() );
 	}
 
@@ -496,10 +499,14 @@ final class Hello_Elementor_Child_Light_Homepage_Template {
 
 		$homepage_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/light-homepage.css';
 		if ( file_exists( $homepage_css ) ) {
+			$homepage_deps = array( 'lk-light-product' );
+			if ( wp_style_is( 'lk-shop-cards', 'enqueued' ) || wp_style_is( 'lk-shop-cards', 'registered' ) ) {
+				$homepage_deps[] = 'lk-shop-cards';
+			}
 			wp_enqueue_style(
 				'lk-light-homepage',
 				HELLO_ELEMENTOR_CHILD_URI . 'assets/css/light-homepage.css',
-				array( 'lk-light-product' ),
+				$homepage_deps,
 				(string) filemtime( $homepage_css )
 			);
 		}
@@ -694,18 +701,72 @@ final class Hello_Elementor_Child_Light_Homepage_Template {
 		}
 
 		$content = (string) $post->post_content;
+		$content = self::swap_first_product_grid( $content );
 		$content = apply_filters( 'the_content', $content );
-
-		// Ensure the scrollable SEO box is present at the bottom (Elementor 01a6705).
-		if ( false === strpos( $content, 'lk-seo-box' )
-			&& class_exists( 'Hello_Elementor_Child_Light_Homepage_Blocks' )
-		) {
-			$content .= Hello_Elementor_Child_Light_Homepage_Blocks::render_seo_box( array() );
-		}
 
 		return array(
 			'content' => $content,
 			'title'   => get_the_title( $page_id ),
 		);
+	}
+
+	/**
+	 * Show category cards where the first chemical product grid is saved.
+	 *
+	 * @param string $content Raw page content.
+	 */
+	private static function swap_first_product_grid( string $content ): string {
+		if ( false === strpos( $content, 'lookazma/home-product-grid' ) ) {
+			return $content;
+		}
+		$blocks   = parse_blocks( $content );
+		$replaced = false;
+		$blocks   = self::replace_chemical_product_grid( $blocks, $replaced );
+		if ( ! $replaced ) {
+			return $content;
+		}
+		return serialize_blocks( $blocks );
+	}
+
+	/**
+	 * @param array<int, array<string, mixed>> $blocks   Parsed blocks.
+	 * @param bool                             $replaced Whether a swap already happened.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function replace_chemical_product_grid( array $blocks, bool &$replaced ): array {
+		foreach ( $blocks as $index => $block ) {
+			if ( $replaced ) {
+				break;
+			}
+			if ( ! is_array( $block ) ) {
+				continue;
+			}
+			$name = isset( $block['blockName'] ) ? (string) $block['blockName'] : '';
+			if ( 'lookazma/home-product-grid' === $name ) {
+				$attrs = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : array();
+				$title = isset( $attrs['title'] ) ? (string) $attrs['title'] : 'محصولات مواد شیمیایی';
+				if ( 'محصولات مواد شیمیایی' === $title ) {
+					$limit = isset( $attrs['limit'] ) ? (int) $attrs['limit'] : 5;
+					$ids   = isset( $attrs['categoryIds'] ) && is_array( $attrs['categoryIds'] ) ? array_map( 'intval', $attrs['categoryIds'] ) : array();
+					$blocks[ $index ] = array(
+						'blockName'    => 'lookazma/home-cat-cards',
+						'attrs'        => array(
+							'limit'       => max( 1, min( 12, $limit ) ),
+							'source'      => isset( $attrs['source'] ) ? (string) $attrs['source'] : 'latest',
+							'categoryIds' => $ids,
+						),
+						'innerBlocks'  => array(),
+						'innerHTML'    => '',
+						'innerContent' => array(),
+					);
+					$replaced = true;
+					break;
+				}
+			}
+			if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
+				$blocks[ $index ]['innerBlocks'] = self::replace_chemical_product_grid( $block['innerBlocks'], $replaced );
+			}
+		}
+		return $blocks;
 	}
 }

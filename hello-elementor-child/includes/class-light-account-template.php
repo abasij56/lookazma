@@ -39,6 +39,9 @@ final class Hello_Elementor_Child_Light_Account_Template {
 		add_action( 'wp_print_scripts', array( __CLASS__, 'dequeue_listing_assets' ), 100 );
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
 		add_filter( 'woocommerce_account_menu_items', array( __CLASS__, 'filter_menu_items' ), 99 );
+		add_filter( 'woocommerce_save_account_details_required_fields', array( __CLASS__, 'optional_account_email' ) );
+		add_filter( 'woocommerce_billing_fields', array( __CLASS__, 'shape_address_fields' ), 20 );
+		add_filter( 'woocommerce_shipping_fields', array( __CLASS__, 'shape_address_fields' ), 20 );
 		add_filter( 'gettext', array( __CLASS__, 'translate_woocommerce_strings' ), 20, 3 );
 		add_filter( 'gettext_with_context', array( __CLASS__, 'translate_woocommerce_strings_with_context' ), 20, 4 );
 	}
@@ -313,6 +316,17 @@ final class Hello_Elementor_Child_Light_Account_Template {
 			wp_enqueue_style( 'select2' );
 		}
 
+		$address_js = HELLO_ELEMENTOR_CHILD_PATH . 'assets/js/lk-account-address.js';
+		if ( file_exists( $address_js ) ) {
+			wp_enqueue_script(
+				'lk-account-address',
+				HELLO_ELEMENTOR_CHILD_URI . 'assets/js/lk-account-address.js',
+				array( 'jquery', 'wc-address-i18n' ),
+				(string) filemtime( $address_js ),
+				true
+			);
+		}
+
 		$chrome_js = HELLO_ELEMENTOR_CHILD_PATH . 'assets/js/light-archive-chrome.js';
 		if ( file_exists( $chrome_js ) ) {
 			wp_enqueue_script(
@@ -448,6 +462,101 @@ final class Hello_Elementor_Child_Light_Account_Template {
 	 * @param array<string, string> $items Menu items.
 	 * @return array<string, string>
 	 */
+	/**
+	 * Email stays optional on the light account form.
+	 *
+	 * @param array<string, string> $fields Required field labels.
+	 * @return array<string, string>
+	 */
+	public static function optional_account_email( array $fields ): array {
+		if ( ! self::is_enabled() ) {
+			return $fields;
+		}
+		unset( $fields['account_email'] );
+		return $fields;
+	}
+
+	/**
+	 * Pair address fields the same way as the account form.
+	 *
+	 * @param array<string, array<string, mixed>> $fields Address fields.
+	 * @return array<string, array<string, mixed>>
+	 */
+	public static function shape_address_fields( array $fields ): array {
+		if ( ! self::is_enabled() ) {
+			return $fields;
+		}
+
+		$prefix = 'billing_';
+		foreach ( array_keys( $fields ) as $key ) {
+			if ( 0 === strpos( (string) $key, 'shipping_' ) ) {
+				$prefix = 'shipping_';
+				break;
+			}
+		}
+
+		if ( ! isset( $fields[ $prefix . 'company' ] ) ) {
+			$fields[ $prefix . 'company' ] = array(
+				'label'        => __( 'نام شرکت', 'hello-elementor-child' ),
+				'required'     => false,
+				'class'        => array(),
+				'autocomplete' => 'organization',
+				'priority'     => 30,
+			);
+		}
+		if ( ! isset( $fields[ $prefix . 'address_2' ] ) ) {
+			$fields[ $prefix . 'address_2' ] = array(
+				'label'    => __( 'پلاک', 'hello-elementor-child' ),
+				'required' => false,
+				'class'    => array( 'address-field' ),
+				'priority' => 80,
+			);
+		}
+
+		$layout = array(
+			'first_name' => array( 10, 'lk-acc-third' ),
+			'last_name'  => array( 20, 'lk-acc-third' ),
+			'company'    => array( 30, 'lk-acc-third' ),
+			'country'    => array( 40, 'lk-acc-third' ),
+			'state'      => array( 50, 'lk-acc-third' ),
+			'city'       => array( 60, 'lk-acc-third' ),
+			'address_1'  => array( 70, 'lk-acc-street' ),
+			'address_2'  => array( 80, 'lk-acc-plaque' ),
+			'postcode'   => array( 90, 'lk-acc-half' ),
+			'phone'      => array( 100, 'lk-acc-half' ),
+			'email'      => array( 110, 'lk-acc-full' ),
+		);
+		$labels = array(
+			'company'   => __( 'نام شرکت', 'hello-elementor-child' ),
+			'address_1' => __( 'خیابان', 'hello-elementor-child' ),
+			'address_2' => __( 'پلاک', 'hello-elementor-child' ),
+		);
+
+		foreach ( $fields as $key => $field ) {
+			$slug = preg_replace( '/^(billing|shipping)_/', '', (string) $key );
+			if ( ! isset( $layout[ $slug ] ) || ! is_array( $field ) ) {
+				continue;
+			}
+			$classes = isset( $field['class'] ) && is_array( $field['class'] ) ? $field['class'] : array();
+			$classes = array_values(
+				array_diff(
+					$classes,
+					array( 'form-row-first', 'form-row-last', 'form-row-wide', 'lk-acc-third', 'lk-acc-street', 'lk-acc-plaque', 'lk-acc-half', 'lk-acc-full' )
+				)
+			);
+			$classes[]                   = $layout[ $slug ][1];
+			$fields[ $key ]['class']     = $classes;
+			$fields[ $key ]['priority']  = $layout[ $slug ][0];
+			$fields[ $key ]['hidden']    = false;
+			if ( isset( $labels[ $slug ] ) ) {
+				$fields[ $key ]['label']       = $labels[ $slug ];
+				$fields[ $key ]['label_class'] = array();
+			}
+		}
+
+		return $fields;
+	}
+
 	public static function filter_menu_items( array $items ): array {
 		if ( ! self::is_enabled() ) {
 			return $items;
@@ -468,7 +577,13 @@ final class Hello_Elementor_Child_Light_Account_Template {
 	 * @param string $domain      Text domain.
 	 */
 	public static function translate_woocommerce_strings( $translation, $text, $domain ) {
-		if ( 'woocommerce' !== $domain || ! self::is_enabled() ) {
+		if ( ! self::is_enabled() ) {
+			return $translation;
+		}
+		if ( 'digits' === $domain && 'Mobile Number' === $text ) {
+			return 'شماره موبایل';
+		}
+		if ( 'woocommerce' !== $domain ) {
 			return $translation;
 		}
 
@@ -543,19 +658,38 @@ final class Hello_Elementor_Child_Light_Account_Template {
 		$orders_url   = function_exists( 'wc_get_account_endpoint_url' ) ? wc_get_account_endpoint_url( 'orders' ) : '';
 		$address_url  = function_exists( 'wc_get_account_endpoint_url' ) ? wc_get_account_endpoint_url( 'edit-address' ) : '';
 		$logout_url   = function_exists( 'wc_logout_url' ) ? wc_logout_url() : wp_logout_url();
+		$active_tab   = self::get_active_tab();
+		$panel_files  = array(
+			'account'   => 'user.svg',
+			'orders'    => 'package.svg',
+			'addresses' => 'map-pin.svg',
+		);
+		$panel_titles = array(
+			'account'   => __( 'اطلاعات حساب کاربری', 'hello-elementor-child' ),
+			'orders'    => __( 'آخرین سفارش ها', 'hello-elementor-child' ),
+			'addresses' => __( 'آدرس حمل و نقل و صورت حساب', 'hello-elementor-child' ),
+		);
 
 		return array(
 			'logged_in'       => $logged_in,
 			'display_name'    => $name,
-			'welcome_suffix'  => __( 'خوش آمدید', 'hello-elementor-child' ),
-			'active_tab'      => self::get_active_tab(),
+			'welcome_suffix'  => 'خوش آمدید.',
+			'active_tab'      => $active_tab,
+			'avatar_icon'     => self::icon_html( 'user.svg', 'lk-account-avatar__icon', 26 ),
+			'chevron_icon'    => self::icon_html( 'chevron-left.svg', 'lk-account-tab__chevron', 16 ),
+			'account_icon'    => self::icon_html( 'user.svg', 'lk-account-tab__icon', 18 ),
+			'orders_icon'     => self::icon_html( 'package.svg', 'lk-account-tab__icon', 18 ),
+			'address_icon'    => self::icon_html( 'map-pin.svg', 'lk-account-tab__icon', 18 ),
+			'logout_icon'     => self::icon_html( 'log-out.svg', 'lk-account-logout__icon', 18 ),
+			'panel_icon'      => self::icon_html( $panel_files[ $active_tab ] ?? 'user.svg', 'lk-account-panel__icon', 22 ),
+			'panel_title'     => $panel_titles[ $active_tab ] ?? $panel_titles['account'],
 			'account_url'     => $account_url,
 			'orders_url'      => $orders_url,
 			'address_url'     => $address_url,
 			'logout_url'      => $logout_url,
-			'account_label'   => __( 'اطلاعات حساب کاربری', 'hello-elementor-child' ),
-			'orders_label'    => __( 'آخرین سفارش ها', 'hello-elementor-child' ),
-			'address_label'   => __( 'آدرس حمل و نقل و صورت حساب', 'hello-elementor-child' ),
+			'account_label'   => $panel_titles['account'],
+			'orders_label'    => $panel_titles['orders'],
+			'address_label'   => $panel_titles['addresses'],
 			'logout_label'    => __( 'خروج', 'hello-elementor-child' ),
 			'breadcrumb_html' => function_exists( 'hello_elementor_child_get_breadcrumb_html' )
 				? hello_elementor_child_get_breadcrumb_html()
@@ -600,5 +734,40 @@ final class Hello_Elementor_Child_Light_Account_Template {
 		}
 
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Inline Lucide SVG from assets/icons/.
+	 *
+	 * @param string $file  Filename e.g. user.svg.
+	 * @param string $class SVG class.
+	 * @param int    $size  Pixel size.
+	 */
+	public static function icon_html( string $file, string $class = 'lk-account-icon', int $size = 18 ): string {
+		$file = basename( $file );
+		if ( ! preg_match( '/^[a-z0-9\-]+\.svg$/i', $file ) ) {
+			return '';
+		}
+		$path = HELLO_ELEMENTOR_CHILD_PATH . 'assets/icons/' . $file;
+		if ( ! is_readable( $path ) ) {
+			return '';
+		}
+		$svg = (string) file_get_contents( $path );
+		if ( '' === $svg ) {
+			return '';
+		}
+		$size = max( 12, min( 48, $size ) );
+		$svg  = preg_replace( '/\s(width|height)="[^"]*"/i', '', $svg, 2 );
+		$svg  = preg_replace(
+			'/<svg\b/i',
+			sprintf(
+				'<svg class="%1$s" width="%2$d" height="%2$d" aria-hidden="true" focusable="false"',
+				esc_attr( $class ),
+				$size
+			),
+			$svg,
+			1
+		);
+		return is_string( $svg ) ? $svg : '';
 	}
 }

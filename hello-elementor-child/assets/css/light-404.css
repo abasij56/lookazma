@@ -2,11 +2,30 @@
  * Light 404 — chemistry-themed empty reaction.
  */
 
-body.lk-light-404 .lk-lpt-main {
+body.lk-light-404 {
+	--lk-ink: #0f172a;
+	--lk-text: #334155;
+	--lk-muted: #64748b;
+	--lk-accent: #0f4c81;
+	--lk-accent-hover: #0a3a61;
+	--lk-line: #d8dde3;
+	--lk-soft: #f3f4f6;
+	--lk-page-bg: #eaf4ff;
+	--lk-lpt-bg: var(--lk-page-bg);
+	--lk-lpt-ink: var(--lk-ink);
+	--lk-lpt-muted: var(--lk-muted);
+	--lk-lpt-line: var(--lk-line);
+	--lk-lpt-accent: var(--lk-accent);
+	--lk-lpt-accent-2: var(--lk-accent);
 	background:
-		radial-gradient(900px 360px at 85% -8%, rgba(13, 110, 110, 0.12), transparent 55%),
-		radial-gradient(700px 300px at 5% 10%, rgba(1, 30, 62, 0.08), transparent 50%),
-		linear-gradient(180deg, #f3f8fa 0%, #eef4f7 100%);
+		radial-gradient(1200px 500px at 100% -10%, rgba(15, 76, 129, 0.12), transparent 55%),
+		radial-gradient(1100px 500px at 0% 0%, rgba(15, 76, 129, 0.07), transparent 48%),
+		linear-gradient(180deg, #eaf4ff 0%, #f3f8fc 42%, #eaf4ff 100%);
+	color: var(--lk-ink);
+}
+
+body.lk-light-404 .lk-lpt-main {
+	background: transparent;
 }
 
 .lk-404 {
@@ -14,7 +33,7 @@ body.lk-light-404 .lk-lpt-main {
 	display: flex;
 	align-items: center;
 	padding: 2rem 0 3rem;
-	color: var(--lk-lpt-ink, #0b1f3a);
+	color: var(--lk-ink, #0f172a);
 }
 
 .lk-404__stage {
@@ -25,12 +44,9 @@ body.lk-light-404 .lk-lpt-main {
 	align-items: center;
 	padding: clamp(1.4rem, 3vw, 2.25rem);
 	border-radius: 20px;
-	border: 1px solid rgba(255, 255, 255, 0.75);
-	background:
-		linear-gradient(155deg, rgba(255, 255, 255, 0.82) 0%, rgba(245, 249, 251, 0.55) 100%);
-	box-shadow:
-		0 16px 40px rgba(11, 31, 58, 0.08),
-		inset 0 1px 0 rgba(255, 255, 255, 0.85);
+	border: 1px solid var(--lk-line, #d8dde3);
+	background: rgba(255, 255, 255, 0.88);
+	box-shadow: 0 18px 44px rgba(15, 76, 129, 0.08);
 	backdrop-filter: blur(16px);
 	-webkit-backdrop-filter: blur(16px);
 }
@@ -51,21 +67,21 @@ body.lk-light-404 .lk-lpt-main {
 }
 
 .lk-404__flask-body {
-	fill: rgba(255, 255, 255, 0.55);
-	stroke: #011e3e;
+	fill: rgba(255, 255, 255, 0.7);
+	stroke: var(--lk-accent, #0f4c81);
 	stroke-width: 3.5;
 	stroke-linejoin: round;
 }
 
 .lk-404__flask-neck {
 	fill: none;
-	stroke: #011e3e;
+	stroke: var(--lk-accent, #0f4c81);
 	stroke-width: 6;
 	stroke-linecap: round;
 }
 
 .lk-404__flask-liquid {
-	fill: rgba(13, 110, 110, 0.42);
+	fill: rgba(15, 76, 129, 0.38);
 	animation: lk-404-swirl 5.5s ease-in-out infinite;
 	transform-origin: 80px 167px;
 }
@@ -91,7 +107,7 @@ body.lk-light-404 .lk-lpt-main {
 	font-weight: 900;
 	letter-spacing: 0.04em;
 	line-height: 1;
-	color: #011e3e;
+	color: var(--lk-ink, #0f172a);
 	animation: lk-404-fade-up 0.7s ease both;
 }
 
@@ -100,7 +116,7 @@ body.lk-light-404 .lk-lpt-main {
 	font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
 	font-size: 0.95rem;
 	font-weight: 700;
-	color: #0d6e6e;
+	color: var(--lk-accent, #0f4c81);
 	letter-spacing: 0.08em;
 	animation: lk-404-fade-up 0.7s ease 0.08s both;
 }
@@ -115,7 +131,7 @@ body.lk-light-404 .lk-lpt-main {
 	font-size: clamp(1.55rem, 3vw, 2.15rem);
 	font-weight: 900;
 	line-height: 1.4;
-	color: #001f3f;
+	color: var(--lk-ink, #0f172a);
 }
 
 .lk-404__lead {
@@ -123,7 +139,7 @@ body.lk-light-404 .lk-lpt-main {
 	max-width: 36rem;
 	font-size: 1.02rem;
 	line-height: 1.85;
-	color: rgba(11, 31, 58, 0.82);
+	color: var(--lk-text, #334155);
 }
 
 .lk-404__actions {
@@ -145,32 +161,32 @@ body.lk-light-404 .lk-lpt-main {
 }
 
 .lk-404__btn--primary {
-	background: linear-gradient(135deg, #001f3f 0%, #0d6e6e 100%);
+	background: var(--lk-accent, #0f4c81);
 	color: #fff;
-	box-shadow: 0 10px 22px rgba(0, 31, 63, 0.18);
+	box-shadow: 0 10px 22px rgba(15, 76, 129, 0.2);
 }
 
 .lk-404__btn--primary:hover {
-	filter: brightness(1.06);
+	background: var(--lk-accent-hover, #0a3a61);
 	color: #fff;
 }
 
 .lk-404__btn--ghost {
-	border: 1px solid rgba(1, 30, 62, 0.16);
-	background: rgba(255, 255, 255, 0.7);
-	color: #011e3e;
+	border: 1px solid var(--lk-line, #d8dde3);
+	background: #fff;
+	color: var(--lk-ink, #0f172a);
 }
 
 .lk-404__btn--ghost:hover {
-	background: #eef6f6;
-	border-color: #b7d4d4;
-	color: #0d6e6e;
+	background: var(--lk-soft, #f3f4f6);
+	border-color: var(--lk-accent, #0f4c81);
+	color: var(--lk-accent, #0f4c81);
 }
 
 .lk-404__hint {
 	margin: 1rem 0 0;
 	font-size: 0.88rem;
-	color: rgba(11, 31, 58, 0.55);
+	color: var(--lk-muted, #64748b);
 }
 
 @keyframes lk-404-rise {

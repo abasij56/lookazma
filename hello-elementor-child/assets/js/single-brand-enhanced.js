@@ -61,9 +61,53 @@
 		});
 	}
 
+	function headerOffset() {
+		var h = getComputedStyle(document.documentElement).getPropertyValue('--lz-header-h').trim();
+		var px = parseFloat(h) || 0;
+		if (h.indexOf('rem') !== -1) {
+			var root = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+			px = px * root;
+		}
+		return px + 6;
+	}
+
+	function scrollToProducts(el) {
+		if (!el) {
+			return;
+		}
+		var top = el.getBoundingClientRect().top + window.pageYOffset - headerOffset();
+		window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+	}
+
+	function initProductsJump() {
+		qsa('a.lk-brand-enhanced-btn--hero-primary[href="#lk-brand-products"]').forEach(function (link) {
+			link.addEventListener('click', function (e) {
+				var target = qs('#lk-brand-products');
+				if (!target) {
+					return;
+				}
+				e.preventDefault();
+				scrollToProducts(target);
+				if (history.replaceState) {
+					history.replaceState(null, '', '#lk-brand-products');
+				}
+			});
+		});
+
+		if (window.location.hash === '#lk-brand-products') {
+			var target = qs('#lk-brand-products');
+			if (target) {
+				window.setTimeout(function () {
+					scrollToProducts(target);
+				}, 50);
+			}
+		}
+	}
+
 	function init() {
 		initAboutToggle();
 		initCarousels();
+		initProductsJump();
 	}
 
 	if (document.readyState === 'loading') {

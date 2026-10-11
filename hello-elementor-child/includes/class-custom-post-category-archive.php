@@ -495,6 +495,9 @@ final class Hello_Elementor_Child_Custom_Post_Category_Archive {
 			'posts'           => $posts,
 			'pagination_html' => $pagination,
 			'more_label'      => __( 'ادامه مطلب', 'hello-elementor-child' ),
+			'date_icon_html'  => class_exists( 'Hello_Elementor_Child_Light_Article_Template' )
+				? Hello_Elementor_Child_Light_Article_Template::icon_html( 'calendar.svg', 'lk-article-card__date-icon', 14 )
+				: '',
 			'paged'           => $paged,
 			'url'             => self::get_paged_url( $cat_id, $paged ),
 		);

@@ -2,54 +2,123 @@
 
 {% block content %}
 {% if category_data %}
-<div class="lk-lpt lk-lpt-container lk-cat-page">
+{% set is_mother = category_data.is_mother %}
+<div class="lk-lpt lk-lpt-container lk-cat-page{% if is_mother %} lk-cat-page--mother{% else %} lk-cat-page--leaf{% endif %}">
 	{% if category_data.breadcrumb_html %}
 		<nav class="lk-lpt-breadcrumb" aria-label="breadcrumb">
 			{{ category_data.breadcrumb_html|raw }}
 		</nav>
 	{% endif %}
 
-	<section class="lk-cat-hero" aria-label="{{ category_data.name }}">
-		<div class="lk-cat-hero__media">
-			{% if category_data.images %}
-				{% for image in category_data.images %}
-					<figure class="lk-cat-hero__photo">
-						<img src="{{ image.url }}" alt="{{ image.alt|default(category_data.name) }}" width="360" height="360" loading="eager">
-					</figure>
-				{% endfor %}
-			{% else %}
-				<div class="lk-cat-hero__placeholder" aria-hidden="true"></div>
-			{% endif %}
-			{% if category_data.msds_url %}
-				<a class="lk-cat-hero__msds" href="{{ category_data.msds_url }}" target="_blank" rel="noopener noreferrer">
-					<svg class="lk-cat-hero__msds-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
-						<path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm1 7V3.5L18.5 9H15zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/>
-					</svg>
-					<span>MSDS</span>
-				</a>
-			{% endif %}
-		</div>
-		<div class="lk-cat-hero__body">
-			<h1 class="lk-cat-hero__title">
-				<span class="lk-cat-hero__name">{{ category_data.name }}</span>
-				{% if category_data.english_name %}
-					<span class="lk-cat-hero__english">{{ category_data.english_name }}</span>
+	{% if is_mother %}
+		<section class="lk-cat-mother-hero" aria-label="{{ category_data.name }}">
+			<div class="lk-cat-mother-hero__copy">
+				<h1 class="lk-cat-mother-hero__title">
+					<span class="lk-cat-mother-hero__name">{{ category_data.name }}</span>
+					{% if category_data.english_name %}
+						<span class="lk-cat-mother-hero__english">{{ category_data.english_name }}</span>
+					{% endif %}
+				</h1>
+				{% if category_data.mother_blurb %}
+					<p class="lk-cat-mother-hero__blurb">{{ category_data.mother_blurb }}</p>
 				{% endif %}
-			</h1>
-			{% if category_data.specs %}
-				<ul class="lk-cat-article__facts" aria-label="مشخصات فنی">
-					{% for item in category_data.specs %}
-						{% if item.value|trim|upper != 'N/A' %}
+				{% if category_data.mother_trusts %}
+					<ul class="lk-cat-mother-hero__trusts" aria-label="مزایای خرید">
+						{% for trust in category_data.mother_trusts %}
+							<li class="lk-cat-mother-hero__trust" data-lk-trust="{{ trust.key }}">
+								<span class="lk-cat-mother-hero__trust-icon" aria-hidden="true">{{ trust.icon_html|raw }}</span>
+								<span class="lk-cat-mother-hero__trust-label">{{ trust.label }}</span>
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</div>
+			<div class="lk-cat-mother-hero__media">
+				{% if category_data.images %}
+					{% set image = category_data.images|first %}
+					<figure class="lk-cat-mother-hero__photo">
+						<img src="{{ image.url }}" alt="{{ image.alt|default(category_data.name) }}" width="720" height="480" loading="eager" decoding="async">
+					</figure>
+				{% else %}
+					<div class="lk-cat-mother-hero__placeholder" aria-hidden="true"></div>
+				{% endif %}
+			</div>
+		</section>
+	{% else %}
+		<section class="lk-cat-hero" aria-label="{{ category_data.name }}">
+			<aside class="lk-cat-hero__media">
+				<div class="lk-cat-hero__card">
+					{% if category_data.images %}
+						{% for image in category_data.images %}
+							<figure class="lk-cat-hero__photo">
+								<img src="{{ image.url }}" alt="{{ image.alt|default(category_data.name) }}" width="360" height="360" loading="eager">
+							</figure>
+						{% endfor %}
+					{% else %}
+						<div class="lk-cat-hero__placeholder" aria-hidden="true"></div>
+					{% endif %}
+					{% if category_data.hero_pills %}
+						<ul class="lk-cat-hero__pills" aria-label="شناسه‌ها">
+							{% for pill in category_data.hero_pills %}
+								<li class="lk-cat-hero__pill" data-lk-fact="{{ pill.icon }}">
+									{% if pill.icon == 'cas' %}
+										<span class="lk-cat-hero__pill-label">CAS No</span>
+									{% elseif pill.icon == 'formula' %}
+										<span class="lk-cat-hero__pill-label">Formula</span>
+									{% else %}
+										<span class="lk-cat-hero__pill-label">{{ pill.label }}</span>
+									{% endif %}
+									<strong class="lk-cat-hero__pill-value">{{ pill.value }}</strong>
+								</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+				</div>
+				{% if category_data.msds_url %}
+					<a class="lk-cat-hero__msds" href="{{ category_data.msds_url }}" target="_blank" rel="noopener noreferrer">
+						<svg class="lk-cat-hero__msds-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+							<path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm1 7V3.5L18.5 9H15zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/>
+						</svg>
+						<span>دانلود MSDS</span>
+					</a>
+				{% endif %}
+			</aside>
+			<div class="lk-cat-hero__body">
+				<h1 class="lk-cat-hero__title">
+					<span class="lk-cat-hero__name">{{ category_data.name }}</span>
+					{% if category_data.english_name %}
+						<span class="lk-cat-hero__english">{{ category_data.english_name }}</span>
+					{% endif %}
+				</h1>
+				{% if category_data.hero_synonym %}
+					<div class="lk-cat-hero__synonyms" data-lk-fact="synonym">
+						<span class="lk-cat-hero__synonyms-label">
+							{% if category_data.hero_synonym.icon_html %}
+								<span class="lk-cat-hero__fact-icon" aria-hidden="true">{{ category_data.hero_synonym.icon_html|raw }}</span>
+							{% endif %}
+							مترادف ها
+						</span>
+						<p class="lk-cat-hero__synonyms-value">{{ category_data.hero_synonym.value }}</p>
+					</div>
+				{% endif %}
+				{% if category_data.hero_facts %}
+					<ul class="lk-cat-article__facts" aria-label="مشخصات فنی">
+						{% for item in category_data.hero_facts %}
 							<li{% if item.wide %} class="lk-cat-article__facts-item--full"{% endif %}{% if item.icon %} data-lk-fact="{{ item.icon }}"{% endif %}>
-								<span>{{ item.label }}</span>
+								<span>
+									{% if item.icon_html %}
+										<span class="lk-cat-hero__fact-icon" aria-hidden="true">{{ item.icon_html|raw }}</span>
+									{% endif %}
+									{{ item.label }}
+								</span>
 								<strong>{{ item.value }}</strong>
 							</li>
-						{% endif %}
-					{% endfor %}
-				</ul>
-			{% endif %}
-		</div>
-	</section>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</div>
+		</section>
+	{% endif %}
 
 	<section class="lk-cat-shell" aria-label="محتوای دسته">
 		<div class="lk-cat-tabs" role="tablist" aria-label="بخش‌های دسته">
@@ -169,6 +238,22 @@
 			</div>
 		{% endif %}
 	</section>
+
+	{% if is_mother and category_data.mother_stats %}
+		<section class="lk-cat-stats" aria-label="مزایای لوک آزما">
+			<div class="lk-cat-stats__inner">
+				{% for stat in category_data.mother_stats %}
+					<article class="lk-cat-stats__item" data-lk-stat="{{ stat.key }}">
+						<span class="lk-cat-stats__icon" aria-hidden="true">{{ stat.icon_html|raw }}</span>
+						<div class="lk-cat-stats__copy">
+							<h2 class="lk-cat-stats__title">{{ stat.title }}</h2>
+							<p class="lk-cat-stats__text">{{ stat.text }}</p>
+						</div>
+					</article>
+				{% endfor %}
+			</div>
+		</section>
+	{% endif %}
 </div>
 {% endif %}
 {% endblock %}

@@ -20,6 +20,8 @@ $context = \Timber\Timber::context();
 if ( class_exists( 'Hello_Elementor_Child_Light_Product_Template' ) ) {
 	$context = array_merge( $context, Hello_Elementor_Child_Light_Product_Template::get_chrome_context() );
 }
+/* Compare page uses its own board UI — never show the floating FAB/tray chrome here. */
+$context['compare_chrome_html'] = '';
 
 ob_start();
 language_attributes();

@@ -34,6 +34,48 @@
 	text-decoration: underline;
 }
 
+/* Compact open panels — same sizing as enhanced brand (3 rows, packaging 2). */
+.lk-archive-filters--compact {
+  --lk-filter-row-h: 2.45rem;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.lk-archive-filters__list.lk-archive-filters__list--scroll,
+.lk-archive-filters--compact .lk-archive-filters__list--scroll {
+  max-height: calc(var(--lk-filter-visible-rows, 3) * var(--lk-filter-row-h, 2.45rem)) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #b8d4d4 transparent;
+}
+
+.lk-archive-filters__list--scroll .lk-archive-filters__item {
+  box-sizing: border-box;
+  height: var(--lk-filter-row-h, 2.45rem);
+  min-height: var(--lk-filter-row-h, 2.45rem);
+  max-height: var(--lk-filter-row-h, 2.45rem);
+}
+
+.lk-archive-filters__list--scroll .lk-archive-filters__check {
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 100%;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.lk-archive-filters--compact .lk-archive-filters__list--scroll::-webkit-scrollbar,
+.lk-archive-filters__list.lk-archive-filters__list--scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.lk-archive-filters--compact .lk-archive-filters__list--scroll::-webkit-scrollbar-thumb,
+.lk-archive-filters__list.lk-archive-filters__list--scroll::-webkit-scrollbar-thumb {
+  background: #b8d4d4;
+  border-radius: 999px;
+}
+
 .lk-archive-filters__panels {
   display: flex;
   flex-direction: column;
@@ -123,6 +165,11 @@
   background: #fff;
   border: 1px solid #e2e5e9;
   border-radius: 4px;
+}
+
+.lk-archive-filters__list.lk-archive-filters__list--scroll {
+  /* Height comes from --lk-filter-visible-rows (see compact rules above). */
+  max-height: calc(var(--lk-filter-visible-rows, 3) * var(--lk-filter-row-h, 2.45rem));
 }
 
 .lk-archive-filters__item {
@@ -315,117 +362,8 @@
 }
 
 /*
- * Category archive pagination (non-light) — same look as shop / tag pagination.
- * Light templates keep styles in archive-product-light.css.
+ * Category archive pagination — see assets/css/lk-pagination.css (sitewide).
  */
-body.tax-product_cat {
-  --lk-shop-ink: #0b1f3a;
-  --lk-shop-muted: #5b6b7c;
-  --lk-shop-line: #d9e3ec;
-  --lk-shop-accent: #001f3f;
-  --lk-shop-accent-2: #0d6e6e;
-}
-
-body.tax-product_cat .lk-shop-pagination,
-body.tax-product_cat .lk-archive-products__pagination {
-  margin: 1.75rem 0 0.5rem;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  direction: rtl;
-}
-
-body.tax-product_cat .lk-shop-pagination[hidden],
-body.tax-product_cat .lk-archive-products__pagination[hidden] {
-  display: none !important;
-}
-
-body.tax-product_cat .lk-shop-pagination .page-numbers,
-body.tax-product_cat .lk-archive-products__pagination .page-numbers {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  align-items: center;
-  justify-content: center;
-}
-
-body.tax-product_cat .lk-shop-pagination .page-numbers li,
-body.tax-product_cat .lk-archive-products__pagination .page-numbers li {
-  list-style: none;
-  margin: 0;
-}
-
-body.tax-product_cat .lk-shop-pagination a.page-numbers,
-body.tax-product_cat .lk-shop-pagination span.page-numbers,
-body.tax-product_cat .lk-archive-products__pagination a.page-numbers,
-body.tax-product_cat .lk-archive-products__pagination span.page-numbers {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2.25rem;
-  height: 2.25rem;
-  padding: 0 0.6rem;
-  border: 1px solid var(--lk-shop-line);
-  border-radius: 8px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  color: var(--lk-shop-ink);
-  font-size: 0.88rem;
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: 0 1px 2px rgba(11, 31, 58, 0.04);
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.15s ease;
-}
-
-body.tax-product_cat .lk-shop-pagination a.page-numbers:hover,
-body.tax-product_cat .lk-archive-products__pagination a.page-numbers:hover {
-  background: var(--lk-shop-accent-2);
-  border-color: var(--lk-shop-accent-2);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(13, 110, 110, 0.22);
-  transform: translateY(-1px);
-}
-
-body.tax-product_cat .lk-shop-pagination span.page-numbers.current,
-body.tax-product_cat .lk-archive-products__pagination span.page-numbers.current {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 45%),
-    linear-gradient(180deg, #0a2a4d 0%, var(--lk-shop-accent) 100%);
-  border-color: var(--lk-shop-accent);
-  color: #fff;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 4px 10px rgba(1, 30, 62, 0.2);
-}
-
-body.tax-product_cat .lk-shop-pagination span.page-numbers.dots,
-body.tax-product_cat .lk-archive-products__pagination span.page-numbers.dots {
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  min-width: 1.5rem;
-  color: var(--lk-shop-muted);
-  font-weight: 700;
-}
-
-body.tax-product_cat .lk-shop-pagination a.page-numbers.prev,
-body.tax-product_cat .lk-shop-pagination a.page-numbers.next,
-body.tax-product_cat .lk-archive-products__pagination a.page-numbers.prev,
-body.tax-product_cat .lk-archive-products__pagination a.page-numbers.next {
-  font-size: 1rem;
-  line-height: 1;
-  direction: ltr;
-  unicode-bidi: isolate;
-}
-
-/* Prefer our nav over Elementor / Woo leftovers on category archives */
 body.tax-product_cat .elementor-pagination,
 body.tax-product_cat .woocommerce-pagination {
   display: none !important;

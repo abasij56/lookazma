@@ -9,6 +9,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( isset( $_GET['login'] ) && class_exists( 'Hello_Elementor_Child_Light_Login_Template' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$login_entry = Hello_Elementor_Child_Light_Login_Template::get_template_path();
+	if ( file_exists( $login_entry ) ) {
+		include $login_entry;
+		return;
+	}
+}
+
 if ( ! class_exists( '\Timber\Timber' )
 	|| ! class_exists( 'Hello_Elementor_Child_Light_Homepage_Template' )
 	|| ! class_exists( 'Hello_Elementor_Child_Light_Product_Template' )

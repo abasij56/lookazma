@@ -23,7 +23,6 @@ $context = array_merge(
 ob_start();
 language_attributes();
 $context['html_language_attributes'] = trim( ob_get_clean() );
-$context['body_class']               = implode( ' ', get_body_class( 'lk-light-product lk-shop-cards-archive lz-chrome' ) );
 
 $css_file = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-light-product.css';
 $context['light_css_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-light-product.css';
@@ -105,6 +104,12 @@ if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' )
 		}
 	}
 }
+
+$extra_body = 'lk-light-product lk-shop-cards-archive lz-chrome';
+if ( in_array( $kind, array( 'shop', 'page' ), true ) ) {
+	$extra_body .= ' lk-light-shop';
+}
+$context['body_class'] = implode( ' ', get_body_class( $extra_body ) );
 
 $breadcrumb_html = function_exists( 'hello_elementor_child_get_breadcrumb_html' )
 	? hello_elementor_child_get_breadcrumb_html()

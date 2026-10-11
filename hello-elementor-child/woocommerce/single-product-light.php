@@ -27,6 +27,34 @@ if ( ! $product ) {
 }
 
 /**
+ * Inline Lucide SVG from assets/icons/ (needed files only).
+ *
+ * @param string $file Filename e.g. star.svg.
+ */
+$lk_icon = static function ( string $file ): string {
+	$file = basename( $file );
+	if ( ! preg_match( '/^[a-z0-9\-]+\.svg$/i', $file ) ) {
+		return '';
+	}
+	$path = HELLO_ELEMENTOR_CHILD_PATH . 'assets/icons/' . $file;
+	if ( ! is_readable( $path ) ) {
+		return '';
+	}
+	$svg = (string) file_get_contents( $path );
+	if ( '' === $svg ) {
+		return '';
+	}
+	$svg = preg_replace( '/\s(width|height)="[^"]*"/i', '', $svg, 2 );
+	$svg = preg_replace(
+		'/<svg\b/i',
+		'<svg class="lk-product-icon" width="24" height="24" aria-hidden="true" focusable="false"',
+		$svg,
+		1
+	);
+	return is_string( $svg ) ? $svg : '';
+};
+
+/**
  * Scalar ACF/meta helper (supports file/image arrays).
  *
  * @param int    $post_id Product ID.
@@ -314,11 +342,15 @@ $context['post'] = \Timber\Timber::get_post( $post_id );
 ob_start();
 language_attributes();
 $context['html_language_attributes'] = trim( ob_get_clean() );
-$context['body_class']               = implode( ' ', get_body_class( 'lk-single-product-light lk-light-product lz-chrome' ) );
+$context['body_class']               = implode( ' ', get_body_class( 'lk-single-product-light lk-light-product lk-shop-cards-archive lz-chrome' ) );
 
 $chrome_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-light-product.css';
 $context['light_css_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-light-product.css';
 $context['light_css_ver'] = file_exists( $chrome_css ) ? (string) filemtime( $chrome_css ) : HELLO_ELEMENTOR_CHILD_VERSION;
+
+$shop_cards_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-product-shop-cards.css';
+$context['card_css_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-product-shop-cards.css';
+$context['card_css_ver'] = file_exists( $shop_cards_css ) ? (string) filemtime( $shop_cards_css ) : HELLO_ELEMENTOR_CHILD_VERSION;
 
 $spl_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/single-product-light.css';
 $context['spl_css_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/single-product-light.css';
@@ -448,26 +480,30 @@ if ( '' === $brand_name ) {
 	$brand_name = $lk_attr( $attr_map, array( 'برند', 'Brand' ) );
 }
 
-// Highlight specs: 2-column card (grade, purity, country, packaging).
+// Highlight specs: grade, purity, country, packaging (Lucide icons).
 $highlight_defs = array(
 	array(
 		'label'   => 'گرید',
 		'icon'    => 'grade',
+		'file'    => 'star.svg',
 		'aliases' => array( 'گرید', 'Grade' ),
 	),
 	array(
 		'label'   => 'درصد خلوص',
 		'icon'    => 'purity',
+		'file'    => 'beaker.svg',
 		'aliases' => array( 'درصد خلوص', 'خلوص', 'Purity' ),
 	),
 	array(
 		'label'   => 'کشور تولید کننده',
 		'icon'    => 'country',
+		'file'    => 'globe.svg',
 		'aliases' => array( 'کشور تولید کننده', 'کشور سازنده', 'کشور', 'Country' ),
 	),
 	array(
 		'label'   => 'بسته بندی',
 		'icon'    => 'packaging',
+		'file'    => 'layers.svg',
 		'aliases' => array( 'بسته بندی', 'بسته‌بندی', 'Packaging', 'Pack size' ),
 	),
 );
@@ -479,14 +515,22 @@ foreach ( $highlight_defs as $def ) {
 		continue;
 	}
 	$highlights[] = array(
-		'label' => $def['label'],
-		'value' => $value,
-		'icon'  => $def['icon'],
+		'label'     => $def['label'],
+		'value'     => $value,
+		'icon'      => $def['icon'],
+		'icon_html' => $lk_icon( $def['file'] ),
 	);
 }
 
-// Full attributes table extras.
-$table_attrs = $attributes_list;
+// Full attributes table extras (CAS lives in the hero meta — omit from table).
+$table_attrs = array();
+foreach ( $attributes_list as $row ) {
+	$label = isset( $row['label'] ) ? (string) $row['label'] : '';
+	if ( preg_match( '/^cas(\s|$|number|no\.?)/iu', $label ) || false !== mb_stripos( $label, 'CAS' ) ) {
+		continue;
+	}
+	$table_attrs[] = $row;
+}
 if ( '' !== $brand_name ) {
 	$has_brand = false;
 	foreach ( $table_attrs as $row ) {
@@ -502,12 +546,6 @@ if ( '' !== $brand_name ) {
 		);
 	}
 }
-if ( '' !== $cas_no ) {
-	$table_attrs[] = array(
-		'label' => 'CAS Number',
-		'value' => $cas_no,
-	);
-}
 if ( $product->get_sku() ) {
 	$table_attrs[] = array(
 		'label' => 'SKU',
@@ -519,38 +557,44 @@ $breadcrumb_html = function_exists( 'hello_elementor_child_get_breadcrumb_html' 
 	? hello_elementor_child_get_breadcrumb_html()
 	: '';
 
+// WooCommerce variation/add-to-cart templates read global $product.
+$GLOBALS['product'] = $product;
+$GLOBALS['post']    = get_post( $post_id );
+if ( function_exists( 'wc_setup_product_data' ) && isset( $GLOBALS['post'] ) && $GLOBALS['post'] instanceof WP_Post ) {
+	wc_setup_product_data( $GLOBALS['post'] );
+}
+
+/* Ensure our variable ATC override is hooked before capturing HTML. */
+if (
+	class_exists( 'Hello_Elementor_Child_Custom_Single_Product' )
+	&& method_exists( 'Hello_Elementor_Child_Custom_Single_Product', 'maybe_override_variable_add_to_cart' )
+) {
+	Hello_Elementor_Child_Custom_Single_Product::maybe_override_variable_add_to_cart();
+}
+
 ob_start();
 woocommerce_template_single_add_to_cart();
 $add_to_cart_html = ob_get_clean();
 
 $reviews_html = '';
-if ( comments_open( $post_id ) || get_comments_number( $post_id ) ) {
-	global $post, $withcomments;
-	$post         = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-	$withcomments = true;
-	setup_postdata( $post );
-	ob_start();
-	comments_template();
-	$reviews_html = ob_get_clean();
-	wp_reset_postdata();
-}
+global $post, $withcomments;
+$post         = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+$withcomments = true;
+setup_postdata( $post );
+ob_start();
+comments_template();
+$reviews_html = trim( (string) ob_get_clean() );
+wp_reset_postdata();
 
-$related_items = array();
-if ( function_exists( 'wc_get_related_products' ) ) {
+$related_html = '';
+if ( function_exists( 'wc_get_related_products' ) && class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' ) ) {
 	$related_ids = wc_get_related_products( $post_id, 4 );
 	foreach ( $related_ids as $related_id ) {
-		$related = wc_get_product( $related_id );
+		$related = wc_get_product( (int) $related_id );
 		if ( ! $related ) {
 			continue;
 		}
-		$thumb_id          = $related->get_image_id();
-		$related_items[] = array(
-			'id'         => $related->get_id(),
-			'name'       => $related->get_name(),
-			'permalink'  => get_permalink( $related->get_id() ),
-			'price_html' => $related->get_price_html(),
-			'image'      => $thumb_id ? wp_get_attachment_image_url( $thumb_id, 'medium' ) : '',
-		);
+		$related_html .= Hello_Elementor_Child_Archive_Product_Filter::render_product_card_html( $related, 'shop' );
 	}
 }
 
@@ -575,14 +619,38 @@ $context['product_data'] = array(
 	'image'            => $image,
 	'attributes'       => $table_attrs,
 	'highlights'       => $highlights,
+	'badges'           => array(
+		array(
+			'label'     => 'تحویل فوری سراسر کشور',
+			'icon_html' => $lk_icon( 'truck.svg' ),
+		),
+		array(
+			'label'     => 'ضمانت اصالت کالا',
+			'icon_html' => $lk_icon( 'shield-check.svg' ),
+		),
+		array(
+			'label'     => 'پشتیبانی ۲۴/۷',
+			'icon_html' => $lk_icon( 'headset.svg' ),
+		),
+	),
+	'datasheet_icon_html' => $lk_icon( 'file-text.svg' ),
+	'share_icon_html'     => $lk_icon( 'share-2.svg' ),
+	'compare_icon_html'   => $lk_icon( 'compare.svg' ),
+	'link_icon_html'      => $lk_icon( 'link.svg' ),
+	'send_icon_html'      => $lk_icon( 'send.svg' ),
+	'truck_icon_html'     => $lk_icon( 'truck.svg' ),
 	'permalink'        => get_permalink( $post_id ),
+	'share_whatsapp_url' => 'https://wa.me/?text=' . rawurlencode( $product->get_name() . ' — ' . get_permalink( $post_id ) ),
+	'share_telegram_url' => 'https://t.me/share/url?url=' . rawurlencode( get_permalink( $post_id ) ) . '&text=' . rawurlencode( $product->get_name() ),
 	'add_to_cart_html' => $add_to_cart_html,
 	'breadcrumb_html'  => $breadcrumb_html,
 	'reviews_html'     => $reviews_html,
-	'related'          => $related_items,
+	'related_html'     => $related_html,
 	'shipping_url'     => home_url( '/sending-goods/' ),
 	'whatsapp_url'     => 'https://wa.me/989122114322',
-	'price_notice'     => 'به علت نوسانات قیمت لطفا قبل از اقدام به خرید از طریق تماس تلفنی استعلام قیمت بگیرید',
+	'price_notice'     => class_exists( 'Hello_Elementor_Child_Custom_Single_Product' )
+		? Hello_Elementor_Child_Custom_Single_Product::get_price_notice()
+		: 'به علت نوسانات قیمت لطفا قبل از اقدام به خرید از طریق تماس تلفنی استعلام قیمت بگیرید',
 );
 
 // Debug marker: if this appears in View Source, light PHP template ran.

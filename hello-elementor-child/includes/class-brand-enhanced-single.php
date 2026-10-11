@@ -16,6 +16,8 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 
 	public const META_KEY = '_lk_use_enhanced_brand';
 
+	public const META_KEY_HERO_COVER = '_lk_brand_hero_cover';
+
 	public const SCOPE_TAXONOMY = 'lk_brand';
 
 	/**
@@ -39,6 +41,19 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 			return false;
 		}
 		return 'yes' === get_post_meta( (int) $post->ID, self::META_KEY, true );
+	}
+
+	/**
+	 * Whether cover (full-bleed image) hero is enabled for a brand.
+	 *
+	 * @param int|WP_Post|null $brand Brand post or ID.
+	 */
+	public static function is_hero_cover_for( $brand = null ): bool {
+		$post = self::resolve_brand_post( $brand );
+		if ( ! $post instanceof WP_Post ) {
+			return false;
+		}
+		return 'yes' === get_post_meta( (int) $post->ID, self::META_KEY_HERO_COVER, true );
 	}
 
 	/**
@@ -83,22 +98,20 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 	 * Register toggle meta.
 	 */
 	public static function register_post_meta(): void {
-		register_post_meta(
-			Hello_Elementor_Child_Brand_Cpt::POST_TYPE,
-			self::META_KEY,
-			array(
-				'type'              => 'string',
-				'single'            => true,
-				'default'           => '',
-				'show_in_rest'      => true,
-				'auth_callback'     => static function (): bool {
-					return current_user_can( 'edit_posts' );
-				},
-				'sanitize_callback' => static function ( $value ): string {
-					return 'yes' === $value ? 'yes' : '';
-				},
-			)
+		$args = array(
+			'type'              => 'string',
+			'single'            => true,
+			'default'           => '',
+			'show_in_rest'      => true,
+			'auth_callback'     => static function (): bool {
+				return current_user_can( 'edit_posts' );
+			},
+			'sanitize_callback' => static function ( $value ): string {
+				return 'yes' === $value ? 'yes' : '';
+			},
 		);
+		register_post_meta( Hello_Elementor_Child_Brand_Cpt::POST_TYPE, self::META_KEY, $args );
+		register_post_meta( Hello_Elementor_Child_Brand_Cpt::POST_TYPE, self::META_KEY_HERO_COVER, $args );
 	}
 
 	/**
@@ -119,15 +132,24 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 	 * @param WP_Post $post Brand post.
 	 */
 	public static function render_meta_box( WP_Post $post ): void {
-		$enabled = self::is_enabled_for( $post );
+		$enabled     = self::is_enabled_for( $post );
+		$hero_cover  = self::is_hero_cover_for( $post );
 		wp_nonce_field( 'lk_enhanced_brand_save', 'lk_enhanced_brand_nonce' );
 		?>
-		<label for="<?php echo esc_attr( self::META_KEY ); ?>" style="display:flex;gap:0.5rem;align-items:flex-start;cursor:pointer;">
+		<label for="<?php echo esc_attr( self::META_KEY ); ?>" style="display:flex;gap:0.5rem;align-items:flex-start;cursor:pointer;margin-bottom:0.85rem;">
 			<input type="checkbox" name="<?php echo esc_attr( self::META_KEY ); ?>" id="<?php echo esc_attr( self::META_KEY ); ?>" value="yes" <?php checked( $enabled ); ?> style="margin-top:0.2rem;">
 			<span>
 				<strong><?php esc_html_e( 'تمپلیت پیشرفته برند', 'hello-elementor-child' ); ?></strong>
 				<br>
 				<span class="description"><?php esc_html_e( 'چیدمان جدید با هیرو، آمار، محصولات از فیلد برند و بخش‌های محتوایی.', 'hello-elementor-child' ); ?></span>
+			</span>
+		</label>
+		<label for="<?php echo esc_attr( self::META_KEY_HERO_COVER ); ?>" style="display:flex;gap:0.5rem;align-items:flex-start;cursor:pointer;">
+			<input type="checkbox" name="<?php echo esc_attr( self::META_KEY_HERO_COVER ); ?>" id="<?php echo esc_attr( self::META_KEY_HERO_COVER ); ?>" value="yes" <?php checked( $hero_cover ); ?> style="margin-top:0.2rem;">
+			<span>
+				<strong><?php esc_html_e( 'هیرو تمام‌عرض با تصویر پس‌زمینه', 'hello-elementor-child' ); ?></strong>
+				<br>
+				<span class="description"><?php esc_html_e( 'تصویر هیرو کل باکس را می‌پوشاند (نسبت ۵:۲، مثلاً ۱۹۸۳×۷۹۳) و متن روی آن نمایش داده می‌شود. نیاز به تصویر هیرو بنر دارد.', 'hello-elementor-child' ); ?></span>
 			</span>
 		</label>
 		<?php
@@ -155,6 +177,9 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 
 		$value = isset( $_POST[ self::META_KEY ] ) && 'yes' === $_POST[ self::META_KEY ] ? 'yes' : '';
 		update_post_meta( $post_id, self::META_KEY, $value );
+
+		$cover = isset( $_POST[ self::META_KEY_HERO_COVER ] ) && 'yes' === $_POST[ self::META_KEY_HERO_COVER ] ? 'yes' : '';
+		update_post_meta( $post_id, self::META_KEY_HERO_COVER, $cover );
 	}
 
 	/**
@@ -465,7 +490,6 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 			$filters_html = Hello_Elementor_Child_Archive_Product_Filter::render_filters_html(
 				array(
 					'scope_brand_id'    => $brand_id,
-					'panels_open'       => true,
 					'max_visible_items' => 3,
 				)
 			);
@@ -478,28 +502,32 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 
 		$stats = array(
 			array(
-				'icon'  => 'products',
-				'label' => __( 'تعداد محصولات', 'hello-elementor-child' ),
-				'value' => sprintf(
+				'icon'      => 'products',
+				'icon_html' => self::icon_html( 'layout-grid.svg' ),
+				'label'     => __( 'تعداد محصولات', 'hello-elementor-child' ),
+				'value'     => sprintf(
 					/* translators: %d: product count */
 					__( '%d محصول', 'hello-elementor-child' ),
 					(int) $query->found_posts
 				),
 			),
 			array(
-				'icon'  => 'calendar',
-				'label' => __( 'سال تاسیس', 'hello-elementor-child' ),
-				'value' => trim( (string) ( $acf( 'brand_established_year' ) ?? '' ) ),
+				'icon'      => 'calendar',
+				'icon_html' => self::icon_html( 'calendar.svg' ),
+				'label'     => __( 'سال تاسیس', 'hello-elementor-child' ),
+				'value'     => trim( (string) ( $acf( 'brand_established_year' ) ?? '' ) ),
 			),
 			array(
-				'icon'  => 'globe',
-				'label' => __( 'کشور سازنده', 'hello-elementor-child' ),
-				'value' => trim( (string) ( $acf( 'brand_country' ) ?? '' ) ),
+				'icon'      => 'globe',
+				'icon_html' => self::icon_html( 'globe.svg' ),
+				'label'     => __( 'کشور سازنده', 'hello-elementor-child' ),
+				'value'     => trim( (string) ( $acf( 'brand_country' ) ?? '' ) ),
 			),
 			array(
-				'icon'  => 'flask',
-				'label' => __( 'حوزه فعالیت', 'hello-elementor-child' ),
-				'value' => trim( (string) ( $acf( 'brand_activity_field' ) ?? '' ) ),
+				'icon'      => 'flask',
+				'icon_html' => self::icon_html( 'flask-conical.svg' ),
+				'label'     => __( 'حوزه فعالیت', 'hello-elementor-child' ),
+				'value'     => trim( (string) ( $acf( 'brand_activity_field' ) ?? '' ) ),
 			),
 		);
 		$stats = array_values(
@@ -526,7 +554,7 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 			'excerpt'         => $excerpt,
 			'logo'            => $logo,
 			'hero_image'      => $hero_image,
-			'icons_url'       => HELLO_ELEMENTOR_CHILD_URI . 'assets/icons/brand-enhanced/',
+			'hero_cover'      => self::is_hero_cover_for( $brand ) && ! empty( $hero_image ),
 			'catalog_url'     => $catalog_url,
 			'website_url'     => $website,
 			'stats'           => $stats,
@@ -739,10 +767,44 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 	}
 
 	/**
+	 * Inline Lucide SVG from assets/icons/ (needed files only).
+	 *
+	 * @param string $file Filename e.g. truck.svg.
+	 */
+	private static function icon_html( string $file ): string {
+		$file = basename( $file );
+		if ( ! preg_match( '/^[a-z0-9\-]+\.svg$/i', $file ) ) {
+			return '';
+		}
+		$path = HELLO_ELEMENTOR_CHILD_PATH . 'assets/icons/' . $file;
+		if ( ! is_readable( $path ) ) {
+			return '';
+		}
+		$svg = (string) file_get_contents( $path );
+		if ( '' === $svg ) {
+			return '';
+		}
+		$svg = preg_replace( '/\s(width|height)="[^"]*"/i', '', $svg, 2 );
+		$svg = preg_replace(
+			'/<svg\b/i',
+			'<svg class="lk-brand-icon" width="24" height="24" aria-hidden="true" focusable="false"',
+			$svg,
+			1
+		);
+		return is_string( $svg ) ? $svg : '';
+	}
+
+	/**
 	 * @param mixed $rows Repeater rows.
-	 * @return array<int, array{icon:string,title:string,text:string}>
+	 * @return array<int, array{icon:string,icon_html:string,title:string,text:string}>
 	 */
 	private static function normalize_why_buy( $rows ): array {
+		$icon_map = array(
+			'shield'  => 'shield-check.svg',
+			'truck'   => 'truck.svg',
+			'consult' => 'headset.svg',
+			'invoice' => 'file-text.svg',
+		);
 		$items = array();
 		if ( is_array( $rows ) ) {
 			$icons = array( 'shield', 'truck', 'consult', 'invoice' );
@@ -756,10 +818,12 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 				if ( '' === $title && '' === $text ) {
 					continue;
 				}
+				$key     = $icons[ $i % count( $icons ) ];
 				$items[] = array(
-					'icon'  => $icons[ $i % count( $icons ) ],
-					'title' => $title,
-					'text'  => $text,
+					'icon'      => $key,
+					'icon_html' => self::icon_html( $icon_map[ $key ] ),
+					'title'     => $title,
+					'text'      => $text,
 				);
 				++$i;
 			}
@@ -769,7 +833,7 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 			return $items;
 		}
 
-		return array(
+		$defaults = array(
 			array(
 				'icon'  => 'shield',
 				'title' => __( 'تضمین اصالت', 'hello-elementor-child' ),
@@ -791,6 +855,11 @@ final class Hello_Elementor_Child_Brand_Enhanced_Single {
 				'text'  => __( 'صدور فاکتور رسمی برای خریدهای سازمانی.', 'hello-elementor-child' ),
 			),
 		);
+		foreach ( $defaults as &$item ) {
+			$item['icon_html'] = self::icon_html( $icon_map[ $item['icon'] ] );
+		}
+		unset( $item );
+		return $defaults;
 	}
 
 	/**

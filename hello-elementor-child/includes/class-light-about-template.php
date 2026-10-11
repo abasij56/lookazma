@@ -547,7 +547,7 @@ final class Hello_Elementor_Child_Light_About_Template {
 	/**
 	 * Why Lookazma feature cards.
 	 *
-	 * @return array<int, array{icon:string,title:string,text:string}>
+	 * @return array<int, array{icon:string,icon_html:string,title:string,text:string}>
 	 */
 	private static function get_features(): array {
 		$items = array(
@@ -578,7 +578,8 @@ final class Hello_Elementor_Child_Light_About_Template {
 			),
 		);
 
-		return apply_filters( 'lk_light_about_features', $items );
+		$items = apply_filters( 'lk_light_about_features', $items );
+		return self::attach_icon_html( $items );
 	}
 
 	/**
@@ -600,7 +601,7 @@ final class Hello_Elementor_Child_Light_About_Template {
 	/**
 	 * Commitments sidebar.
 	 *
-	 * @return array<int, array{icon:string,title:string,text:string}>
+	 * @return array<int, array{icon:string,icon_html:string,title:string,text:string}>
 	 */
 	private static function get_commitments(): array {
 		$items = array(
@@ -626,7 +627,71 @@ final class Hello_Elementor_Child_Light_About_Template {
 			),
 		);
 
-		return apply_filters( 'lk_light_about_commitments', $items );
+		$items = apply_filters( 'lk_light_about_commitments', $items );
+		return self::attach_icon_html( $items );
+	}
+
+	/**
+	 * Map logical icon keys → local Lucide SVG filenames (only what this page needs).
+	 *
+	 * @param string $key Logical key.
+	 */
+	private static function icon_file_for_key( string $key ): string {
+		$map = array(
+			'truck'   => 'truck.svg',
+			'consult' => 'headset.svg',
+			'price'   => 'circle-dollar-sign.svg',
+			'quality' => 'shield-check.svg',
+			'flask'   => 'flask-conical.svg',
+		);
+		return $map[ $key ] ?? 'shield-check.svg';
+	}
+
+	/**
+	 * @param array<int, array<string, mixed>> $items Feature/commitment rows.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function attach_icon_html( array $items ): array {
+		foreach ( $items as $i => $item ) {
+			$key = isset( $item['icon'] ) ? (string) $item['icon'] : 'quality';
+			$items[ $i ]['icon_html'] = self::icon_html( self::icon_file_for_key( $key ), 'lk-about-icon', 28 );
+		}
+		return $items;
+	}
+
+	/**
+	 * Inline Lucide SVG from assets/icons/ (needed files only).
+	 *
+	 * @param string $file  Filename e.g. truck.svg.
+	 * @param string $class SVG class.
+	 * @param int    $size  Pixel size.
+	 */
+	public static function icon_html( string $file, string $class = 'lk-about-icon', int $size = 24 ): string {
+		$file = basename( $file );
+		if ( ! preg_match( '/^[a-z0-9\-]+\.svg$/i', $file ) ) {
+			return '';
+		}
+		$path = HELLO_ELEMENTOR_CHILD_PATH . 'assets/icons/' . $file;
+		if ( ! is_readable( $path ) ) {
+			return '';
+		}
+		$svg = (string) file_get_contents( $path );
+		if ( '' === $svg ) {
+			return '';
+		}
+		$size = max( 12, min( 48, $size ) );
+		$svg  = preg_replace( '/\s(width|height)="[^"]*"/i', '', $svg, 2 );
+		$svg  = preg_replace(
+			'/<svg\b/i',
+			sprintf(
+				'<svg class="%1$s" width="%2$d" height="%2$d" aria-hidden="true" focusable="false"',
+				esc_attr( $class ),
+				$size
+			),
+			$svg,
+			1
+		);
+		return is_string( $svg ) ? $svg : '';
 	}
 
 	/**

@@ -1,21 +1,5 @@
 {% extends "woo/base-light-product.twig" %}
 
-{% macro about_icon(name) %}
-	{% if name == 'truck' %}
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M3 4h11v9h2.6l2.2-3H22v8h-1.1a2.9 2.9 0 0 1-5.8 0H10a2.9 2.9 0 0 1-5.8 0H3V4zm2.1 13.5A1.4 1.4 0 1 0 6.5 16a1.4 1.4 0 0 0-1.4 1.5zm11 0A1.4 1.4 0 1 0 17.5 16a1.4 1.4 0 0 0-1.4 1.5zM5 6v8h8V6H5z"/></svg>
-	{% elseif name == 'consult' %}
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M12 3a7 7 0 0 0-7 7v4a3 3 0 0 0 3 3h1v-6H7a5 5 0 0 1 10 0h-2v6h1a3 3 0 0 0 3-3v-4a7 7 0 0 0-7-7zm-3 16h6v2H9v-2z"/></svg>
-	{% elseif name == 'price' %}
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M12 2 3.5 6.5v5.3C3.5 17 7.3 21.2 12 22c4.7-.8 8.5-5 8.5-10.2V6.5L12 2zm0 4.2c1.9 0 3.4.6 3.4 2.1 0 1.3-1 1.9-2.6 2.2l-.8.2v.9h1.7v1.5h-1.7V14h-2v-1.1H8.8V11h1.2v-.8c-1.5-.4-2.4-1.3-2.4-2.8C7.6 5.8 9.4 5 12 4.8zm0 1.6c-.9 0-1.5.3-1.5.8s.6.8 1.6.9c.9-.1 1.5-.4 1.5-.8s-.6-.9-1.6-.9z"/></svg>
-	{% elseif name == 'quality' %}
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M12 2 4 5v6.5c0 4.8 3.2 8.9 8 10 4.8-1.1 8-5.2 8-10V5l-8-3zm-1.1 13.2-3.1-3.1 1.4-1.4 1.7 1.7 4.2-4.2 1.4 1.4-5.6 5.6z"/></svg>
-	{% else %}
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M9 3h6v2h-1v3.2A6 6 0 0 1 18 14c0 2.4-1.4 4.4-3.5 5.4V21h-5v-1.6A6 6 0 0 1 6 14c0-2.3 1.3-4.3 3-5.3V5H9V3zm3 5a4 4 0 0 0-4 4c0 1.8 1.2 3.3 2.8 3.8l.7.2V19h1v-1.9l.7-.2A4 4 0 0 0 16 13a4 4 0 0 0-4-4z"/></svg>
-	{% endif %}
-{% endmacro %}
-
-{% import _self as icons %}
-
 {% block content %}
 {% if about %}
 <div class="lk-lpt lk-lpt-container lk-about-page">
@@ -54,7 +38,7 @@
 					{% for item in about.commitments %}
 						<li class="lk-about-commit__item">
 							<div class="lk-about-commit__icon" aria-hidden="true">
-								{{ icons.about_icon(item.icon|default('quality')) }}
+								{{ item.icon_html|raw }}
 							</div>
 							<div>
 								<h3 class="lk-about-commit__name">{{ item.title }}</h3>
@@ -74,7 +58,7 @@
 				{% for item in about.features %}
 					<article class="lk-about-feature">
 						<div class="lk-about-feature__icon" aria-hidden="true">
-							{{ icons.about_icon(item.icon|default('flask')) }}
+							{{ item.icon_html|raw }}
 						</div>
 						<h3 class="lk-about-feature__title">{{ item.title }}</h3>
 						<p class="lk-about-feature__text">{{ item.text }}</p>

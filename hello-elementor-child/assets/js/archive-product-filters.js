@@ -391,6 +391,10 @@
 		return payload;
 	}
 
+	function isMobileFiltersViewport() {
+		return window.matchMedia('(max-width: 899px)').matches;
+	}
+
 	function panelHasSelection(panel) {
 		if (panel.hasAttribute('data-lk-filter-key')) {
 			return qsa('input[type="checkbox"]:checked', panel).length > 0;
@@ -407,11 +411,33 @@
 	}
 
 	function syncPanelOpenState(root) {
-		var keepOpen = cfg.panelsOpenDefault
-			|| (root && root.classList.contains('lk-archive-filters--panels-open'));
+		var desktopDefault =
+			cfg.panelsOpenDefault ||
+			(root && root.classList.contains('lk-archive-filters--panels-open'));
+		/* Mobile: closed by default (global). Keep open only if panel has a selection. */
+		var keepOpen = desktopDefault && !isMobileFiltersViewport();
 		qsa('.lk-archive-filters__panel', root).forEach(function (panel) {
 			panel.open = keepOpen || panelHasSelection(panel);
 		});
+	}
+
+	function bindPanelOpenResize(root) {
+		if (!root || window.lkArchiveFiltersPanelResizeBound) {
+			return;
+		}
+		window.lkArchiveFiltersPanelResizeBound = true;
+		var mq = window.matchMedia('(max-width: 899px)');
+		var onChange = function () {
+			var liveRoot = qs('.lk-archive-filters');
+			if (liveRoot) {
+				syncPanelOpenState(liveRoot);
+			}
+		};
+		if (typeof mq.addEventListener === 'function') {
+			mq.addEventListener('change', onChange);
+		} else if (typeof mq.addListener === 'function') {
+			mq.addListener(onChange);
+		}
 	}
 
 	function applySearchFilter(panel) {
@@ -629,6 +655,7 @@
 
 		bindSearch(root);
 		syncPanelOpenState(root);
+		bindPanelOpenResize(root);
 
 		root.addEventListener('change', function (event) {
 			var t = event.target;

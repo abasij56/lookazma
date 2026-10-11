@@ -12,18 +12,34 @@
 	{% if account.logged_in %}
 	<div class="lk-account-layout">
 		<aside class="lk-account-sidebar" aria-label="{{ account.account_label }}">
-			<div class="lk-account-welcome">
-				<p class="lk-account-welcome__name">{{ account.display_name }}</p>
-				<p class="lk-account-welcome__hello">{{ account.welcome_suffix }}</p>
+			<div class="lk-account-profile">
+				<span class="lk-account-avatar">{{ account.avatar_icon|raw }}</span>
+				<div class="lk-account-profile__text">
+					<p class="lk-account-welcome__name">{{ account.display_name }}</p>
+					<p class="lk-account-welcome__hello">{{ account.welcome_suffix }}</p>
+				</div>
 			</div>
 			<nav class="lk-account-tabs" aria-label="{{ account.account_label }}">
-				<a class="lk-account-tab{% if account.active_tab == 'account' %} is-active{% endif %}" href="{{ account.account_url }}"{% if account.active_tab == 'account' %} aria-current="page"{% endif %}>{{ account.account_label }}</a>
-				<a class="lk-account-tab{% if account.active_tab == 'orders' %} is-active{% endif %}" href="{{ account.orders_url }}"{% if account.active_tab == 'orders' %} aria-current="page"{% endif %}>{{ account.orders_label }}</a>
-				<a class="lk-account-tab{% if account.active_tab == 'addresses' %} is-active{% endif %}" href="{{ account.address_url }}"{% if account.active_tab == 'addresses' %} aria-current="page"{% endif %}>{{ account.address_label }}</a>
+				<a class="lk-account-tab{% if account.active_tab == 'account' %} is-active{% endif %}" href="{{ account.account_url }}"{% if account.active_tab == 'account' %} aria-current="page"{% endif %}>
+					<span class="lk-account-tab__main">{{ account.account_icon|raw }}<span>{{ account.account_label }}</span></span>
+					{{ account.chevron_icon|raw }}
+				</a>
+				<a class="lk-account-tab{% if account.active_tab == 'orders' %} is-active{% endif %}" href="{{ account.orders_url }}"{% if account.active_tab == 'orders' %} aria-current="page"{% endif %}>
+					<span class="lk-account-tab__main">{{ account.orders_icon|raw }}<span>{{ account.orders_label }}</span></span>
+					{{ account.chevron_icon|raw }}
+				</a>
+				<a class="lk-account-tab{% if account.active_tab == 'addresses' %} is-active{% endif %}" href="{{ account.address_url }}"{% if account.active_tab == 'addresses' %} aria-current="page"{% endif %}>
+					<span class="lk-account-tab__main">{{ account.address_icon|raw }}<span>{{ account.address_label }}</span></span>
+					{{ account.chevron_icon|raw }}
+				</a>
 			</nav>
-			<a class="lk-account-logout" href="{{ account.logout_url }}">{{ account.logout_label }}</a>
+			<a class="lk-account-logout" href="{{ account.logout_url }}">{{ account.logout_icon|raw }}<span>{{ account.logout_label }}</span></a>
 		</aside>
 		<section class="lk-account-panel" aria-live="polite">
+			<header class="lk-account-panel__head">
+				{{ account.panel_icon|raw }}
+				<h1>{{ account.panel_title }}</h1>
+			</header>
 			<div class="woocommerce">
 				{{ account.content_html|raw }}
 			</div>

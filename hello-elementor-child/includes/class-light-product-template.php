@@ -35,6 +35,15 @@ final class Hello_Elementor_Child_Light_Product_Template {
 		add_action( 'customize_register', array( __CLASS__, 'register_customizer' ) );
 		add_filter( 'theme_page_templates', array( __CLASS__, 'register_page_template' ), 20, 4 );
 
+		add_filter( 'wp_nav_menu_objects', array( __CLASS__, 'mark_chemicals_nav_items' ), 20, 2 );
+		add_filter( 'wp_nav_menu_objects', array( __CLASS__, 'mark_brands_nav_items' ), 21, 2 );
+		add_filter( 'nav_menu_css_class', array( __CLASS__, 'chemicals_nav_item_classes' ), 20, 2 );
+		add_filter( 'nav_menu_css_class', array( __CLASS__, 'brands_nav_item_classes' ), 21, 2 );
+		add_filter( 'nav_menu_link_attributes', array( __CLASS__, 'chemicals_nav_link_attributes' ), 20, 2 );
+		add_filter( 'nav_menu_link_attributes', array( __CLASS__, 'brands_nav_link_attributes' ), 21, 2 );
+		add_filter( 'nav_menu_item_title', array( __CLASS__, 'chemicals_nav_item_title' ), 20, 2 );
+		add_filter( 'nav_menu_item_title', array( __CLASS__, 'brands_nav_item_title' ), 21, 2 );
+
 		add_filter( 'timber/locations', array( __CLASS__, 'add_timber_locations' ) );
 
 		add_action( 'template_redirect', array( __CLASS__, 'unhook_elementor_chrome' ), -5 );
@@ -53,9 +62,115 @@ final class Hello_Elementor_Child_Light_Product_Template {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'dequeue_listing_assets' ), 100 );
 		add_action( 'wp_print_styles', array( __CLASS__, 'dequeue_listing_assets' ), 100 );
 		add_action( 'wp_print_scripts', array( __CLASS__, 'dequeue_listing_assets' ), 100 );
+		add_action( 'wp_head', array( __CLASS__, 'print_critical_chrome_css' ), 3 );
+		add_filter( 'style_loader_tag', array( __CLASS__, 'mark_chrome_styles_no_async' ), 20, 2 );
 		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
 		add_filter( 'loop_shop_per_page', array( __CLASS__, 'filter_loop_per_page' ), 30 );
 		add_filter( 'woocommerce_add_to_cart_fragments', array( __CLASS__, 'cart_count_fragment' ) );
+	}
+
+	/**
+	 * Whether any native light chrome template is rendering.
+	 */
+	public static function uses_native_chrome(): bool {
+		if ( self::is_enabled() ) {
+			return true;
+		}
+
+		if ( class_exists( 'Hello_Elementor_Child_Product_Compare' )
+			&& method_exists( 'Hello_Elementor_Child_Product_Compare', 'is_light_front' )
+		) {
+			return Hello_Elementor_Child_Product_Compare::is_light_front();
+		}
+
+		return false;
+	}
+
+	/**
+	 * Critical header CSS in <head> so LiteSpeed async CSS cannot FOUC the chrome
+	 * (giant icons, dual search, open mobile nav) on cold first paint.
+	 */
+	public static function print_critical_chrome_css(): void {
+		if ( is_admin() || wp_doing_ajax() || ! self::uses_native_chrome() ) {
+			return;
+		}
+
+		echo '<style id="lk-light-chrome-critical">'
+			. 'html:has(body.lk-light-product){overflow-x:clip;transform:none!important}'
+			. 'body.lk-light-product{margin:0;overflow-x:clip;transform:none!important;padding-top:var(--lz-header-h,8rem)}'
+			. 'body.lk-light-product>.lz-site-header,'
+			. 'body.lk-light-product.search .lz-site-header,'
+			. 'body.lk-light-product.search-results .lz-site-header,'
+			. '.lz-site-header{position:fixed!important;top:0!important;left:0!important;right:0!important;z-index:10050!important;width:100%!important;max-width:none!important;margin:0!important;background:#fff;border-bottom:1px solid #e6eef4;transform:none!important}'
+			. '.lz-site-header__top{display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:center;min-height:64px;padding:.55rem 4%;background:#fff}'
+			. '.lz-site-header__logo img,.lz-site-header__logo .custom-logo{display:block;height:46px!important;width:auto!important;max-width:240px!important}'
+			. '.lz-search--desktop{display:none;width:100%;max-width:620px;margin-inline:auto}'
+			. '.lz-search-mobile{display:block;padding:0 4% .75rem;background:#fff}'
+			. '.lz-header-actions{display:inline-flex;align-items:center;gap:.45rem}'
+			. '.lz-account-btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.75rem;padding:.4rem .7rem;border:1px solid #d4e0ea;border-radius:12px;background:#fff;color:#001f3f;font-weight:800;font-size:.8rem;line-height:1;text-decoration:none;white-space:nowrap}'
+			. '.lz-account-btn__icon{display:inline-grid;place-items:center;width:18px!important;height:18px!important;flex:0 0 18px;overflow:hidden}'
+			. '.lz-account-btn__icon svg{width:18px!important;height:18px!important;max-width:18px!important;max-height:18px!important}'
+			. '.lz-cart-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .55rem;border:1px solid #d4e0ea;border-radius:12px;background:#fff;color:#001f3f;text-decoration:none}'
+			. '.lz-cart-btn__icon{position:relative;display:inline-grid;place-items:center;width:22px!important;height:22px!important;overflow:visible}'
+			. '.lz-cart-btn__icon svg{width:22px!important;height:22px!important;max-width:22px!important;max-height:22px!important}'
+			. '.lz-cart-btn__count{position:absolute;top:-4px;left:-4px;width:16px;height:16px;min-width:0;padding:0;border-radius:50%;background:#0f4c81;color:#fff;font-size:.62rem;font-weight:800;line-height:1;display:grid;place-items:center;box-sizing:border-box}'
+			. '.lz-cart-btn__price{display:none}'
+			. 'body.lk-light-product .lz-menu-toggle{display:none!important;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;padding:0;border:1px solid #d4e0ea;border-radius:12px;background:#fff;color:#001f3f}'
+			. 'body.lk-light-product .lz-menu-toggle__icon{display:block;width:22px!important;height:22px!important;max-width:22px!important;max-height:22px!important}'
+			. 'body.lk-light-product .lz-menu-toggle__icon--close{display:none}'
+			. '.lz-nav-backdrop{display:none}'
+			. '.lz-site-header__bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem;padding:.55rem 4% .8rem;border-top:1px solid #e6eef4;background:#fff}'
+			. '.lz-nav,.lz-nav__list{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem 1.1rem;list-style:none;margin:0;padding:0}'
+			. '.lz-phones{display:none}'
+			. '@media (min-width:900px){'
+			. '.lz-site-header__logo img,.lz-site-header__logo .custom-logo{height:56px!important;max-width:290px!important}'
+			. '.lz-search--desktop{display:block}'
+			. '.lz-search-mobile{display:none}'
+			. '.lz-cart-btn__price{display:inline}'
+			. '.lz-phones{display:flex}'
+			. '}'
+			. '@media (max-width:899px){'
+			. '.lz-site-header__top{grid-template-columns:minmax(0,1fr) auto}'
+			. '.lz-search--desktop{display:none!important}'
+			. 'body.lk-light-product .lz-menu-toggle{display:inline-flex!important}'
+			. '.lz-cart-btn__price{display:none!important}'
+			. '.lz-site-header__bottom{display:none!important}'
+			. 'body.lz-nav-open .lz-site-header__bottom{display:flex!important}'
+			. '}'
+			. '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Keep chrome CSS render-blocking under LiteSpeed "Load CSS Asynchronously".
+	 *
+	 * @param string $html   Link tag HTML.
+	 * @param string $handle Style handle.
+	 */
+	public static function mark_chrome_styles_no_async( string $html, string $handle ): string {
+		if ( ! self::uses_native_chrome() ) {
+			return $html;
+		}
+
+		$protected = array(
+			HELLO_ELEMENTOR_CHILD_VAZIRMATN_HANDLE,
+			'lk-light-product',
+			'lk-light-homepage',
+			'lk-lookazma-search',
+			'lk-shop-cards',
+			'lk-archive-shop-cards',
+			'lk-single-product-light',
+			'lk-light-compare',
+		);
+
+		if ( ! in_array( $handle, $protected, true ) ) {
+			return $html;
+		}
+
+		if ( false !== strpos( $html, 'data-no-async' ) ) {
+			return $html;
+		}
+
+		return str_replace( '<link ', '<link data-no-async="1" data-no-optimize="1" data-no-ucss="1" ', $html );
 	}
 
 	/**
@@ -349,6 +464,12 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			return false;
 		}
 
+		if ( class_exists( 'Hello_Elementor_Child_Light_Login_Template' )
+			&& Hello_Elementor_Child_Light_Login_Template::is_enabled()
+		) {
+			return false;
+		}
+
 		if ( class_exists( 'Hello_Elementor_Child_Archive_Product_Filter' )
 			&& Hello_Elementor_Child_Archive_Product_Filter::is_product_search_context()
 		) {
@@ -597,6 +718,10 @@ final class Hello_Elementor_Child_Light_Product_Template {
 		wp_enqueue_script( 'wc-cart-fragments' );
 		wp_enqueue_script( 'woocommerce' );
 
+		if ( class_exists( 'Hello_Elementor_Child_Product_Compare' ) ) {
+			Hello_Elementor_Child_Product_Compare::enqueue_assets( false );
+		}
+
 		$chrome_js = HELLO_ELEMENTOR_CHILD_PATH . 'assets/js/light-archive-chrome.js';
 		if ( file_exists( $chrome_js ) ) {
 			wp_enqueue_script(
@@ -781,6 +906,290 @@ final class Hello_Elementor_Child_Light_Product_Template {
 	}
 
 	/**
+	 * Whether a menu item is the chemicals category root.
+	 *
+	 * @param object $item Menu item.
+	 */
+	public static function is_chemicals_root_item( $item ): bool {
+		if ( ! is_object( $item ) ) {
+			return false;
+		}
+		if ( 'product_cat' === ( $item->object ?? '' ) ) {
+			$term = get_term( (int) ( $item->object_id ?? 0 ), 'product_cat' );
+			if ( $term && ! is_wp_error( $term ) && 'chemicals' === $term->slug ) {
+				return true;
+			}
+		}
+		$url = (string) ( $item->url ?? '' );
+		if ( '' === $url ) {
+			return false;
+		}
+		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+		$path = untrailingslashit( $path );
+		return (bool) preg_match( '#/product-category/chemicals$#', $path );
+	}
+
+	/**
+	 * Mark chemicals parent + children for scoped mega-submenu styling.
+	 *
+	 * @param array<int, object> $items Menu items.
+	 * @param object|array       $args  Menu args.
+	 * @return array<int, object>
+	 */
+	public static function mark_chemicals_nav_items( $items, $args ) {
+		if ( ! is_array( $items ) || array() === $items ) {
+			return $items;
+		}
+
+		$root_ids = array();
+		foreach ( $items as $item ) {
+			if ( self::is_chemicals_root_item( $item ) ) {
+				$root_ids[] = (int) $item->ID;
+				$classes    = is_array( $item->classes ) ? $item->classes : array();
+				$classes[]  = 'lz-nav__chemicals';
+				$item->classes = array_values( array_unique( $classes ) );
+			}
+		}
+
+		if ( array() === $root_ids ) {
+			return $items;
+		}
+
+		foreach ( $items as $item ) {
+			$parent = (int) ( $item->menu_item_parent ?? 0 );
+			if ( in_array( $parent, $root_ids, true ) ) {
+				$classes       = is_array( $item->classes ) ? $item->classes : array();
+				$classes[]     = 'lz-nav__chemicals-child';
+				$item->classes = array_values( array_unique( $classes ) );
+			}
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Extra class pass (keeps chemicals markers if another filter rebuilt classes).
+	 *
+	 * @param array<int, string> $classes Classes.
+	 * @param object             $item    Menu item.
+	 * @return array<int, string>
+	 */
+	public static function chemicals_nav_item_classes( $classes, $item ) {
+		$classes = is_array( $classes ) ? $classes : array();
+		if ( self::is_chemicals_root_item( $item ) ) {
+			$classes[] = 'lz-nav__chemicals';
+		}
+		return array_values( array_unique( $classes ) );
+	}
+
+	/**
+	 * Make chemicals parent unclickable (hover opens submenu).
+	 *
+	 * @param array<string, string> $atts Link attributes.
+	 * @param object                $item Menu item.
+	 * @return array<string, string>
+	 */
+	public static function chemicals_nav_link_attributes( $atts, $item ) {
+		$atts    = is_array( $atts ) ? $atts : array();
+		$classes = is_object( $item ) && is_array( $item->classes ) ? $item->classes : array();
+		if ( ! in_array( 'lz-nav__chemicals', $classes, true ) && ! self::is_chemicals_root_item( $item ) ) {
+			return $atts;
+		}
+
+		$atts['href']          = '#';
+		$atts['role']          = 'button';
+		$atts['aria-haspopup'] = 'true';
+		$atts['aria-expanded'] = 'false';
+		$atts['tabindex']      = '0';
+		$existing              = isset( $atts['class'] ) ? (string) $atts['class'] : '';
+		$atts['class']         = trim( $existing . ' lz-nav__chemicals-toggle' );
+		return $atts;
+	}
+
+	/**
+	 * Append category thumbnail for chemicals submenu children only.
+	 *
+	 * @param string $title Item title.
+	 * @param object $item  Menu item.
+	 */
+	public static function chemicals_nav_item_title( $title, $item ): string {
+		$title   = (string) $title;
+		$classes = is_object( $item ) && is_array( $item->classes ) ? $item->classes : array();
+		if ( ! in_array( 'lz-nav__chemicals-child', $classes, true ) ) {
+			return $title;
+		}
+		if ( ! is_object( $item ) || 'product_cat' !== ( $item->object ?? '' ) ) {
+			return $title;
+		}
+
+		$term_id = (int) ( $item->object_id ?? 0 );
+		$thumb   = '';
+		if ( $term_id > 0 ) {
+			$thumb_id = (int) get_term_meta( $term_id, 'thumbnail_id', true );
+			if ( $thumb_id > 0 ) {
+				$src = wp_get_attachment_image_url( $thumb_id, 'woocommerce_gallery_thumbnail' );
+				if ( ! is_string( $src ) || '' === $src ) {
+					$src = wp_get_attachment_image_url( $thumb_id, 'thumbnail' );
+				}
+				if ( is_string( $src ) && '' !== $src ) {
+					$thumb = sprintf(
+						'<img class="lz-nav__cat-thumb" src="%s" alt="" width="40" height="40" loading="lazy" decoding="async">',
+						esc_url( $src )
+					);
+				}
+			}
+		}
+		if ( '' === $thumb ) {
+			$thumb = '<span class="lz-nav__cat-thumb lz-nav__cat-thumb--empty" aria-hidden="true"></span>';
+		}
+
+		return $thumb . '<span class="lz-nav__cat-label">' . esc_html( wp_strip_all_tags( $title ) ) . '</span>';
+	}
+
+	/**
+	 * Whether a menu item is the brands / شرکت ها root.
+	 *
+	 * @param object $item Menu item.
+	 */
+	public static function is_brands_root_item( $item ): bool {
+		if ( ! is_object( $item ) ) {
+			return false;
+		}
+		if ( 'page' === ( $item->object ?? '' ) ) {
+			$post = get_post( (int) ( $item->object_id ?? 0 ) );
+			if ( $post instanceof WP_Post && 'brands' === $post->post_name ) {
+				return true;
+			}
+		}
+		$title = isset( $item->title ) ? wp_strip_all_tags( (string) $item->title ) : '';
+		if ( 'شرکت ها' === $title || 'شرکت‌ها' === $title ) {
+			return true;
+		}
+		$url = (string) ( $item->url ?? '' );
+		if ( '' === $url ) {
+			return false;
+		}
+		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+		$path = untrailingslashit( $path );
+		return (bool) preg_match( '#/brands$#', $path );
+	}
+
+	/**
+	 * Mark brands parent + children for scoped mega-submenu styling.
+	 *
+	 * @param array<int, object> $items Menu items.
+	 * @param object|array       $args  Menu args.
+	 * @return array<int, object>
+	 */
+	public static function mark_brands_nav_items( $items, $args ) {
+		if ( ! is_array( $items ) || array() === $items ) {
+			return $items;
+		}
+
+		$root_ids = array();
+		foreach ( $items as $item ) {
+			if ( self::is_brands_root_item( $item ) ) {
+				$root_ids[]    = (int) $item->ID;
+				$classes       = is_array( $item->classes ) ? $item->classes : array();
+				$classes[]     = 'lz-nav__brands';
+				$item->classes = array_values( array_unique( $classes ) );
+			}
+		}
+
+		if ( array() === $root_ids ) {
+			return $items;
+		}
+
+		foreach ( $items as $item ) {
+			$parent = (int) ( $item->menu_item_parent ?? 0 );
+			if ( in_array( $parent, $root_ids, true ) ) {
+				$classes       = is_array( $item->classes ) ? $item->classes : array();
+				$classes[]     = 'lz-nav__brands-child';
+				$item->classes = array_values( array_unique( $classes ) );
+			}
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Extra class pass for brands root.
+	 *
+	 * @param array<int, string> $classes Classes.
+	 * @param object             $item    Menu item.
+	 * @return array<int, string>
+	 */
+	public static function brands_nav_item_classes( $classes, $item ) {
+		$classes = is_array( $classes ) ? $classes : array();
+		if ( self::is_brands_root_item( $item ) ) {
+			$classes[] = 'lz-nav__brands';
+		}
+		return array_values( array_unique( $classes ) );
+	}
+
+	/**
+	 * Brands parent: keep mega-menu class, link to /brands/.
+	 *
+	 * @param array<string, string> $atts Link attributes.
+	 * @param object                $item Menu item.
+	 * @return array<string, string>
+	 */
+	public static function brands_nav_link_attributes( $atts, $item ) {
+		$atts    = is_array( $atts ) ? $atts : array();
+		$classes = is_object( $item ) && is_array( $item->classes ) ? $item->classes : array();
+		if ( ! in_array( 'lz-nav__brands', $classes, true ) && ! self::is_brands_root_item( $item ) ) {
+			return $atts;
+		}
+
+		$atts['href']          = home_url( '/brands/' );
+		$atts['aria-haspopup'] = 'true';
+		unset( $atts['role'], $atts['tabindex'] );
+		$existing      = isset( $atts['class'] ) ? (string) $atts['class'] : '';
+		$atts['class'] = trim( $existing . ' lz-nav__brands-toggle' );
+		return $atts;
+	}
+
+	/**
+	 * Brand featured image for شرکت ها submenu children only.
+	 *
+	 * @param string $title Item title.
+	 * @param object $item  Menu item.
+	 */
+	public static function brands_nav_item_title( $title, $item ): string {
+		$title   = (string) $title;
+		$classes = is_object( $item ) && is_array( $item->classes ) ? $item->classes : array();
+		if ( ! in_array( 'lz-nav__brands-child', $classes, true ) ) {
+			return $title;
+		}
+		if ( ! is_object( $item ) || 'brand' !== ( $item->object ?? '' ) ) {
+			return $title;
+		}
+
+		$post_id = (int) ( $item->object_id ?? 0 );
+		$thumb   = '';
+		if ( $post_id > 0 ) {
+			$thumb_id = (int) get_post_thumbnail_id( $post_id );
+			if ( $thumb_id > 0 ) {
+				$src = wp_get_attachment_image_url( $thumb_id, 'thumbnail' );
+				if ( ! is_string( $src ) || '' === $src ) {
+					$src = wp_get_attachment_image_url( $thumb_id, 'medium' );
+				}
+				if ( is_string( $src ) && '' !== $src ) {
+					$thumb = sprintf(
+						'<img class="lz-nav__cat-thumb" src="%s" alt="" width="40" height="40" loading="lazy" decoding="async">',
+						esc_url( $src )
+					);
+				}
+			}
+		}
+		if ( '' === $thumb ) {
+			$thumb = '<span class="lz-nav__cat-thumb lz-nav__cat-thumb--empty" aria-hidden="true"></span>';
+		}
+
+		return $thumb . '<span class="lz-nav__cat-label">' . esc_html( wp_strip_all_tags( $title ) ) . '</span>';
+	}
+
+	/**
 	 * Render a nav menu to HTML.
 	 *
 	 * @param array<int, string> $candidates Locations.
@@ -870,6 +1279,16 @@ final class Hello_Elementor_Child_Light_Product_Template {
 			'search_desktop'  => $search_desktop,
 			'search_mobile'   => $search_mobile,
 			'compare_url'       => $compare_url,
+			'compare_chrome_html' => class_exists( 'Hello_Elementor_Child_Product_Compare' )
+				? Hello_Elementor_Child_Product_Compare::get_tray_html()
+				: '',
+			'compare_css_url'      => class_exists( 'Hello_Elementor_Child_Product_Compare' )
+				&& file_exists( HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/light-compare.css' )
+				? HELLO_ELEMENTOR_CHILD_URI . 'assets/css/light-compare.css'
+				: '',
+			'compare_css_ver'      => file_exists( HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/light-compare.css' )
+				? (string) filemtime( HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/light-compare.css' )
+				: HELLO_ELEMENTOR_CHILD_VERSION,
 			'cart_url'          => $cart_url,
 			'cart_count'        => $cart['count'],
 			'cart_total'        => $cart['total'],

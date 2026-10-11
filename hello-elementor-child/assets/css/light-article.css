@@ -1,24 +1,61 @@
 /**
  * Light article / magazine listing — match Elementor loop sizes.
+ * Boss palette scoped to body.lk-light-article.
  */
+
+body.lk-light-article {
+	--lk-article-h1: #0f172a;
+	--lk-article-text: #334155;
+	--lk-article-muted: #64748b;
+	--lk-article-accent: #0f4c81;
+	--lk-article-accent-hover: #0a3a61;
+	--lk-article-page-bg: #eaf4ff;
+	--lk-article-line: #d8dde3;
+
+	--lk-lpt-bg: var(--lk-article-page-bg);
+	--lk-lpt-surface: #ffffff;
+	--lk-lpt-ink: var(--lk-article-h1);
+	--lk-lpt-muted: var(--lk-article-muted);
+	--lk-lpt-line: var(--lk-article-line);
+	--lk-lpt-accent: var(--lk-article-accent);
+	--lk-lpt-accent-2: var(--lk-article-accent-hover);
+
+	background: var(--lk-article-page-bg);
+	color: var(--lk-article-text);
+}
 
 body.lk-light-article .lk-lpt-main {
 	background:
-		radial-gradient(900px 320px at 100% -5%, rgba(13, 110, 110, 0.08), transparent 58%),
-		radial-gradient(700px 280px at 0% 0%, rgba(1, 30, 62, 0.06), transparent 55%),
-		var(--lk-lpt-bg, #f5f9fb);
+		radial-gradient(900px 320px at 100% -5%, rgba(15, 76, 129, 0.12), transparent 58%),
+		radial-gradient(700px 280px at 0% 0%, rgba(15, 76, 129, 0.07), transparent 55%),
+		var(--lk-article-page-bg);
+}
+
+body.lk-light-article .lk-lpt-breadcrumb,
+body.lk-light-article .lk-breadcrumb {
+	color: var(--lk-article-muted);
+}
+
+body.lk-light-article .lk-lpt-breadcrumb a,
+body.lk-light-article .lk-breadcrumb a {
+	color: var(--lk-article-accent);
+}
+
+body.lk-light-article .lk-lpt-breadcrumb a:hover,
+body.lk-light-article .lk-breadcrumb a:hover {
+	color: var(--lk-article-accent-hover);
 }
 
 .lk-article-page {
 	padding-bottom: 2.5rem;
-	color: var(--lk-lpt-ink, #0b1f3a);
+	color: var(--lk-article-text);
 }
 
 .lk-article-page__title {
 	margin: 0 0 1rem;
 	font-size: 1.35rem;
 	font-weight: 900;
-	color: #001f3f;
+	color: var(--lk-article-h1);
 }
 
 /* RTL: first column sits on the right = sidebar */
@@ -35,7 +72,6 @@ body.lk-light-article .lk-lpt-main {
 	gap: 0;
 }
 
-/* Loop item 8de6f3c */
 .lk-article-card-wrap {
 	display: flex;
 	flex-direction: column;
@@ -46,7 +82,6 @@ body.lk-light-article .lk-lpt-main {
 	box-sizing: border-box;
 }
 
-/* Card 33bedbb — Elementor size + liquid glass */
 .lk-article-card {
 	position: relative;
 	display: flex;
@@ -57,19 +92,13 @@ body.lk-light-article .lk-lpt-main {
 	isolation: isolate;
 	border-radius: 15px;
 	gap: 5px;
-	background:
-		linear-gradient(
-			155deg,
-			rgba(255, 255, 255, 0.78) 0%,
-			rgba(255, 255, 255, 0.42) 46%,
-			rgba(13, 110, 110, 0.08) 100%
-		);
-	border: 1.5px solid rgba(255, 255, 255, 0.92);
+	background: #fff;
+	border: 2px solid var(--lk-article-line, #d8dde3);
 	box-shadow:
-		0 14px 32px rgba(0, 31, 63, 0.12),
-		0 4px 10px rgba(13, 110, 110, 0.08),
+		0 14px 32px rgba(15, 76, 129, 0.1),
+		0 4px 10px rgba(15, 76, 129, 0.06),
 		inset 0 1px 1px rgba(255, 255, 255, 1),
-		inset 0 -1px 3px rgba(0, 31, 63, 0.05);
+		inset 0 -1px 3px rgba(15, 23, 42, 0.04);
 	-webkit-backdrop-filter: blur(22px) saturate(1.7);
 	backdrop-filter: blur(22px) saturate(1.7);
 	transition:
@@ -83,12 +112,7 @@ body.lk-light-article .lk-lpt-main {
 	position: absolute;
 	inset: 0;
 	border-radius: inherit;
-	background: linear-gradient(
-		180deg,
-		rgba(255, 255, 255, 0.72) 0%,
-		rgba(255, 255, 255, 0.16) 28%,
-		transparent 52%
-	);
+	background: none;
 	pointer-events: none;
 	z-index: 1;
 }
@@ -98,9 +122,7 @@ body.lk-light-article .lk-lpt-main {
 	position: absolute;
 	inset: 0;
 	border-radius: inherit;
-	background:
-		radial-gradient(120% 80% at 100% 0%, rgba(13, 110, 110, 0.2), transparent 55%),
-		radial-gradient(90% 70% at 0% 100%, rgba(0, 31, 63, 0.12), transparent 50%);
+	background: none;
 	pointer-events: none;
 	z-index: 1;
 	mix-blend-mode: overlay;
@@ -108,10 +130,11 @@ body.lk-light-article .lk-lpt-main {
 
 .lk-article-card:hover {
 	transform: translateY(-3px);
-	border-color: #fff;
+	border-width: 1px;
+	border-color: #7aabcf;
 	box-shadow:
-		0 20px 40px rgba(13, 110, 110, 0.16),
-		0 8px 18px rgba(0, 31, 63, 0.1),
+		0 20px 40px rgba(15, 76, 129, 0.14),
+		0 8px 18px rgba(15, 23, 42, 0.08),
 		inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
@@ -123,7 +146,7 @@ body.lk-light-article .lk-lpt-main {
 	height: 173px;
 	flex: 0 0 173px;
 	overflow: hidden;
-	background: rgba(243, 247, 251, 0.55);
+	background: #fff;
 }
 
 .lk-article-card__media::after {
@@ -135,7 +158,7 @@ body.lk-light-article .lk-lpt-main {
 	background: linear-gradient(
 		180deg,
 		transparent 0%,
-		rgba(245, 249, 251, 0.18) 45%,
+		rgba(234, 244, 255, 0.18) 45%,
 		rgba(255, 255, 255, 0.55) 100%
 	);
 	pointer-events: none;
@@ -175,15 +198,17 @@ body.lk-light-article .lk-lpt-main {
 	font-size: 14px;
 	font-weight: 500;
 	line-height: 1.6;
-	color: #0d6e6e;
-	background: rgba(255, 255, 255, 0.45);
-	border: 1px solid rgba(255, 255, 255, 0.8);
+	color: var(--lk-article-accent, #0f4c81);
+	background: #fff;
+	border: 2px solid var(--lk-article-line, #d8dde3);
 }
 
 .lk-article-card__date-icon {
 	width: 14px;
 	height: 14px;
 	flex: 0 0 14px;
+	stroke: currentColor;
+	fill: none;
 }
 
 .lk-article-card__title {
@@ -195,12 +220,12 @@ body.lk-light-article .lk-lpt-main {
 }
 
 .lk-article-card__title a {
-	color: #001f3f;
+	color: var(--lk-article-h1, #0f172a);
 	text-decoration: none;
 }
 
 .lk-article-card__title a:hover {
-	color: #0d6e6e;
+	color: var(--lk-article-accent, #0f4c81);
 }
 
 .lk-article-card__more {
@@ -216,10 +241,10 @@ body.lk-light-article .lk-lpt-main {
 	font-weight: 700;
 	line-height: 1.2;
 	letter-spacing: 0.02em;
-	color: #001f3f;
+	color: var(--lk-article-h1, #0f172a);
 	text-decoration: none;
 	white-space: nowrap;
-	border: 1px solid rgba(0, 31, 63, 0.14);
+	border: 1px solid rgba(15, 76, 129, 0.16);
 	border-radius: 10px;
 	background: #fff;
 	box-shadow: none;
@@ -237,16 +262,16 @@ body.lk-light-article .lk-lpt-main {
 	border-color: transparent;
 	background:
 		linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 42%),
-		linear-gradient(180deg, #128080 0%, #0d6e6e 100%);
+		linear-gradient(180deg, #1a5f9a 0%, #0f4c81 100%);
 	box-shadow:
 		inset 0 1px 0 rgba(255, 255, 255, 0.22),
-		0 8px 16px rgba(13, 110, 110, 0.28);
+		0 8px 16px rgba(15, 76, 129, 0.28);
 	transform: translateY(-1px);
 }
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
 	.lk-article-card {
-		background: linear-gradient(165deg, #ffffff 0%, #f4f8fb 100%);
+		background: #fff;
 	}
 }
 
@@ -259,16 +284,16 @@ body.lk-light-article .lk-lpt-main {
 .lk-article-side {
 	padding: 0.75rem 0.85rem 1rem;
 	border-radius: 16px;
-	border: 1px solid rgba(1, 30, 62, 0.08);
+	border: 1px solid rgba(15, 76, 129, 0.1);
 	background: #fff;
-	box-shadow: 0 8px 22px rgba(11, 31, 58, 0.06);
+	box-shadow: 0 8px 22px rgba(15, 76, 129, 0.08);
 }
 
 .lk-article-side__title {
 	margin: 0 0 0.75rem;
 	font-size: 1rem;
 	font-weight: 900;
-	color: #001f3f;
+	color: var(--lk-article-h1);
 	text-align: center;
 }
 
@@ -309,7 +334,7 @@ body.lk-light-article .lk-lpt-main {
 
 .lk-article-carousel__dot.is-active {
 	width: 18px;
-	background: #0d6e6e;
+	background: var(--lk-article-accent, #0f4c81);
 }
 
 /* Keep PHP shop cards; fit Elementor loop 354 box (360 / 320) */

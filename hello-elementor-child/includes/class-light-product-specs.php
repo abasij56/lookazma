@@ -159,9 +159,12 @@ final class Hello_Elementor_Child_Light_Product_Specs {
 
 		$image_url = '';
 		if ( $image_id > 0 ) {
-			$maybe = wp_get_attachment_image_url( $image_id, 'medium' );
-			if ( is_string( $maybe ) && '' !== $maybe ) {
-				$image_url = $maybe;
+			foreach ( array( 'woocommerce_single', 'large', 'full', 'medium' ) as $size ) {
+				$maybe = wp_get_attachment_image_url( $image_id, $size );
+				if ( is_string( $maybe ) && '' !== $maybe ) {
+					$image_url = $maybe;
+					break;
+				}
 			}
 		}
 

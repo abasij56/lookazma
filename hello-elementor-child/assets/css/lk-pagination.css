@@ -1,0 +1,178 @@
+/**
+ * Unified Lookazma pagination (.lk-shop-pagination / .lk-archive-products__pagination).
+ * No border/box; centered digits & arrows; white label on hover/current.
+ */
+
+.lk-shop-pagination,
+.lk-archive-products__pagination,
+.lk-brand-enhanced-pagination,
+.lk-article-pagination {
+	margin: 1.75rem 0 0.5rem;
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	direction: rtl;
+}
+
+.lk-shop-pagination[hidden],
+.lk-archive-products__pagination[hidden],
+.lk-brand-enhanced-pagination[hidden],
+.lk-article-pagination[hidden] {
+	display: none !important;
+}
+
+.lk-shop-pagination .page-numbers,
+.lk-archive-products__pagination .page-numbers,
+.lk-brand-enhanced-pagination .page-numbers,
+.lk-article-pagination .page-numbers,
+.lk-shop-pagination ul.page-numbers,
+.lk-archive-products__pagination ul.page-numbers {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	align-items: center;
+	justify-content: center;
+}
+
+.lk-shop-pagination .page-numbers li,
+.lk-archive-products__pagination .page-numbers li,
+.lk-brand-enhanced-pagination .page-numbers li,
+.lk-article-pagination .page-numbers li {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.lk-shop-pagination a.page-numbers,
+.lk-shop-pagination span.page-numbers,
+.lk-archive-products__pagination a.page-numbers,
+.lk-archive-products__pagination span.page-numbers,
+.lk-brand-enhanced-pagination a.page-numbers,
+.lk-brand-enhanced-pagination span.page-numbers,
+.lk-article-pagination a.page-numbers,
+.lk-article-pagination span.page-numbers {
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.35rem;
+	height: 2.35rem;
+	min-width: 2.35rem;
+	min-height: 2.35rem;
+	max-width: 2.35rem;
+	max-height: 2.35rem;
+	padding: 0;
+	margin: 0;
+	border: 1px solid #d8dde3;
+	border-radius: 10px;
+	background: #eaf4ff;
+	color: #0f4c81;
+	font-family: inherit;
+	font-size: 0.9rem;
+	font-weight: 700;
+	line-height: 1 !important;
+	text-decoration: none !important;
+	text-align: center;
+	box-shadow: none !important;
+	transform: none !important;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.lk-shop-pagination a.page-numbers:hover,
+.lk-shop-pagination a.page-numbers:focus-visible,
+.lk-archive-products__pagination a.page-numbers:hover,
+.lk-archive-products__pagination a.page-numbers:focus-visible,
+.lk-brand-enhanced-pagination a.page-numbers:hover,
+.lk-brand-enhanced-pagination a.page-numbers:focus-visible,
+.lk-article-pagination a.page-numbers:hover,
+.lk-article-pagination a.page-numbers:focus-visible {
+	background: #0f4c81 !important;
+	color: #fff !important;
+	border-color: #0f4c81 !important;
+	box-shadow: none !important;
+	outline: none;
+	transform: none !important;
+}
+
+.lk-shop-pagination span.page-numbers.current,
+.lk-archive-products__pagination span.page-numbers.current,
+.lk-brand-enhanced-pagination span.page-numbers.current,
+.lk-article-pagination span.page-numbers.current,
+.lk-shop-pagination .page-numbers.current,
+.lk-archive-products__pagination .page-numbers.current {
+	background: #0f4c81 !important;
+	color: #fff !important;
+	border: 1px solid #0f4c81 !important;
+	box-shadow: none !important;
+}
+
+.lk-shop-pagination span.page-numbers.dots,
+.lk-archive-products__pagination span.page-numbers.dots,
+.lk-brand-enhanced-pagination span.page-numbers.dots,
+.lk-article-pagination span.page-numbers.dots {
+	width: auto;
+	min-width: 1.35rem;
+	max-width: none;
+	border: 0 !important;
+	background: transparent !important;
+	color: #64748b !important;
+	font-weight: 800;
+	cursor: default;
+}
+
+.lk-shop-pagination a.page-numbers.prev,
+.lk-shop-pagination a.page-numbers.next,
+.lk-archive-products__pagination a.page-numbers.prev,
+.lk-archive-products__pagination a.page-numbers.next,
+.lk-brand-enhanced-pagination a.page-numbers.prev,
+.lk-brand-enhanced-pagination a.page-numbers.next,
+.lk-article-pagination a.page-numbers.prev,
+.lk-article-pagination a.page-numbers.next {
+	font-size: 0;
+	line-height: 0 !important;
+	direction: ltr;
+	unicode-bidi: isolate;
+}
+
+.lk-shop-pagination .lk-page-arrow,
+.lk-archive-products__pagination .lk-page-arrow,
+.lk-brand-enhanced-pagination .lk-page-arrow,
+.lk-article-pagination .lk-page-arrow {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1rem;
+	height: 1rem;
+	line-height: 0;
+}
+
+.lk-shop-pagination .lk-page-arrow svg,
+.lk-archive-products__pagination .lk-page-arrow svg,
+.lk-brand-enhanced-pagination .lk-page-arrow svg,
+.lk-article-pagination .lk-page-arrow svg {
+	display: block;
+	width: 1rem;
+	height: 1rem;
+	flex: 0 0 auto;
+}
+
+/* Prefer our nav over Elementor / Woo leftovers on listing templates */
+body.lk-light-product .elementor-pagination,
+body.lk-light-product .woocommerce-pagination,
+body.lk-shop-cards-archive .elementor-pagination,
+body.lk-shop-cards-archive .woocommerce-pagination,
+body.tax-product_cat .elementor-pagination,
+body.tax-product_cat .woocommerce-pagination,
+body.tax-product_tag .elementor-pagination,
+body.tax-product_tag .woocommerce-pagination,
+body.woocommerce-shop .elementor-pagination,
+body.woocommerce-shop .woocommerce-pagination,
+body.lk-brand-enhanced .elementor-pagination,
+body.lk-brand-enhanced .woocommerce-pagination,
+body.lk-article-page .elementor-pagination,
+body.lk-article-page .woocommerce-pagination {
+	display: none !important;
+}

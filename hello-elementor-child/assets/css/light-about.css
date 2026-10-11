@@ -1,28 +1,62 @@
 /**
  * Light about template — liquid glass layout.
+ * Boss palette scoped to body.lk-light-about.
  */
+
+body.lk-light-about {
+	--lk-about-h1: #0f172a;
+	--lk-about-h2: #1e293b;
+	--lk-about-text: #334155;
+	--lk-about-muted: #64748b;
+	--lk-about-accent: #0f4c81;
+	--lk-about-accent-hover: #0a3a61;
+	--lk-about-page-bg: #eaf4ff;
+	--lk-about-soft: #f3f4f6;
+	--lk-about-line: #d8dde3;
+
+	--lk-lpt-bg: var(--lk-about-page-bg);
+	--lk-lpt-surface: #ffffff;
+	--lk-lpt-ink: var(--lk-about-h1);
+	--lk-lpt-muted: var(--lk-about-muted);
+	--lk-lpt-line: var(--lk-about-line);
+	--lk-lpt-accent: var(--lk-about-accent);
+	--lk-lpt-accent-2: var(--lk-about-accent-hover);
+
+	background: var(--lk-about-page-bg);
+	color: var(--lk-about-text);
+}
 
 body.lk-light-about .lk-lpt-main {
 	background:
-		radial-gradient(980px 380px at 100% -8%, rgba(13, 110, 110, 0.12), transparent 58%),
-		radial-gradient(760px 320px at 0% 8%, rgba(1, 30, 62, 0.08), transparent 52%),
-		radial-gradient(520px 240px at 50% 42%, rgba(13, 110, 110, 0.05), transparent 70%),
-		var(--lk-lpt-bg, #f5f9fb);
+		radial-gradient(980px 380px at 100% -8%, rgba(15, 76, 129, 0.12), transparent 58%),
+		radial-gradient(760px 320px at 0% 8%, rgba(15, 76, 129, 0.07), transparent 52%),
+		radial-gradient(520px 240px at 50% 42%, rgba(15, 76, 129, 0.05), transparent 70%),
+		var(--lk-about-page-bg);
+}
+
+body.lk-light-about .lk-lpt-breadcrumb,
+body.lk-light-about .lk-breadcrumb {
+	color: var(--lk-about-muted);
+}
+
+body.lk-light-about .lk-lpt-breadcrumb a,
+body.lk-light-about .lk-breadcrumb a {
+	color: var(--lk-about-accent);
+}
+
+body.lk-light-about .lk-lpt-breadcrumb a:hover,
+body.lk-light-about .lk-breadcrumb a:hover {
+	color: var(--lk-about-accent-hover);
 }
 
 .lk-about-page {
-	--lk-about-glass-bg: linear-gradient(
-		155deg,
-		rgba(255, 255, 255, 0.78) 0%,
-		rgba(255, 255, 255, 0.42) 46%,
-		rgba(13, 110, 110, 0.08) 100%
-	);
-	--lk-about-glass-border: 1.5px solid rgba(255, 255, 255, 0.92);
+	--lk-about-glass-bg: #fff;
+	--lk-about-glass-border: 2px solid var(--lk-about-line, #d8dde3);
 	--lk-about-glass-shadow:
-		0 14px 32px rgba(0, 31, 63, 0.1),
+		0 14px 32px rgba(15, 76, 129, 0.1),
 		inset 0 1px 1px rgba(255, 255, 255, 1);
 	padding-bottom: 2.5rem;
-	color: var(--lk-lpt-ink, #0b1f3a);
+	color: var(--lk-about-text);
 }
 
 .lk-about-page__title {
@@ -50,7 +84,7 @@ body.lk-light-about .lk-lpt-main {
 	margin: 0 0 1.15rem;
 	font-size: clamp(1.2rem, 2vw, 1.45rem);
 	font-weight: 900;
-	color: #001f3f;
+	color: var(--lk-about-h1);
 	text-align: center;
 }
 
@@ -60,7 +94,7 @@ body.lk-light-about .lk-lpt-main {
 	flex: 0 1 4.5rem;
 	height: 2px;
 	border-radius: 999px;
-	background: linear-gradient(90deg, rgba(1, 30, 62, 0.08), #0d6e6e, rgba(1, 30, 62, 0.08));
+	background: linear-gradient(90deg, rgba(15, 76, 129, 0.08), var(--lk-about-accent), rgba(15, 76, 129, 0.08));
 }
 
 .lk-about-features {
@@ -88,7 +122,7 @@ body.lk-light-about .lk-lpt-main {
 .lk-about-feature:hover {
 	transform: translateY(-3px);
 	box-shadow:
-		0 18px 36px rgba(13, 110, 110, 0.14),
+		0 18px 36px rgba(15, 76, 129, 0.14),
 		inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
@@ -99,16 +133,24 @@ body.lk-light-about .lk-lpt-main {
 	width: 3.15rem;
 	height: 3.15rem;
 	border-radius: 14px;
-	color: #0d6e6e;
-	background: linear-gradient(160deg, rgba(255, 255, 255, 0.88), rgba(13, 110, 110, 0.12));
-	border: 1px solid rgba(255, 255, 255, 0.95);
+	color: var(--lk-about-accent);
+	background: #fff;
+	border: 2px solid var(--lk-about-line, #d8dde3);
 	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-.lk-about-feature__icon svg {
+.lk-about-feature__icon svg,
+.lk-about-commit__icon svg {
 	display: block;
 	width: 1.55rem;
 	height: 1.55rem;
+	stroke: currentColor;
+	fill: none;
+}
+
+.lk-about-commit__icon svg {
+	width: 1.35rem;
+	height: 1.35rem;
 }
 
 .lk-about-feature__title {
@@ -116,14 +158,14 @@ body.lk-light-about .lk-lpt-main {
 	font-size: 0.95rem;
 	font-weight: 800;
 	line-height: 1.45;
-	color: #001f3f;
+	color: var(--lk-about-h1);
 }
 
 .lk-about-feature__text {
 	margin: 0;
 	font-size: 0.8rem;
 	line-height: 1.7;
-	color: var(--lk-lpt-muted, #5b6b7c);
+	color: var(--lk-about-muted);
 }
 
 /* Story + commitments */
@@ -157,7 +199,7 @@ body.lk-light-about .lk-lpt-main {
 	inset: 0;
 	z-index: -1;
 	border-radius: inherit;
-	background: linear-gradient(135deg, rgba(1, 30, 62, 0.08), rgba(13, 110, 110, 0.1));
+	background: none;
 	opacity: 0.55;
 	pointer-events: none;
 }
@@ -170,7 +212,7 @@ body.lk-light-about .lk-lpt-main {
 	margin: 0 0 1rem;
 	overflow: hidden;
 	border-radius: 14px;
-	background: rgba(1, 30, 62, 0.06);
+	background: #fff;
 }
 
 .lk-about-story__media img {
@@ -186,14 +228,14 @@ body.lk-light-about .lk-lpt-main {
 	font-size: clamp(1.05rem, 1.8vw, 1.28rem);
 	font-weight: 900;
 	line-height: 1.55;
-	color: #001f3f;
+	color: var(--lk-about-h1);
 }
 
 .lk-about-story__text {
 	margin: 0 0 1rem;
 	font-size: 0.94rem;
 	line-height: 1.9;
-	color: var(--lk-lpt-muted, #5b6b7c);
+	color: var(--lk-about-muted);
 }
 
 .lk-about-checklist {
@@ -212,7 +254,7 @@ body.lk-light-about .lk-lpt-main {
 	font-size: 0.9rem;
 	font-weight: 700;
 	line-height: 1.7;
-	color: #001f3f;
+	color: var(--lk-about-h1);
 }
 
 .lk-about-checklist li::before {
@@ -225,8 +267,8 @@ body.lk-light-about .lk-lpt-main {
 	background:
 		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M9.5 16.2 5.8 12.5l1.4-1.4 2.3 2.3 7.3-7.3 1.4 1.4z'/%3E%3C/svg%3E")
 			center / 0.85rem no-repeat,
-		linear-gradient(135deg, #001f3f, #0d6e6e);
-	box-shadow: 0 6px 14px rgba(1, 30, 62, 0.16);
+		linear-gradient(135deg, #0f172a, #0f4c81);
+	box-shadow: 0 6px 14px rgba(15, 76, 129, 0.16);
 }
 
 /* Commitments */
@@ -239,7 +281,7 @@ body.lk-light-about .lk-lpt-main {
 	font-size: 1.05rem;
 	font-weight: 900;
 	line-height: 1.55;
-	color: #001f3f;
+	color: var(--lk-about-h1);
 }
 
 .lk-about-commit__list {
@@ -257,8 +299,8 @@ body.lk-light-about .lk-lpt-main {
 	gap: 0.75rem;
 	padding: 0.75rem 0.8rem;
 	border-radius: 14px;
-	background: rgba(255, 255, 255, 0.45);
-	border: 1px solid rgba(255, 255, 255, 0.75);
+	background: #fff;
+	border: 2px solid var(--lk-about-line, #d8dde3);
 }
 
 .lk-about-commit__icon {
@@ -269,29 +311,23 @@ body.lk-light-about .lk-lpt-main {
 	width: 2.6rem;
 	height: 2.6rem;
 	border-radius: 12px;
-	color: #0d6e6e;
-	background: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(13, 110, 110, 0.14));
-	border: 1px solid rgba(255, 255, 255, 0.95);
-}
-
-.lk-about-commit__icon svg {
-	display: block;
-	width: 1.35rem;
-	height: 1.35rem;
+	color: var(--lk-about-accent);
+	background: #fff;
+	border: 2px solid var(--lk-about-line, #d8dde3);
 }
 
 .lk-about-commit__name {
 	margin: 0 0 0.2rem;
 	font-size: 0.92rem;
 	font-weight: 800;
-	color: #001f3f;
+	color: var(--lk-about-h1);
 }
 
 .lk-about-commit__text {
 	margin: 0;
 	font-size: 0.82rem;
 	line-height: 1.7;
-	color: var(--lk-lpt-muted, #5b6b7c);
+	color: var(--lk-about-muted);
 }
 
 /* FAQ */
@@ -327,13 +363,13 @@ body.lk-light-about .lk-lpt-main {
 	margin: 0 0 0.35rem;
 	font-size: 1.2rem;
 	font-weight: 900;
-	color: #001f3f;
+	color: var(--lk-about-h1);
 }
 
 .lk-about-faq__subtitle {
 	margin: 0 0 1.1rem;
 	font-size: 0.92rem;
-	color: var(--lk-lpt-muted, #5b6b7c);
+	color: var(--lk-about-muted);
 }
 
 .lk-about-faq__list {
@@ -344,8 +380,8 @@ body.lk-light-about .lk-lpt-main {
 
 .lk-about-faq__item {
 	border-radius: 12px;
-	background: rgba(255, 255, 255, 0.55);
-	border: 1px solid rgba(255, 255, 255, 0.8);
+	background: #fff;
+	border: 2px solid var(--lk-about-line, #d8dde3);
 	overflow: hidden;
 }
 
@@ -358,7 +394,7 @@ body.lk-light-about .lk-lpt-main {
 	padding: 0.9rem 2.25rem 0.9rem 1rem;
 	font-size: 0.94rem;
 	font-weight: 700;
-	color: #001f3f;
+	color: var(--lk-about-h1);
 	position: relative;
 }
 
@@ -373,8 +409,8 @@ body.lk-light-about .lk-lpt-main {
 	top: 50%;
 	width: 0.55rem;
 	height: 0.55rem;
-	border-right: 2px solid #0d6e6e;
-	border-bottom: 2px solid #0d6e6e;
+	border-right: 2px solid var(--lk-about-accent);
+	border-bottom: 2px solid var(--lk-about-accent);
 	transform: translateY(-80%) rotate(45deg);
 	transition: transform 0.16s ease;
 }
@@ -387,7 +423,7 @@ body.lk-light-about .lk-lpt-main {
 	padding: 0 1rem 1rem;
 	font-size: 0.92rem;
 	line-height: 1.85;
-	color: var(--lk-lpt-muted, #5b6b7c);
+	color: var(--lk-about-muted);
 }
 
 .lk-about-faq__answer p {

@@ -162,6 +162,12 @@ function hello_elementor_child_enqueue_styles() {
 		return;
 	}
 
+	if ( class_exists( 'Hello_Elementor_Child_Light_Login_Template' )
+		&& Hello_Elementor_Child_Light_Login_Template::is_enabled()
+	) {
+		return;
+	}
+
 	if ( class_exists( 'Hello_Elementor_Child_Light_Compare_Template' )
 		&& Hello_Elementor_Child_Light_Compare_Template::is_enabled()
 	) {
@@ -176,6 +182,33 @@ function hello_elementor_child_enqueue_styles() {
 	);
 }
 add_action( 'wp_enqueue_scripts', 'hello_elementor_child_enqueue_styles', 20 );
+
+/**
+ * Digits full-page login (?login=true) uses the Lookazma palette.
+ */
+function hello_elementor_child_enqueue_digits_login_palette(): void {
+	if ( ! isset( $_GET['login'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return;
+	}
+
+	$css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/light-login.css';
+	if ( ! file_exists( $css ) ) {
+		return;
+	}
+
+	$deps = array();
+	if ( wp_style_is( 'digits-login-style', 'registered' ) || wp_style_is( 'digits-login-style', 'enqueued' ) ) {
+		$deps[] = 'digits-login-style';
+	}
+
+	wp_enqueue_style(
+		'lk-light-login',
+		HELLO_ELEMENTOR_CHILD_URI . 'assets/css/light-login.css',
+		$deps,
+		(string) filemtime( $css )
+	);
+}
+add_action( 'wp_enqueue_scripts', 'hello_elementor_child_enqueue_digits_login_palette', 99 );
 
 /**
  * Category CTA + intro typography on single product pages.
@@ -378,7 +411,19 @@ function hello_elementor_child_enqueue_breadcrumb_style(): void {
 add_action( 'wp_enqueue_scripts', 'hello_elementor_child_enqueue_breadcrumb_style', 1000 );
 
 /**
- * Canonical shop archive URL (Persian slug). WC shop page ID can resolve to ?page_id= / __trashed.
+ * Suppress WooCommerce “has been added to your cart” flash notice.
+ * Sticky mini-cart / AJAX feedback still works; other notices are unchanged.
+ *
+ * @param string $message Message HTML.
+ */
+function hello_elementor_child_suppress_add_to_cart_notice( $message ) {
+	return '';
+}
+add_filter( 'wc_add_to_cart_message_html', 'hello_elementor_child_suppress_add_to_cart_notice', 99 );
+
+/**
+ * Canonical shop archive URL (Persian slug /فروشگاه/).
+ * WC shop page ID may resolve to /shop/ or __trashed — theme links always use this.
  */
 function hello_elementor_child_get_shop_url(): string {
 	return home_url( user_trailingslashit( 'فروشگاه' ) );
@@ -393,6 +438,7 @@ function hello_elementor_child_get_shop_label(): string {
 
 /**
  * Force WooCommerce shop permalinks / "browse products" / empty-cart buttons to /فروشگاه/.
+ * (Link generation only — no HTTP redirect.)
  *
  * @param string $url Permalink from WooCommerce.
  */
@@ -403,8 +449,26 @@ add_filter( 'woocommerce_get_shop_page_permalink', 'hello_elementor_child_force_
 add_filter( 'woocommerce_return_to_shop_redirect', 'hello_elementor_child_force_shop_permalink', 99 );
 
 /**
- * WC breadcrumbs use get_permalink( shop_page_id ), which can be /shop/__trashed/ («فروشگاه-2»).
- * Replace those crumbs with the live /فروشگاه/ page (search, product, archives, etc.).
+ * When code/menus call get_permalink( shop_page ), still emit /فروشگاه/.
+ *
+ * @param string $link    Page permalink.
+ * @param int    $post_id Page ID.
+ */
+function hello_elementor_child_force_shop_page_link( $link, $post_id ): string {
+	if ( ! function_exists( 'wc_get_page_id' ) ) {
+		return (string) $link;
+	}
+	$shop_id = (int) wc_get_page_id( 'shop' );
+	if ( $shop_id > 0 && (int) $post_id === $shop_id ) {
+		return hello_elementor_child_get_shop_url();
+	}
+	return (string) $link;
+}
+add_filter( 'page_link', 'hello_elementor_child_force_shop_page_link', 99, 2 );
+
+/**
+ * WC breadcrumbs use get_permalink( shop_page_id ), which can be /shop/ or __trashed.
+ * Replace those crumbs with the live /فروشگاه/ page (no redirect).
  *
  * @param array<int, array{0?: string, 1?: string}> $crumbs Breadcrumb trail.
  * @return array<int, array{0?: string, 1?: string}>
@@ -417,7 +481,9 @@ function hello_elementor_child_fix_shop_breadcrumb( array $crumbs ): array {
 	if ( function_exists( 'wc_get_page_id' ) ) {
 		$shop_id = (int) wc_get_page_id( 'shop' );
 		if ( $shop_id > 0 ) {
+			remove_filter( 'page_link', 'hello_elementor_child_force_shop_page_link', 99 );
 			$permalink = get_permalink( $shop_id );
+			add_filter( 'page_link', 'hello_elementor_child_force_shop_page_link', 99, 2 );
 			if ( is_string( $permalink ) && '' !== $permalink ) {
 				$wc_shop_url = $permalink;
 			}
@@ -431,12 +497,17 @@ function hello_elementor_child_fix_shop_breadcrumb( array $crumbs ): array {
 
 		$title = isset( $crumb[0] ) ? (string) $crumb[0] : '';
 		$url   = isset( $crumb[1] ) ? (string) $crumb[1] : '';
+		$path  = (string) wp_parse_url( $url, PHP_URL_PATH );
+		$path  = untrailingslashit( rawurldecode( $path ) );
 
 		$needs_fix = false;
 		if ( '' !== $url && false !== strpos( $url, '__trashed' ) ) {
 			$needs_fix = true;
 		}
 		if ( false !== strpos( $title, 'فروشگاه-2' ) ) {
+			$needs_fix = true;
+		}
+		if ( '/shop' === $path || 'shop' === ltrim( $path, '/' ) ) {
 			$needs_fix = true;
 		}
 		if (

@@ -14,32 +14,33 @@
 	{# RTL: [قیمت | مشخصات | عکس] — کارت محصول راست، کارت قیمت چپ #}
 	<div class="lk-product__hero">
 	<div class="lk-product__row">
-		{% if product_data.brand_image or product_data.brand_name %}
-			{% if product_data.brand_link %}
-				<a
-					class="lk-product__brand-badge{% if product_data.brand_image %} lk-product__brand-badge--logo{% else %} lk-product__brand-badge--text{% endif %}"
-					href="{{ product_data.brand_link }}"
-					aria-label="{{ product_data.brand_name|default('برند') }}"
-				>
-					{% if product_data.brand_image %}
-						<img src="{{ product_data.brand_image }}" alt="{{ product_data.brand_name|default('برند') }}" width="48" height="48">
-					{% else %}
-						<span>{{ product_data.brand_name }}</span>
-					{% endif %}
-				</a>
-			{% else %}
-				<span class="lk-product__brand-badge{% if product_data.brand_image %} lk-product__brand-badge--logo{% else %} lk-product__brand-badge--text{% endif %}">
-					{% if product_data.brand_image %}
-						<img src="{{ product_data.brand_image }}" alt="{{ product_data.brand_name|default('برند') }}" width="48" height="48">
-					{% else %}
-						<span>{{ product_data.brand_name }}</span>
-					{% endif %}
-				</span>
-			{% endif %}
-		{% endif %}
 		<section class="lk-info-card" aria-label="اطلاعات محصول">
 			<div class="lk-info-card__inner">
 				<div class="lk-info-card__media">
+					{% if product_data.brand_image or product_data.brand_name %}
+						{% if product_data.brand_link %}
+							<a
+								class="lk-product__brand-badge{% if product_data.brand_image %} lk-product__brand-badge--logo{% else %} lk-product__brand-badge--text{% endif %}"
+								href="{{ product_data.brand_link }}"
+								aria-label="{{ product_data.brand_name|default('برند') }}"
+							>
+								{% if product_data.brand_image %}
+									<img src="{{ product_data.brand_image }}" alt="{{ product_data.brand_name|default('برند') }}" width="48" height="48">
+								{% else %}
+									<span>{{ product_data.brand_name }}</span>
+								{% endif %}
+							</a>
+						{% else %}
+							<span class="lk-product__brand-badge{% if product_data.brand_image %} lk-product__brand-badge--logo{% else %} lk-product__brand-badge--text{% endif %}">
+								{% if product_data.brand_image %}
+									<img src="{{ product_data.brand_image }}" alt="{{ product_data.brand_name|default('برند') }}" width="48" height="48">
+								{% else %}
+									<span>{{ product_data.brand_name }}</span>
+								{% endif %}
+							</span>
+						{% endif %}
+					{% endif %}
+
 					<figure class="lk-info-card__photo">
 						{% if product_data.image %}
 							<img src="{{ product_data.image.url }}" alt="{{ product_data.image.alt|default(product_data.name) }}" width="800" height="576">
@@ -47,19 +48,72 @@
 							<span class="lk-info-card__placeholder">بدون تصویر</span>
 						{% endif %}
 					</figure>
+
+					<div class="lk-info-card__tools" aria-label="ابزار محصول">
+						<div class="lk-media-tool lk-media-tool--share" data-lk-share-root>
+							<span
+								class="lk-media-tool__btn"
+								role="button"
+								tabindex="0"
+								aria-expanded="false"
+								aria-haspopup="true"
+								aria-label="اشتراک گذاری"
+								data-lk-share-toggle
+							>
+								{% if product_data.share_icon_html %}
+									{{ product_data.share_icon_html|raw }}
+								{% endif %}
+							</span>
+							<div class="lk-media-tool__panel" data-lk-share-panel hidden role="menu">
+								<button type="button" class="lk-media-tool__panel-item" data-lk-share-copy role="menuitem">
+									{% if product_data.link_icon_html %}<span class="lk-media-tool__panel-icon" aria-hidden="true">{{ product_data.link_icon_html|raw }}</span>{% endif %}
+									<span>کپی لینک</span>
+								</button>
+								{% if product_data.share_whatsapp_url %}
+									<a class="lk-media-tool__panel-item" data-lk-share-wa href="{{ product_data.share_whatsapp_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">
+										<svg class="lk-media-tool__panel-icon" aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 1.82c4.46 0 8.09 3.63 8.09 8.09 0 4.46-3.63 8.09-8.09 8.09-1.42 0-2.8-.37-4.01-1.07l-.29-.17-3.12.82.83-3.04-.19-.31a8.05 8.05 0 0 1-1.23-4.32c0-4.46 3.63-8.09 8.09-8.09zm4.58 10.56c-.25-.12-1.48-.73-1.71-.81-.23-.09-.4-.12-.56.12-.17.25-.64.81-.79.98-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.42h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74 1.78.77 2.35.83 3.19.7.51-.08 1.48-.6 1.69-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.17-.48-.29z"/></svg>
+										<span>واتساپ</span>
+									</a>
+								{% endif %}
+								{% if product_data.share_telegram_url %}
+									<a class="lk-media-tool__panel-item" data-lk-share-tg href="{{ product_data.share_telegram_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">
+										{% if product_data.send_icon_html %}<span class="lk-media-tool__panel-icon" aria-hidden="true">{{ product_data.send_icon_html|raw }}</span>{% endif %}
+										<span>تلگرام</span>
+									</a>
+								{% endif %}
+							</div>
+						</div>
+
+						<div class="lk-media-tool lk-media-tool--compare">
+							<button
+								type="button"
+								class="lk-media-tool__btn"
+								data-lk-compare-from-single="{{ product_data.id }}"
+								{% if product_data.is_variable %}data-lk-compare-variable="1"{% endif %}
+								aria-label="مقایسه محصول"
+							>
+								{% if product_data.compare_icon_html %}
+									{{ product_data.compare_icon_html|raw }}
+								{% endif %}
+							</button>
+							<span class="lk-media-tool__tip" aria-hidden="true">مقایسه محصول</span>
+						</div>
+					</div>
+
+					{% if product_data.brand_name %}
+						{% if product_data.brand_link %}
+							<a class="lk-info-card__brand-btn" href="{{ product_data.brand_link }}">
+								محصولات دیگر {{ product_data.brand_name }}
+							</a>
+						{% else %}
+							<span class="lk-info-card__brand-btn lk-info-card__brand-btn--static">
+								محصولات دیگر {{ product_data.brand_name }}
+							</span>
+						{% endif %}
+					{% endif %}
 				</div>
 
 				<div class="lk-info-card__body">
-					{% if product_data.brand_name %}
-						<p class="lk-info-card__brand">
-							{% if product_data.brand_link %}
-								<a href="{{ product_data.brand_link }}">نام برند : {{ product_data.brand_name }}</a>
-							{% else %}
-								نام برند : {{ product_data.brand_name }}
-							{% endif %}
-						</p>
-					{% endif %}
-
 					<h1 class="lk-info-card__title">
 						<span class="lk-info-card__name">{{ product_data.name }}</span>
 						{% if product_data.english_name %}
@@ -67,57 +121,56 @@
 						{% endif %}
 					</h1>
 
+					{% if product_data.cas_no %}
+						<div class="lk-info-card__meta">
+							<p class="lk-info-card__cas" dir="ltr">
+								<span class="lk-info-card__cas-label">CAS:</span>
+								<span class="lk-info-card__cas-value">{{ product_data.cas_no }}</span>
+							</p>
+						</div>
+					{% endif %}
+
 					<hr class="lk-info-card__divider">
 
 					{% if product_data.highlights or product_data.datasheet_view_url or product_data.datasheet %}
 						<div class="lk-info-card__specs">
 							{% if product_data.highlights %}
 								<h2>مشخصات محصول</h2>
-								<ul class="lk-specs-grid">
-									{% for item in product_data.highlights %}
-										<li{% if item.icon %} data-lk-fact="{{ item.icon }}"{% endif %}>
-											<span>{{ item.label }}</span>
-											<strong>{{ item.value }}</strong>
-										</li>
-									{% endfor %}
-									{% if product_data.datasheet_view_url or product_data.datasheet %}
-										<li class="lk-specs-grid__full">
-											<button
-												type="button"
-												class="lk-datasheet"
-												data-lk-datasheet-open
-												data-view-url="{{ product_data.datasheet_view_url|e }}"
-												data-download-url="{{ product_data.datasheet_download_url|e }}"
-												data-fallback-url="{{ product_data.datasheet|e }}"
-												data-mime="{{ product_data.datasheet_mime|e }}"
-												data-share-url="{{ product_data.permalink|e }}"
-												data-share-title="{{ product_data.name|e }}"
-											>
-												<svg class="lk-datasheet__icon" aria-hidden="true" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M369.9 97.9L286 14C277 5 264.8-.1 252.1-.1H48C21.5 0 0 21.5 0 48v416c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V131.9c0-12.7-5.1-25-14.1-34zM332.1 128H256V51.9l76.1 76.1zM48 464V48h160v104c0 13.3 10.7 24 24 24h104v288H48zm250.2-143.7c-12.2-12-47-8.7-64.4-6.5-17.2-10.5-28.7-25-36.8-46.3 3.9-16.1 10.1-40.6 5.4-56-4.2-26.2-37.8-23.6-42.6-5.9-4.4 16.1-.4 38.5 7 67.1-10 23.9-24.9 56-35.4 74.4-20 10.3-47 26.2-51 46.2-3.3 15.8 26 55.2 76.1-31.2 22.4-7.4 46.8-16.5 68.4-20.1 18.9 10.2 41 17 55.8 17 25.5 0 28-28.2 17.5-38.7zm-198.1 77.8c5.1-13.7 24.5-29.5 30.4-35-19 30.3-30.4 35.7-30.4 35zm81.6-190.6c7.4 0 6.7 32.1 1.8 40.8-4.4-13.9-4.3-40.8-1.8-40.8zm-24.4 136.6c9.7-16.9 18-37 24.7-54.7 8.3 15.1 18.9 27.2 30.1 35.5-20.8 4.3-38.9 13.1-54.8 19.2zm131.6-5s-5 6-37.3-7.8c35.1-2.6 40.9 5.4 37.3 7.8z"/></svg>
-												دانلود برگه مشخصات فنی
-											</button>
-										</li>
-									{% endif %}
-								</ul>
-							{% elseif product_data.datasheet_view_url or product_data.datasheet %}
-								<ul class="lk-specs-grid">
-									<li class="lk-specs-grid__full">
-										<button
-											type="button"
-											class="lk-datasheet"
-											data-lk-datasheet-open
-											data-view-url="{{ product_data.datasheet_view_url|e }}"
-											data-download-url="{{ product_data.datasheet_download_url|e }}"
-											data-fallback-url="{{ product_data.datasheet|e }}"
-											data-mime="{{ product_data.datasheet_mime|e }}"
-											data-share-url="{{ product_data.permalink|e }}"
-											data-share-title="{{ product_data.name|e }}"
-										>
-											<svg class="lk-datasheet__icon" aria-hidden="true" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M369.9 97.9L286 14C277 5 264.8-.1 252.1-.1H48C21.5 0 0 21.5 0 48v416c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V131.9c0-12.7-5.1-25-14.1-34zM332.1 128H256V51.9l76.1 76.1zM48 464V48h160v104c0 13.3 10.7 24 24 24h104v288H48zm250.2-143.7c-12.2-12-47-8.7-64.4-6.5-17.2-10.5-28.7-25-36.8-46.3 3.9-16.1 10.1-40.6 5.4-56-4.2-26.2-37.8-23.6-42.6-5.9-4.4 16.1-.4 38.5 7 67.1-10 23.9-24.9 56-35.4 74.4-20 10.3-47 26.2-51 46.2-3.3 15.8 26 55.2 76.1-31.2 22.4-7.4 46.8-16.5 68.4-20.1 18.9 10.2 41 17 55.8 17 25.5 0 28-28.2 17.5-38.7zm-198.1 77.8c5.1-13.7 24.5-29.5 30.4-35-19 30.3-30.4 35.7-30.4 35zm81.6-190.6c7.4 0 6.7 32.1 1.8 40.8-4.4-13.9-4.3-40.8-1.8-40.8zm-24.4 136.6c9.7-16.9 18-37 24.7-54.7 8.3 15.1 18.9 27.2 30.1 35.5-20.8 4.3-38.9 13.1-54.8 19.2zm131.6-5s-5 6-37.3-7.8c35.1-2.6 40.9 5.4 37.3 7.8z"/></svg>
-											دانلود برگه مشخصات فنی
-										</button>
-									</li>
-								</ul>
+								<table class="lk-table lk-specs-table">
+									<tbody>
+										{% for item in product_data.highlights %}
+											<tr{% if item.icon %} data-lk-fact="{{ item.icon }}"{% endif %}>
+												<th scope="row">
+													{% if item.icon_html %}
+														<span class="lk-specs-table__icon" aria-hidden="true">{{ item.icon_html|raw }}</span>
+													{% endif %}
+													{{ item.label }}
+												</th>
+												<td>{{ item.value }}</td>
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							{% endif %}
+							{% if product_data.datasheet_view_url or product_data.datasheet %}
+								<div class="lk-specs-table__datasheet">
+									<button
+										type="button"
+										class="lk-datasheet"
+										data-lk-datasheet-open
+										data-view-url="{{ product_data.datasheet_view_url|e }}"
+										data-download-url="{{ product_data.datasheet_download_url|e }}"
+										data-fallback-url="{{ product_data.datasheet|e }}"
+										data-mime="{{ product_data.datasheet_mime|e }}"
+										data-share-url="{{ product_data.permalink|e }}"
+										data-share-title="{{ product_data.name|e }}"
+									>
+										{% if product_data.datasheet_icon_html %}
+											<span class="lk-datasheet__icon" aria-hidden="true">{{ product_data.datasheet_icon_html|raw }}</span>
+										{% endif %}
+										دانلود برگه مشخصات فنی
+									</button>
+								</div>
 							{% endif %}
 						</div>
 					{% endif %}
@@ -131,70 +184,59 @@
 				<p class="lk-price-card__notice">{{ product_data.price_notice }}</p>
 			{% endif %}
 
-			<p class="lk-price-card__label">قیمت محصول</p>
-			<div class="lk-price-card__amount">{{ product_data.price_html|raw }}</div>
+			<div class="lk-price-card__head">
+				<p class="lk-price-card__label">قیمت محصول</p>
+				<div class="lk-price-card__amount" data-lk-price-amount>{{ product_data.price_html|raw }}</div>
 
-			{% if product_data.is_in_stock %}
-				<div class="lk-price-card__stock is-in">موجود در انبار</div>
-			{% else %}
-				<div class="lk-price-card__stock is-muted">ناموجود</div>
-			{% endif %}
+				{% if product_data.is_in_stock %}
+					<div class="lk-price-card__stock is-in">موجود در انبار</div>
+				{% else %}
+					<div class="lk-price-card__stock is-muted">ناموجود</div>
+				{% endif %}
+			</div>
 
 			<div class="lk-price-card__cart">
 				{{ product_data.add_to_cart_html|raw }}
 			</div>
 
-			<div class="lk-price-card__actions">
-				<div class="lk-price-card__actions-pair">
-					{% if product_data.shipping_url %}
-						<a class="lk-price-card__shipping" href="{{ product_data.shipping_url }}">روش و هزینه ارسال کالا</a>
+			{% if product_data.whatsapp_url %}
+				<a class="lk-price-card__whatsapp lk-price-card__whatsapp--inquiry" href="{{ product_data.whatsapp_url }}" target="_blank" rel="noopener noreferrer">
+					<svg aria-hidden="true" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+					<span>استعلام قیمت</span>
+				</a>
+			{% endif %}
+
+			{% if product_data.shipping_url %}
+				<a class="lk-price-card__shipping-row" href="{{ product_data.shipping_url }}">
+					{% if product_data.truck_icon_html %}
+						<span class="lk-price-card__shipping-icon" aria-hidden="true">{{ product_data.truck_icon_html|raw }}</span>
 					{% endif %}
-					<button
-						type="button"
-						class="lk-price-card__compare"
-						data-lk-compare-from-single="{{ product_data.id }}"
-						{% if product_data.is_variable %}data-lk-compare-variable="1"{% endif %}
-					>مقایسه محصول</button>
-				</div>
-				{% if product_data.whatsapp_url %}
-					<a class="lk-price-card__whatsapp" href="{{ product_data.whatsapp_url }}" target="_blank" rel="noopener noreferrer" aria-label="واتساپ">
-						<svg aria-hidden="true" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
-					</a>
-				{% endif %}
-			</div>
+					<span>روش و هزینه ارسال کالا</span>
+				</a>
+			{% endif %}
 		</aside>
 	</div>
 	</div>
 
 	<ul class="lk-badges" aria-label="مزایای خرید">
-		<li>
-			<span class="lk-badges__icon" aria-hidden="true">
-				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h13l5 5v5h-2a2 2 0 1 1-4 0H9a2 2 0 1 1-4 0H3V7z"/><path d="M16 7v5h5"/></svg>
-			</span>
-			<span>تحویل فوری سراسر کشور</span>
-		</li>
-		<li>
-			<span class="lk-badges__icon" aria-hidden="true">
-				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 3v6c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>
-			</span>
-			<span>ضمانت اصالت کالا</span>
-		</li>
-		<li>
-			<span class="lk-badges__icon" aria-hidden="true">
-				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/><path d="M19 4v3M19 10h.01"/></svg>
-			</span>
-			<span>پشتیبانی ۲۴/۷</span>
-		</li>
+		{% for badge in product_data.badges %}
+			<li>
+				{% if badge.icon_html %}
+					<span class="lk-badges__icon" aria-hidden="true">{{ badge.icon_html|raw }}</span>
+				{% endif %}
+				<span>{{ badge.label }}</span>
+			</li>
+		{% endfor %}
 	</ul>
 
 	<section class="lk-tabs" data-lk-tabs>
-		<div class="lk-tabs__nav" role="tablist">
-			<button type="button" class="is-active" data-tab="attrs" role="tab" aria-selected="true">مشخصات محصول</button>
-			<button type="button" data-tab="intro" role="tab" aria-selected="false">معرفی محصول</button>
-			<button type="button" data-tab="reviews" role="tab" aria-selected="false">نظرات</button>
+		<div class="lk-cat-tabs lk-tabs__nav" role="tablist" aria-label="بخش‌های محصول">
+			<button type="button" class="lk-cat-tabs__btn is-active" data-tab="attrs" role="tab" aria-selected="true">مشخصات محصول</button>
+			<button type="button" class="lk-cat-tabs__btn" data-tab="intro" role="tab" aria-selected="false">معرفی محصول</button>
+			<button type="button" class="lk-cat-tabs__btn" data-tab="reviews" role="tab" aria-selected="false">نظرات</button>
 		</div>
 
-		<div class="lk-tabs__panel is-active" data-panel="attrs" role="tabpanel">
+		<div class="lk-tabs__panel lk-cat-panel is-active" data-panel="attrs" role="tabpanel">
 			{% if product_data.attributes %}
 				<table class="lk-table">
 					<tbody>
@@ -211,7 +253,7 @@
 			{% endif %}
 		</div>
 
-		<div class="lk-tabs__panel" data-panel="intro" role="tabpanel" hidden>
+		<div class="lk-tabs__panel lk-cat-panel" data-panel="intro" role="tabpanel" hidden>
 			{% if product_data.description %}
 				<div class="lk-prose">
 					{{ product_data.description|raw }}
@@ -221,27 +263,23 @@
 			{% endif %}
 		</div>
 
-		<div class="lk-tabs__panel" data-panel="reviews" role="tabpanel" hidden>
-			{{ product_data.reviews_html|raw }}
+		<div class="lk-tabs__panel lk-cat-panel" data-panel="reviews" role="tabpanel" hidden>
+			{% if product_data.reviews_html %}
+				{{ product_data.reviews_html|raw }}
+			{% else %}
+				<div class="lk-reviews lk-reviews--empty">
+					<p class="lk-reviews__empty">هنوز نظری ثبت نشده است.</p>
+				</div>
+			{% endif %}
 		</div>
 	</section>
 
-	{% if product_data.related %}
+	{% if product_data.related_html %}
 		<section class="lk-related" aria-labelledby="lk-related-title">
 			<h2 id="lk-related-title">محصولات مرتبط</h2>
-			<ul class="lk-related__grid">
-				{% for item in product_data.related %}
-					<li>
-						<a href="{{ item.permalink }}">
-							{% if item.image %}
-								<img src="{{ item.image }}" alt="{{ item.name }}">
-							{% endif %}
-							<span class="lk-related__name">{{ item.name }}</span>
-							<span class="lk-related__price">{{ item.price_html|raw }}</span>
-						</a>
-					</li>
-				{% endfor %}
-			</ul>
+			<div class="lk-related__grid lk-shop-products-grid" role="list">
+				{{ product_data.related_html|raw }}
+			</div>
 		</section>
 	{% endif %}
 </article>

@@ -11,9 +11,75 @@
 
 	<h1 class="lk-cart-page__title">{{ cart_page.title }}</h1>
 
-	<div class="lk-cart-panel">
-		<div class="woocommerce">
-			{{ cart_page.content_html|raw }}
+	<div class="lk-cart-steps" data-lk-cart-steps data-step="1">
+	<ol class="lk-cart-steps__list">
+		<li class="lk-cart-steps__item is-current">
+			<button type="button" class="lk-cart-steps__btn" data-lk-cart-goto="1">
+				<span class="lk-cart-steps__dot" aria-hidden="true"></span>
+				<span class="lk-cart-steps__label">اقلام سبد خرید</span>
+			</button>
+		</li>
+		<li class="lk-cart-steps__item">
+			<span class="lk-cart-steps__btn" aria-disabled="true">
+				<span class="lk-cart-steps__dot" aria-hidden="true"></span>
+				<span class="lk-cart-steps__label">آدرس تحویل کالا</span>
+			</span>
+		</li>
+		<li class="lk-cart-steps__item">
+			<span class="lk-cart-steps__btn" aria-disabled="true">
+				<span class="lk-cart-steps__dot" aria-hidden="true"></span>
+				<span class="lk-cart-steps__label">روش ارسال</span>
+			</span>
+		</li>
+		<li class="lk-cart-steps__item">
+			<span class="lk-cart-steps__btn" aria-disabled="true">
+				<span class="lk-cart-steps__dot" aria-hidden="true"></span>
+				<span class="lk-cart-steps__label">زمان ارسال</span>
+			</span>
+		</li>
+		<li class="lk-cart-steps__item">
+			<span class="lk-cart-steps__btn" aria-disabled="true">
+				<span class="lk-cart-steps__dot" aria-hidden="true"></span>
+				<span class="lk-cart-steps__label">درخواست فاکتور</span>
+			</span>
+		</li>
+		<li class="lk-cart-steps__item">
+			<span class="lk-cart-steps__btn" aria-disabled="true">
+				<span class="lk-cart-steps__dot" aria-hidden="true"></span>
+				<span class="lk-cart-steps__label">پرداخت</span>
+			</span>
+		</li>
+	</ol>
+	<span class="lk-cart-steps__track" aria-hidden="true"><span class="lk-cart-steps__fill"></span></span>
+	</div>
+
+	<div class="lk-cart-step-panel is-active" data-lk-cart-panel="1">
+		<div class="lk-cart-panel">
+			<div class="woocommerce">
+				{{ cart_page.content_html|raw }}
+			</div>
+		</div>
+	</div>
+
+	<div class="lk-cart-step-panel" data-lk-cart-panel="2" hidden></div>
+	<div class="lk-cart-step-panel" data-lk-cart-panel="3" hidden></div>
+	<div class="lk-cart-step-panel" data-lk-cart-panel="4" hidden></div>
+	<div class="lk-cart-step-panel" data-lk-cart-panel="5" hidden></div>
+	<div class="lk-cart-step-panel" data-lk-cart-panel="6" hidden></div>
+
+	<div class="lk-cart-login" data-lk-cart-login hidden>
+		<div class="lk-cart-login__dialog" role="dialog" aria-modal="true" aria-labelledby="lk-cart-login-title">
+			<header class="lk-cart-login__head">
+				<h2 class="lk-cart-login__title" id="lk-cart-login-title">ورود به حساب کاربری</h2>
+				<button type="button" class="lk-cart-login__back" data-lk-cart-login-close aria-label="بازگشت">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+				</button>
+			</header>
+			<p class="lk-cart-login__text">برای ادامه فرایند خرید و تکمیل سفارش، لطفاً وارد حساب کاربری خود شوید. در صورتی که تاکنون حساب کاربری ایجاد نکرده‌اید، می‌توانید همین حالا ثبت‌نام کنید.</p>
+			<div class="lk-cart-login__actions">
+				<button type="button" class="lk-cart-login__stay" data-lk-cart-login-close>بازگشت به سبد خرید</button>
+				<a class="lk-cart-login__go" data-lk-cart-login-url href="#">ورود</a>
+			</div>
 		</div>
 	</div>
 </div>

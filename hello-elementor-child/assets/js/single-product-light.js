@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', function () {
 	window.__lkSplReady = true;
 	initTabs();
 	initDatasheetViewer();
+	initVariationPriceSync();
+	initMediaTools();
+	ensureVariationsVisible();
 });
 
 // If this script loads after DOMContentLoaded (e.g. late inject), still init.
@@ -12,6 +15,52 @@ if (document.readyState !== 'loading' && !window.__lkSplReady) {
 	window.__lkSplReady = true;
 	initTabs();
 	initDatasheetViewer();
+	initVariationPriceSync();
+	initMediaTools();
+	ensureVariationsVisible();
+}
+
+/**
+ * Keep table.variations visible even when plugins hide single-option UIs.
+ * Skip screen-reader-only tables used with the single-packaging notice.
+ */
+function ensureVariationsVisible() {
+	var tables = document.querySelectorAll('.lk-price-card__cart table.variations:not(.lk-variations--sr-only)');
+	tables.forEach(function (table) {
+		table.hidden = false;
+		table.removeAttribute('hidden');
+		table.style.setProperty('display', 'block', 'important');
+		table.style.setProperty('visibility', 'visible', 'important');
+		table.style.setProperty('opacity', '1', 'important');
+	});
+
+	lockSinglePackagingVariation();
+}
+
+/**
+ * Pre-select the only variation when the packaging notice is shown.
+ */
+function lockSinglePackagingVariation() {
+	var forms = document.querySelectorAll('form.variations_form.lk-variations-form--single-packaging');
+	forms.forEach(function (form) {
+		var $form = window.jQuery ? window.jQuery(form) : null;
+		var selects = form.querySelectorAll('table.variations select');
+		selects.forEach(function (select) {
+			if (!select.value) {
+				var opts = Array.prototype.filter.call(select.options, function (o) {
+					return o.value;
+				});
+				if (opts.length === 1) {
+					select.value = opts[0].value;
+				}
+			}
+			select.dispatchEvent(new Event('change', { bubbles: true }));
+		});
+		if ($form && $form.length) {
+			$form.trigger('check_variations');
+			$form.trigger('woocommerce_variation_has_changed');
+		}
+	});
 }
 
 function initTabs() {
@@ -20,7 +69,7 @@ function initTabs() {
 		return;
 	}
 
-	var buttons = tabsRoot.querySelectorAll('.lk-tabs__nav button');
+	var buttons = tabsRoot.querySelectorAll('.lk-tabs__nav button, .lk-cat-tabs__btn');
 	var panels = tabsRoot.querySelectorAll('.lk-tabs__panel');
 
 	buttons.forEach(function (button) {
@@ -42,6 +91,18 @@ function initTabs() {
 					panel.setAttribute('hidden', 'hidden');
 				}
 			});
+
+			/* Woo star picker may need a kick after the reviews panel becomes visible. */
+			if (tab === 'reviews' && window.jQuery) {
+				window.setTimeout(function () {
+					var $ = window.jQuery;
+					var $select = $('.lk-reviews #rating');
+					if ($select.length && ! $select.parent().find('p.stars').length) {
+						$select.trigger('init');
+					}
+					$(document.body).trigger('init_comment_ratings');
+				}, 30);
+			}
 		});
 	});
 }
@@ -66,6 +127,235 @@ function lkClosest(el, selector) {
 		el = el.parentElement;
 	}
 	return null;
+}
+
+/**
+ * Mirror WooCommerce variation price into the visible price card amount.
+ * Also keeps stock label in sync when availability HTML is present.
+ */
+function initVariationPriceSync() {
+	var card = document.querySelector('.lk-price-card');
+	if (!card) {
+		return;
+	}
+
+	var amount = card.querySelector('[data-lk-price-amount]');
+	var stock = card.querySelector('.lk-price-card__stock');
+	var form = card.querySelector('form.variations_form');
+	if (!amount || !form) {
+		return;
+	}
+
+	var defaultPrice = amount.innerHTML;
+	var defaultStockHtml = stock ? stock.innerHTML : '';
+	var defaultStockClass = stock ? stock.className : '';
+
+	function setPrice(html) {
+		if (html && String(html).trim()) {
+			amount.innerHTML = html;
+		} else {
+			amount.innerHTML = defaultPrice;
+		}
+	}
+
+	function setStockFromAvailability(html) {
+		if (!stock || !html) {
+			return;
+		}
+		var tmp = document.createElement('div');
+		tmp.innerHTML = html;
+		var text = (tmp.textContent || '').trim();
+		if (!text) {
+			return;
+		}
+		var inStock = !/out-of-stock|ناموجود|تمام/i.test(html + text);
+		stock.textContent = text;
+		stock.className = 'lk-price-card__stock ' + (inStock ? 'is-in' : 'is-muted');
+	}
+
+	function resetStock() {
+		if (!stock) {
+			return;
+		}
+		stock.innerHTML = defaultStockHtml;
+		stock.className = defaultStockClass;
+	}
+
+	function bindWithJquery($) {
+		$(function () {
+			var $form = $(form);
+
+			$form.on('found_variation', function (event, variation) {
+				if (!variation) {
+					return;
+				}
+				if (variation.price_html) {
+					setPrice(variation.price_html);
+				}
+				if (variation.availability_html) {
+					setStockFromAvailability(variation.availability_html);
+				}
+			});
+
+			$form.on('reset_data hide_variation', function () {
+				setPrice(defaultPrice);
+				resetStock();
+			});
+
+			/* Re-trigger if a value is already selected (e.g. browser restore). */
+			window.setTimeout(function () {
+				$form.trigger('check_variations');
+			}, 50);
+		});
+	}
+
+	if (window.jQuery) {
+		bindWithJquery(window.jQuery);
+		return;
+	}
+
+	/* Fallback without jQuery: watch select changes + WC-injected price node. */
+	var selects = form.querySelectorAll('select');
+	selects.forEach(function (select) {
+		select.addEventListener('change', function () {
+			window.setTimeout(function () {
+				var injected = form.querySelector('.woocommerce-variation-price .price, .woocommerce-variation-price');
+				if (injected && injected.innerHTML.trim()) {
+					setPrice(injected.innerHTML);
+				} else {
+					var anyEmpty = false;
+					selects.forEach(function (s) {
+						if (!s.value) {
+							anyEmpty = true;
+						}
+					});
+					if (anyEmpty) {
+						setPrice(defaultPrice);
+						resetStock();
+					}
+				}
+			}, 80);
+		});
+	});
+}
+
+function initMediaTools() {
+	var roots = document.querySelectorAll('[data-lk-share-root]');
+	if (!roots.length) {
+		return;
+	}
+
+	function closeAll(except) {
+		roots.forEach(function (root) {
+			if (except && root === except) {
+				return;
+			}
+			root.classList.remove('is-open');
+			var toggle = root.querySelector('[data-lk-share-toggle]');
+			var panel = root.querySelector('[data-lk-share-panel]');
+			if (toggle) {
+				toggle.setAttribute('aria-expanded', 'false');
+			}
+			if (panel) {
+				panel.setAttribute('hidden', 'hidden');
+			}
+		});
+	}
+
+	roots.forEach(function (root) {
+		var toggle = root.querySelector('[data-lk-share-toggle]');
+		var panel = root.querySelector('[data-lk-share-panel]');
+		var copyBtn = root.querySelector('[data-lk-share-copy]');
+		if (!toggle || !panel) {
+			return;
+		}
+
+		function openPanel() {
+			closeAll(root);
+			root.classList.add('is-open');
+			toggle.setAttribute('aria-expanded', 'true');
+			panel.removeAttribute('hidden');
+		}
+
+		function closePanel() {
+			root.classList.remove('is-open');
+			toggle.setAttribute('aria-expanded', 'false');
+			panel.setAttribute('hidden', 'hidden');
+		}
+
+		function togglePanel(event) {
+			event.preventDefault();
+			event.stopPropagation();
+			if (root.classList.contains('is-open')) {
+				closePanel();
+			} else {
+				openPanel();
+			}
+		}
+
+		/* Toggle opens panel; control itself does not navigate. */
+		toggle.addEventListener('click', togglePanel);
+		toggle.addEventListener('keydown', function (event) {
+			if (event.key === 'Enter' || event.key === ' ') {
+				togglePanel(event);
+			}
+		});
+
+		root.addEventListener('mouseenter', function () {
+			if (window.matchMedia('(hover: hover)').matches) {
+				window.clearTimeout(root._lkShareCloseTimer);
+				openPanel();
+			}
+		});
+		root.addEventListener('mouseleave', function () {
+			if (window.matchMedia('(hover: hover)').matches) {
+				window.clearTimeout(root._lkShareCloseTimer);
+				root._lkShareCloseTimer = window.setTimeout(closePanel, 120);
+			}
+		});
+
+		if (copyBtn) {
+			copyBtn.addEventListener('click', function (event) {
+				event.preventDefault();
+				event.stopPropagation();
+				var url = window.location.href;
+				var done = function () {
+					copyBtn.classList.add('is-copied');
+					var label = copyBtn.querySelector('span:last-child');
+					var prev = label ? label.textContent : '';
+					if (label) {
+						label.textContent = 'کپی شد';
+					}
+					window.setTimeout(function () {
+						copyBtn.classList.remove('is-copied');
+						if (label) {
+							label.textContent = prev || 'کپی لینک';
+						}
+					}, 1600);
+				};
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard.writeText(url).then(done).catch(function () {
+						window.prompt('کپی لینک:', url);
+					});
+				} else {
+					window.prompt('کپی لینک:', url);
+					done();
+				}
+			});
+		}
+	});
+
+	document.addEventListener('click', function (event) {
+		if (!lkClosest(event.target, '[data-lk-share-root]')) {
+			closeAll();
+		}
+	});
+
+	document.addEventListener('keydown', function (event) {
+		if (event.key === 'Escape') {
+			closeAll();
+		}
+	});
 }
 
 function initDatasheetViewer() {

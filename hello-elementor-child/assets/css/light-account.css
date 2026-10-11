@@ -1,142 +1,192 @@
 /**
- * Light account template — liquid glass sidebar + WooCommerce content.
+ * Light account template — Lookazma palette, white cards, two-column form.
  */
+
+body.lk-light-account {
+	--lk-acc-bg: #eaf4ff;
+	--lk-acc-accent: #0f4c81;
+	--lk-acc-accent-hover: #0a3a61;
+	--lk-acc-ink: #0f172a;
+	--lk-acc-ink-2: #1e293b;
+	--lk-acc-text: #334155;
+	--lk-acc-muted: #64748b;
+	--lk-acc-soft: #f3f4f6;
+	--lk-acc-line: #d8dde3;
+	--lk-acc-danger: #b42318;
+	--lk-lpt-bg: #eaf4ff;
+	--lk-lpt-ink: #0f172a;
+}
 
 body.lk-light-account .lk-lpt-main {
 	background:
-		radial-gradient(900px 320px at 100% -5%, rgba(13, 110, 110, 0.08), transparent 58%),
-		radial-gradient(700px 280px at 0% 0%, rgba(1, 30, 62, 0.06), transparent 55%),
-		var(--lk-lpt-bg, #f5f9fb);
+		radial-gradient(900px 360px at 100% -10%, rgba(15, 76, 129, 0.08), transparent 55%),
+		var(--lk-acc-bg);
 }
 
 .lk-account-page {
 	padding-bottom: 2.5rem;
-	color: var(--lk-lpt-ink, #0b1f3a);
+	color: var(--lk-acc-text);
 }
 
 .lk-account-layout {
 	display: grid;
-	grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
-	gap: clamp(1rem, 2.5vw, 1.75rem);
+	grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+	gap: clamp(1rem, 2.5vw, 1.5rem);
 	align-items: start;
+	direction: rtl;
 }
 
 .lk-account-sidebar,
 .lk-account-panel,
 .lk-account-guest {
-	position: relative;
-	isolation: isolate;
-	border-radius: var(--lk-lpt-radius, 16px);
-	border: 1px solid rgba(255, 255, 255, 0.55);
-	background:
-		linear-gradient(165deg, rgba(255, 255, 255, 0.72) 0%, rgba(245, 249, 251, 0.55) 100%);
-	box-shadow:
-		0 10px 30px rgba(11, 31, 58, 0.08),
-		inset 0 1px 0 rgba(255, 255, 255, 0.7);
-	backdrop-filter: blur(18px);
-	-webkit-backdrop-filter: blur(18px);
-}
-
-.lk-account-sidebar::before,
-.lk-account-panel::before,
-.lk-account-guest::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	z-index: -1;
-	border-radius: inherit;
-	background: linear-gradient(135deg, rgba(1, 30, 62, 0.12), rgba(13, 110, 110, 0.14));
-	opacity: 0.55;
-	pointer-events: none;
+	border-radius: 18px;
+	border: 1px solid var(--lk-acc-line);
+	background: #fff;
+	box-shadow: 0 10px 28px rgba(15, 76, 129, 0.06);
 }
 
 .lk-account-sidebar {
-	padding: 1.25rem 1.1rem 1rem;
+	padding: 1.15rem 1rem 1rem;
 	position: sticky;
 	top: calc(var(--lz-header-h, 72px) + 1rem);
 }
 
-.lk-account-welcome {
-	margin: 0 0 1.1rem;
-	padding: 0 0.15rem 1rem;
-	border-bottom: 1px solid rgba(1, 30, 62, 0.1);
+.lk-account-profile {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin: 0 0 1rem;
+	padding: 0.15rem 0.15rem 0.95rem;
+	border-bottom: 1px solid var(--lk-acc-line);
+}
+
+.lk-account-avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 52px;
+	height: 52px;
+	border-radius: 50%;
+	background: var(--lk-acc-bg);
+	color: var(--lk-acc-accent);
+	flex-shrink: 0;
+}
+
+.lk-account-profile__text {
+	min-width: 0;
 }
 
 .lk-account-welcome__name {
-	margin: 0 0 0.2rem;
-	font-size: 1.15rem;
+	margin: 0 0 0.15rem;
+	font-size: 1.05rem;
 	font-weight: 800;
-	color: #001f3f;
+	color: var(--lk-acc-ink);
 	line-height: 1.4;
 }
 
 .lk-account-welcome__hello {
 	margin: 0;
-	font-size: 0.95rem;
+	font-size: 0.82rem;
 	font-weight: 600;
-	color: #0d6e6e;
+	color: var(--lk-acc-muted);
 }
 
 .lk-account-tabs {
 	display: flex;
 	flex-direction: column;
-	gap: 0.45rem;
+	gap: 0.4rem;
 }
 
 .lk-account-tab {
-	display: block;
-	padding: 0.7rem 0.85rem;
-	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	padding: 0.68rem 0.75rem;
+	border-radius: 10px;
 	text-decoration: none;
 	font-weight: 700;
-	font-size: 0.92rem;
+	font-size: 0.88rem;
 	line-height: 1.45;
-	color: #001f3f;
-	background: rgba(255, 255, 255, 0.35);
+	color: var(--lk-acc-ink-2);
+	background: #fff;
 	border: 1px solid transparent;
 	transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
+.lk-account-tab__main {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-width: 0;
+}
+
+.lk-account-tab__icon,
+.lk-account-tab__chevron,
+.lk-account-logout__icon {
+	flex-shrink: 0;
+}
+
 .lk-account-tab:hover {
-	background: rgba(13, 110, 110, 0.1);
-	color: #0d6e6e;
+	background: var(--lk-acc-soft);
+	border-color: var(--lk-acc-line);
+	color: var(--lk-acc-accent);
 }
 
 .lk-account-tab.is-active {
-	background: linear-gradient(135deg, #001f3f 0%, #0d6e6e 100%);
+	background: var(--lk-acc-accent);
 	color: #fff;
-	border-color: transparent;
-	box-shadow: 0 8px 18px rgba(0, 31, 63, 0.18);
+	border-color: var(--lk-acc-accent);
+	box-shadow: 0 6px 14px rgba(15, 76, 129, 0.2);
 }
 
 .lk-account-logout {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-start;
+	gap: 0.5rem;
 	width: 100%;
-	margin-top: 1rem;
-	padding: 0.55rem 0.85rem;
-	border-radius: 12px;
-	border: 1px solid rgba(180, 35, 24, 0.28);
-	background: rgba(180, 35, 24, 0.06);
-	font-size: 0.86rem;
-	font-weight: 800;
-	color: #9b1c1c;
+	margin-top: 0.85rem;
+	padding: 0.68rem 0.75rem;
+	border-radius: 10px;
+	border: 0;
+	background: transparent;
+	font-size: 0.88rem;
+	font-weight: 700;
+	color: var(--lk-acc-danger);
 	text-decoration: none;
-	transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+	transition: background 0.15s ease, color 0.15s ease;
 }
 
 .lk-account-logout:hover {
-	background: #b42318;
-	border-color: #b42318;
+	background: var(--lk-acc-danger);
+	border-color: var(--lk-acc-danger);
 	color: #fff;
 	text-decoration: none;
 }
 
 .lk-account-panel,
 .lk-account-guest {
-	padding: clamp(1.1rem, 2vw, 1.75rem);
+	padding: clamp(1.1rem, 2vw, 1.5rem);
 	min-height: 320px;
+}
+
+.lk-account-panel__head {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 0 0 1.1rem;
+	padding-bottom: 0.85rem;
+	border-bottom: 1px solid var(--lk-acc-line);
+	color: var(--lk-acc-accent);
+}
+
+.lk-account-panel__head h1 {
+	margin: 0;
+	font-size: 1.12rem;
+	font-weight: 800;
+	color: var(--lk-acc-ink);
+	line-height: 1.4;
 }
 
 .lk-account-page .woocommerce-MyAccount-navigation,
@@ -153,7 +203,11 @@ body.lk-light-account .lk-lpt-main {
 	margin: 0;
 }
 
-.lk-account-page .woocommerce-notices-wrapper,
+/* Notices */
+.lk-account-page .woocommerce-notices-wrapper:empty {
+	display: none;
+}
+
 .lk-account-page .woocommerce-message,
 .lk-account-page .woocommerce-info,
 .lk-account-page .woocommerce-error {
@@ -163,12 +217,18 @@ body.lk-light-account .lk-lpt-main {
 	justify-content: space-between;
 	gap: 0.75rem 1rem;
 	margin: 0 0 1rem;
-	padding: 0.85rem 1rem;
+	padding: 0.8rem 1rem;
 	border-radius: 12px;
-	border: 1px solid rgba(13, 110, 110, 0.22);
-	background: rgba(13, 110, 110, 0.08);
-	color: #001f3f;
+	border: 1px solid #c7dbee;
+	background: var(--lk-acc-bg);
+	color: var(--lk-acc-ink-2);
 	line-height: 1.7;
+}
+
+.lk-account-page .woocommerce-error {
+	border-color: rgba(180, 35, 24, 0.3);
+	background: #fdeeec;
+	color: var(--lk-acc-danger);
 }
 
 .lk-account-page .woocommerce-info::before,
@@ -185,17 +245,151 @@ body.lk-light-account .lk-lpt-main {
 	order: 2;
 }
 
-.lk-account-page form.woocommerce-EditAccountForm .form-row,
+/* Edit account form */
+.lk-account-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	max-width: none;
+}
+
+.lk-account-form__section,
+.lk-account-page fieldset.lk-account-form__section {
+	margin: 0;
+	padding: 1rem 1.05rem 1.1rem;
+	border: 1px solid #e7eef5;
+	border-radius: 14px;
+	background: #f7fafc;
+	min-inline-size: 0;
+}
+
+.lk-account-form__title {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	width: 100%;
+	margin: 0 0 0.35rem;
+	padding: 0;
+	font-size: 0.98rem;
+	font-weight: 800;
+	color: var(--lk-acc-ink);
+	float: none;
+}
+
+.lk-account-form__title-icon,
+.lk-account-field__icon,
+.lk-account-panel__icon {
+	color: var(--lk-acc-accent);
+	flex-shrink: 0;
+}
+
+.lk-account-form__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.9rem 1rem;
+	margin-top: 0.85rem;
+}
+
+.lk-account-form__grid--pass {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lk-account-form__field {
+	margin: 0 !important;
+	padding: 0;
+	min-width: 0;
+}
+
+.lk-account-form__field--wide {
+	grid-column: 1 / -1;
+}
+
+.lk-account-form__field--phone {
+	order: 1;
+}
+
+.lk-account-form__field--email {
+	order: 2;
+}
+
+.lk-account-form__field--phone:not(:has(.form-row)) {
+	display: none;
+}
+
+.lk-account-form__field--phone label::before {
+	content: "";
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	background: var(--lk-acc-accent);
+	-webkit-mask: url("../icons/phone.svg") center / contain no-repeat;
+	mask: url("../icons/phone.svg") center / contain no-repeat;
+}
+
+.lk-account-form__field--phone .form-row {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	float: none;
+}
+
+.lk-account-form__field--phone .form-row + .form-row {
+	margin-top: 0.9rem;
+}
+
+.lk-account-form__hooked .form-row {
+	max-width: 760px;
+	margin: 0 0 0.9rem;
+	padding: 0;
+}
+
+.lk-account-form__hooked .form-row[style*="display: none"] {
+	margin: 0;
+}
+
+.lk-account-form__hint {
+	display: block;
+	margin-top: 0.35rem;
+	font-size: 0.78rem;
+	line-height: 1.6;
+	color: var(--lk-acc-muted);
+}
+
+.lk-account-form__hint em {
+	font-style: normal;
+}
+
+.lk-account-form__hint--section {
+	margin: 0;
+}
+
+.lk-account-form__actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.75rem;
+	margin: 0.15rem 0 0;
+	padding: 0;
+	border: 0;
+}
+
 .lk-account-page form .form-row {
 	margin: 0 0 0.85rem;
 }
 
 .lk-account-page form label {
-	display: block;
-	margin-bottom: 0.35rem;
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	margin-bottom: 0.4rem;
 	font-weight: 700;
-	font-size: 0.86rem;
-	color: #001f3f;
+	font-size: 0.84rem;
+	color: var(--lk-acc-text);
+}
+
+.lk-account-page form label .required {
+	color: var(--lk-acc-danger);
+	text-decoration: none;
 }
 
 .lk-account-page form input.input-text,
@@ -205,37 +399,102 @@ body.lk-light-account .lk-lpt-main {
 .lk-account-page form input[type="password"],
 .lk-account-page form select,
 .lk-account-page form textarea,
+.lk-account-page .woocommerce form .form-row input.input-text,
+.lk-account-page .woocommerce form .form-row textarea,
+.lk-account-page .woocommerce form .form-row select,
 .lk-account-page .select2-container .select2-selection--single {
 	width: 100%;
 	max-width: 100%;
-	border: 1px solid rgba(1, 30, 62, 0.16);
-	border-radius: 12px;
-	background: rgba(255, 255, 255, 0.85);
-	padding: 0.65rem 0.8rem;
-	color: #001f3f;
+	min-height: 46px;
+	border: 1px solid var(--lk-acc-line, #d8dde3) !important;
+	border-radius: 10px !important;
+	background: #fff;
+	padding: 0 0.9rem;
+	color: var(--lk-acc-ink);
+	font: inherit;
+	font-size: 0.92rem;
 	box-shadow: none;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lk-account-page form textarea {
+	min-height: 110px;
+	padding-block: 0.7rem;
+}
+
+.lk-account-page form input::placeholder,
+.lk-account-page form textarea::placeholder {
+	color: #94a3b8;
 }
 
 .lk-account-page form input:focus,
 .lk-account-page form select:focus,
-.lk-account-page form textarea:focus {
-	outline: 2px solid rgba(13, 110, 110, 0.35);
-	border-color: #0d6e6e;
+.lk-account-page form textarea:focus,
+.lk-account-page .woocommerce form .form-row input.input-text:focus,
+.lk-account-page .woocommerce form .form-row textarea:focus,
+.lk-account-page .woocommerce form .form-row select:focus {
+	outline: none;
+	border-color: var(--lk-acc-accent) !important;
+	box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.14);
+}
+
+.lk-account-page form input[readonly],
+.lk-account-page form input[disabled] {
+	background: var(--lk-acc-soft);
+	color: var(--lk-acc-muted);
+}
+
+.lk-account-page .password-input {
+	position: relative;
+	display: block;
+	width: 100%;
+}
+
+.lk-account-page .password-input input {
+	padding-inline-end: 2.75rem;
+}
+
+.lk-account-page .show-password-input {
+	top: 50%;
+	inset-inline-end: 0.85rem;
+	inset-inline-start: auto;
+	transform: translateY(-50%);
+	color: var(--lk-acc-muted);
+}
+
+.lk-account-page .show-password-input::after {
+	color: inherit;
+}
+
+.lk-account-page .show-password-input:hover {
+	color: var(--lk-acc-accent);
+}
+
+.lk-account-page .dig_resendotp {
+	max-width: 760px;
+	margin: 0.75rem 0 0;
+	font-size: 0.85rem;
+	color: var(--lk-acc-muted);
+}
+
+.lk-account-page .dig_resendotp:empty {
+	display: none;
 }
 
 .lk-account-page fieldset {
 	margin: 1.25rem 0 0;
 	padding: 1rem 0 0;
 	border: 0;
-	border-top: 1px solid rgba(1, 30, 62, 0.1);
+	border-top: 1px solid var(--lk-acc-line);
 }
 
 .lk-account-page legend {
 	padding: 0;
 	font-weight: 800;
-	color: #001f3f;
+	color: var(--lk-acc-ink);
 }
 
+/* Buttons */
 .lk-account-page button.button,
 .lk-account-page .woocommerce-Button,
 .lk-account-page a.button,
@@ -247,23 +506,27 @@ body.lk-light-account .lk-lpt-main {
 	align-items: center;
 	justify-content: center;
 	gap: 0.35rem;
+	min-height: 44px;
 	border: 0 !important;
-	border-radius: 12px;
-	padding: 0.7rem 1.15rem;
-	background: linear-gradient(135deg, #001f3f 0%, #0d6e6e 100%) !important;
-	background-color: #001f3f !important;
+	border-radius: 10px;
+	padding: 0.6rem 1.25rem;
+	background: var(--lk-acc-accent) !important;
 	color: #fff !important;
+	font: inherit;
+	font-size: 0.92rem;
 	font-weight: 800;
 	text-decoration: none !important;
 	cursor: pointer;
-	box-shadow: 0 8px 18px rgba(0, 31, 63, 0.16);
+	box-shadow: 0 6px 14px rgba(15, 76, 129, 0.18);
+	transition: background 0.15s ease;
 }
 
 .lk-account-page a.woocommerce-button.button.view,
 .lk-account-page a.button.wc-forward {
-	padding: 0.4rem 0.85rem;
+	min-height: 36px;
+	padding: 0.35rem 0.85rem;
 	font-size: 0.82rem;
-	box-shadow: 0 4px 12px rgba(0, 31, 63, 0.12);
+	box-shadow: none;
 }
 
 .lk-account-page button.button:hover,
@@ -272,38 +535,45 @@ body.lk-light-account .lk-lpt-main {
 .lk-account-page a.button.wc-forward:hover,
 .lk-account-page a.woocommerce-button:hover,
 .lk-account-page a.woocommerce-button.button.view:hover {
-	filter: brightness(1.06);
+	background: var(--lk-acc-accent-hover) !important;
 	color: #fff !important;
 }
 
+/* Orders table */
 .lk-account-page table.shop_table {
 	width: 100%;
 	border-collapse: separate;
 	border-spacing: 0;
-	border: 1px solid rgba(1, 30, 62, 0.1);
+	border: 1px solid var(--lk-acc-line);
 	border-radius: 14px;
 	overflow: hidden;
-	background: rgba(255, 255, 255, 0.7);
+	background: #fff;
 }
 
 .lk-account-page table.shop_table th,
 .lk-account-page table.shop_table td {
 	padding: 0.75rem 0.85rem;
 	text-align: right;
-	border-bottom: 1px solid rgba(1, 30, 62, 0.08);
+	border-bottom: 1px solid #e7eef5;
 	vertical-align: middle;
+	color: var(--lk-acc-text);
 }
 
 .lk-account-page table.shop_table thead th {
-	background: rgba(1, 30, 62, 0.06);
+	background: #f3f7fb;
 	font-weight: 800;
-	color: #001f3f;
+	color: var(--lk-acc-ink);
 }
 
 .lk-account-page table.shop_table tr:last-child td {
 	border-bottom: 0;
 }
 
+.lk-account-page table.shop_table a:not(.button) {
+	color: var(--lk-acc-accent);
+}
+
+/* Addresses */
 .lk-account-page .woocommerce-Addresses,
 .lk-account-page .u-columns.woocommerce-Addresses,
 .lk-account-page .col2-set.addresses {
@@ -339,8 +609,8 @@ body.lk-light-account .lk-lpt-main {
 	margin: 0 !important;
 	padding: 1rem;
 	border-radius: 14px;
-	background: rgba(255, 255, 255, 0.65);
-	border: 1px solid rgba(1, 30, 62, 0.1);
+	background: #fff;
+	border: 1px solid var(--lk-acc-line);
 }
 
 .lk-account-page .woocommerce-Address,
@@ -364,7 +634,7 @@ body.lk-light-account .lk-lpt-main {
 	grid-row: 1;
 	margin: 0;
 	font-size: 1rem;
-	color: #001f3f;
+	color: var(--lk-acc-ink);
 	direction: rtl;
 	text-align: right;
 }
@@ -379,23 +649,24 @@ body.lk-light-account .lk-lpt-main {
 	align-items: center;
 	justify-content: center;
 	padding: 0.4rem 0.85rem;
-	border-radius: 12px;
-	border: 0;
-	background: linear-gradient(135deg, #001f3f 0%, #0d6e6e 100%);
-	color: #fff !important;
+	border-radius: 10px;
+	border: 1px solid var(--lk-acc-line);
+	background: #fff;
+	color: var(--lk-acc-accent) !important;
 	font-size: 0.82rem;
 	font-weight: 800;
 	line-height: 1.3;
 	text-align: center;
 	text-decoration: none !important;
-	box-shadow: 0 4px 12px rgba(0, 31, 63, 0.12);
 	white-space: nowrap;
+	transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .lk-account-page .woocommerce-Address-title a.edit:hover,
 .lk-account-page .woocommerce-Address a.edit:hover {
-	filter: brightness(1.06);
-	color: #fff !important;
+	background: var(--lk-acc-soft);
+	border-color: var(--lk-acc-accent);
+	color: var(--lk-acc-accent-hover) !important;
 }
 
 .lk-account-page .woocommerce-Address address {
@@ -408,6 +679,7 @@ body.lk-light-account .lk-lpt-main {
 .lk-account-page address {
 	font-style: normal;
 	line-height: 1.7;
+	color: var(--lk-acc-text);
 }
 
 .lk-account-page .woocommerce-customer-details--phone,
@@ -430,6 +702,107 @@ body.lk-light-account .lk-lpt-main {
 	display: inline-block;
 	flex-shrink: 0;
 	transform: none;
+}
+
+/* Edit address form */
+.lk-account-address-form {
+	max-width: none;
+}
+
+.lk-account-page .woocommerce-address-fields__field-wrapper {
+	display: grid;
+	grid-template-columns: repeat(60, minmax(0, 1fr));
+	gap: 0.9rem 1rem;
+	margin-top: 0.85rem;
+}
+
+.lk-account-page .woocommerce-address-fields__field-wrapper .form-row {
+	margin: 0 !important;
+	padding: 0 !important;
+	width: auto !important;
+	float: none !important;
+	clear: none !important;
+}
+
+.lk-account-page .woocommerce-address-fields__field-wrapper .form-row::before,
+.lk-account-page .woocommerce-address-fields__field-wrapper .form-row::after {
+	content: none;
+	display: none;
+}
+
+.lk-account-page .woocommerce-address-fields__field-wrapper .lk-acc-third,
+#billing_first_name_field,
+#shipping_first_name_field,
+#billing_last_name_field,
+#shipping_last_name_field,
+#billing_company_field,
+#shipping_company_field,
+#billing_country_field,
+#shipping_country_field,
+#billing_state_field,
+#shipping_state_field,
+#billing_city_field,
+#shipping_city_field {
+	grid-column: span 20;
+}
+
+.lk-account-page .woocommerce-address-fields__field-wrapper .lk-acc-street,
+#billing_address_1_field,
+#shipping_address_1_field {
+	grid-column: span 45;
+}
+
+.lk-account-page .woocommerce-address-fields__field-wrapper .lk-acc-plaque,
+#billing_address_2_field,
+#shipping_address_2_field {
+	grid-column: span 15;
+}
+
+.lk-account-page .woocommerce-address-fields__field-wrapper .lk-acc-half,
+#billing_postcode_field,
+#shipping_postcode_field,
+#billing_phone_field,
+#shipping_phone_field {
+	grid-column: span 30;
+}
+
+.lk-account-page .woocommerce-address-fields__field-wrapper .lk-acc-full,
+#billing_email_field {
+	grid-column: 1 / -1;
+}
+
+.lk-account-page .woocommerce-address-fields .select2-container {
+	width: 100% !important;
+}
+
+.lk-account-page .select2-container .select2-selection--single {
+	height: 46px !important;
+	min-height: 46px !important;
+	max-height: 46px;
+	padding: 0 !important;
+	box-sizing: border-box;
+}
+
+.lk-account-page .select2-container .select2-selection--single .select2-selection__rendered {
+	line-height: 44px;
+	padding-block: 0;
+	padding-inline: 0.9rem 2rem;
+	color: var(--lk-acc-ink);
+}
+
+.lk-account-page .select2-container .select2-selection--single .select2-selection__arrow {
+	height: 44px;
+	top: 1px;
+	inset-inline-end: 0.65rem;
+	inset-inline-start: auto;
+}
+
+.lk-account-address-form .lk-account-form__actions {
+	margin-top: 1.15rem;
+}
+
+.lk-account-address-form .lk-account-form__actions button.button {
+	border-radius: 14px;
 }
 
 .lk-account-page .woocommerce-pagination {
@@ -484,6 +857,53 @@ body.lk-light-account .lk-lpt-main {
 		display: block;
 		font-weight: 800;
 		margin-bottom: 0.25rem;
-		color: #0d6e6e;
+		color: var(--lk-acc-accent);
+	}
+}
+
+@media (max-width: 720px) {
+	.lk-account-form__grid,
+	.lk-account-form__grid--pass,
+	.lk-account-page .woocommerce-address-fields__field-wrapper {
+		grid-template-columns: 1fr;
+	}
+
+	.lk-account-page .woocommerce-address-fields__field-wrapper .lk-acc-third,
+	.lk-account-page .woocommerce-address-fields__field-wrapper .lk-acc-street,
+	.lk-account-page .woocommerce-address-fields__field-wrapper .lk-acc-plaque,
+	.lk-account-page .woocommerce-address-fields__field-wrapper .lk-acc-half,
+	.lk-account-page .woocommerce-address-fields__field-wrapper .form-row,
+	#billing_first_name_field,
+	#shipping_first_name_field,
+	#billing_last_name_field,
+	#shipping_last_name_field,
+	#billing_company_field,
+	#shipping_company_field,
+	#billing_country_field,
+	#shipping_country_field,
+	#billing_state_field,
+	#shipping_state_field,
+	#billing_city_field,
+	#shipping_city_field,
+	#billing_address_1_field,
+	#shipping_address_1_field,
+	#billing_address_2_field,
+	#shipping_address_2_field,
+	#billing_postcode_field,
+	#shipping_postcode_field,
+	#billing_phone_field,
+	#shipping_phone_field,
+	#billing_email_field {
+		grid-column: 1 / -1;
+	}
+
+	.lk-account-form__field--wide,
+	.lk-account-form__field--phone {
+		grid-column: auto;
+	}
+
+	.lk-account-form__actions .woocommerce-Button,
+	.lk-account-form__actions button.button {
+		width: 100%;
 	}
 }

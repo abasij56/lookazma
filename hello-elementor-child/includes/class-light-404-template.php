@@ -62,6 +62,9 @@ final class Hello_Elementor_Child_Light_404_Template {
 		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return false;
 		}
+		if ( isset( $_GET['login'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
 		return is_404();
 	}
 
@@ -379,9 +382,12 @@ final class Hello_Elementor_Child_Light_404_Template {
 	}
 
 	/**
-	 * Always use the live shop archive URL (فروشگاه), never trashed/query fallbacks.
+	 * Always use the live shop archive URL (/فروشگاه/), never trashed/query fallbacks.
 	 */
 	private static function get_shop_url(): string {
+		if ( function_exists( 'hello_elementor_child_get_shop_url' ) ) {
+			return hello_elementor_child_get_shop_url();
+		}
 		return home_url( user_trailingslashit( 'فروشگاه' ) );
 	}
 }

@@ -45,6 +45,7 @@ final class Hello_Elementor_Child_Theme {
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-article-template.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-homepage-template.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-404-template.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-login-template.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-archive-product-filter.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-product-search.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-lookazma-search.php';
@@ -58,6 +59,8 @@ final class Hello_Elementor_Child_Theme {
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-product-specs.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-product-compare.php';
 		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-light-compare-template.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-product-export-brand-filter.php';
+		require_once HELLO_ELEMENTOR_CHILD_PATH . 'includes/class-sticky-mini-cart.php';
 	}
 
 	/**
@@ -81,6 +84,7 @@ final class Hello_Elementor_Child_Theme {
 		Hello_Elementor_Child_Light_Article_Template::init();
 		Hello_Elementor_Child_Light_Homepage_Template::init();
 		Hello_Elementor_Child_Light_404_Template::init();
+		Hello_Elementor_Child_Light_Login_Template::init();
 		Hello_Elementor_Child_Archive_Product_Filter::init();
 		Hello_Elementor_Child_Product_Search::init();
 		Hello_Elementor_Child_Lookazma_Search::init();
@@ -93,5 +97,7 @@ final class Hello_Elementor_Child_Theme {
 		Hello_Elementor_Child_Light_Brands_Template::init();
 		Hello_Elementor_Child_Product_Compare::init();
 		Hello_Elementor_Child_Light_Compare_Template::init();
+		Hello_Elementor_Child_Product_Export_Brand_Filter::init();
+		Hello_Elementor_Child_Sticky_Mini_Cart::init();
 	}
 }

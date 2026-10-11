@@ -538,12 +538,48 @@ final class Hello_Elementor_Child_Light_Article_Template {
 		wp_reset_postdata();
 
 		return array(
-			'posts'           => $posts,
-			'pagination_html' => $pagination,
-			'more_label'      => __( 'ادامه مطلب', 'hello-elementor-child' ),
-			'paged'           => $paged,
-			'url'             => self::get_paged_url( $page_id, $paged ),
+			'posts'            => $posts,
+			'pagination_html'  => $pagination,
+			'more_label'       => __( 'ادامه مطلب', 'hello-elementor-child' ),
+			'date_icon_html'   => self::icon_html( 'calendar.svg', 'lk-article-card__date-icon', 14 ),
+			'paged'            => $paged,
+			'url'              => self::get_paged_url( $page_id, $paged ),
 		);
+	}
+
+	/**
+	 * Inline Lucide SVG from assets/icons/ (needed files only).
+	 *
+	 * @param string $file  Filename e.g. calendar.svg.
+	 * @param string $class SVG class.
+	 * @param int    $size  Pixel size.
+	 */
+	public static function icon_html( string $file, string $class = 'lk-article-icon', int $size = 24 ): string {
+		$file = basename( $file );
+		if ( ! preg_match( '/^[a-z0-9\-]+\.svg$/i', $file ) ) {
+			return '';
+		}
+		$path = HELLO_ELEMENTOR_CHILD_PATH . 'assets/icons/' . $file;
+		if ( ! is_readable( $path ) ) {
+			return '';
+		}
+		$svg = (string) file_get_contents( $path );
+		if ( '' === $svg ) {
+			return '';
+		}
+		$size = max( 12, min( 48, $size ) );
+		$svg  = preg_replace( '/\s(width|height)="[^"]*"/i', '', $svg, 2 );
+		$svg  = preg_replace(
+			'/<svg\b/i',
+			sprintf(
+				'<svg class="%1$s" width="%2$d" height="%2$d" aria-hidden="true" focusable="false"',
+				esc_attr( $class ),
+				$size
+			),
+			$svg,
+			1
+		);
+		return is_string( $svg ) ? $svg : '';
 	}
 
 	/**

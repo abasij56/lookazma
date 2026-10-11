@@ -555,6 +555,10 @@ final class Hello_Elementor_Child_Custom_Tag_Archive {
 			Hello_Elementor_Child_Archive_Product_Filter::enqueue_assets();
 		}
 
+		if ( class_exists( 'Hello_Elementor_Child_Product_Compare' ) ) {
+			Hello_Elementor_Child_Product_Compare::enqueue_assets( false );
+		}
+
 		$card_css = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-product-shop-cards.css';
 		if ( file_exists( $card_css ) ) {
 			wp_enqueue_style(

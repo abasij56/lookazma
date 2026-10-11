@@ -25,6 +25,17 @@ if ( ! $term instanceof WP_Term || 'product_cat' !== $term->taxonomy ) {
 $term_id = (int) $term->term_id;
 $acf_id  = 'product_cat_' . $term_id;
 
+/* Mother = has at least one child product_cat; leaf = datasheet hero. */
+$child_ids = get_terms(
+	array(
+		'taxonomy'   => 'product_cat',
+		'parent'     => $term_id,
+		'hide_empty' => false,
+		'fields'     => 'ids',
+	)
+);
+$is_mother = ! is_wp_error( $child_ids ) && is_array( $child_ids ) && array() !== $child_ids;
+
 /**
  * Scalar ACF/meta helper for term fields.
  *
@@ -54,7 +65,12 @@ if ( class_exists( 'Hello_Elementor_Child_Light_Product_Template' ) ) {
 ob_start();
 language_attributes();
 $context['html_language_attributes'] = trim( ob_get_clean() );
-$context['body_class']               = implode( ' ', get_body_class( 'lk-light-product lk-light-category lk-shop-cards-archive lz-chrome' ) );
+$context['body_class'] = implode(
+	' ',
+	get_body_class(
+		'lk-light-product lk-light-category lk-shop-cards-archive lz-chrome ' . ( $is_mother ? 'lk-cat-is-mother' : 'lk-cat-is-leaf' )
+	)
+);
 
 $css_file = HELLO_ELEMENTOR_CHILD_PATH . 'assets/css/archive-light-product.css';
 $context['light_css_url'] = HELLO_ELEMENTOR_CHILD_URI . 'assets/css/archive-light-product.css';
@@ -84,6 +100,103 @@ $english_name = $lk_field( $acf_id, 'en-cat' );
 $description  = Hello_Elementor_Child_Custom_Category_Archive::resolve_category_description_html( $term_id, $acf_id );
 $parsed       = Hello_Elementor_Child_Custom_Category_Archive::parse_description_sections( (string) $description );
 
+$mother_blurb = trim( (string) ( $parsed['excerpt'] ?? '' ) );
+if ( '' === $mother_blurb ) {
+	$raw_desc = get_term_field( 'description', $term_id, 'product_cat', 'raw' );
+	if ( is_string( $raw_desc ) && '' !== trim( wp_strip_all_tags( $raw_desc ) ) ) {
+		$mother_blurb = wp_trim_words( wp_strip_all_tags( $raw_desc ), 40, '…' );
+	}
+}
+
+/**
+ * Load a local Lucide SVG (only files under assets/icons/).
+ *
+ * @param string $file Filename e.g. shield-check.svg.
+ */
+$lk_cat_icon = static function ( string $file ): string {
+	$file = basename( $file );
+	if ( ! preg_match( '/^[a-z0-9\-]+\.svg$/i', $file ) ) {
+		return '';
+	}
+	$path = HELLO_ELEMENTOR_CHILD_PATH . 'assets/icons/' . $file;
+	if ( ! is_readable( $path ) ) {
+		return '';
+	}
+	$svg = (string) file_get_contents( $path );
+	if ( '' === $svg ) {
+		return '';
+	}
+	$svg = preg_replace( '/\s(width|height)="[^"]*"/i', '', $svg, 2 );
+	$svg = preg_replace(
+		'/<svg\b/i',
+		'<svg class="lk-cat-icon" width="24" height="24" aria-hidden="true" focusable="false"',
+		$svg,
+		1
+	);
+	return is_string( $svg ) ? $svg : '';
+};
+
+$mother_trusts = array(
+	array(
+		'key'       => 'quality',
+		'label'     => 'کیفیت تضمین شده',
+		'icon_html' => $lk_cat_icon( 'shield-check.svg' ),
+	),
+	array(
+		'key'       => 'shipping',
+		'label'     => 'ارسال سریع',
+		'icon_html' => $lk_cat_icon( 'truck.svg' ),
+	),
+	array(
+		'key'       => 'support',
+		'label'     => 'پشتیبانی تخصصی',
+		'icon_html' => $lk_cat_icon( 'headset.svg' ),
+	),
+);
+
+$mother_stats = array(
+	array(
+		'key'       => 'quality',
+		'title'     => 'کیفیت تضمین شده',
+		'text'      => 'تضمین کیفیت و برگه آنالیز COA',
+		'icon_html' => $lk_cat_icon( 'badge-check.svg' ),
+	),
+	array(
+		'key'       => 'support',
+		'title'     => 'مشاوره تخصصی',
+		'text'      => 'تیم متخصص آماده مشاوره پیش از خرید',
+		'icon_html' => $lk_cat_icon( 'headset.svg' ),
+	),
+	array(
+		'key'       => 'price',
+		'title'     => 'قیمت رقابتی',
+		'text'      => 'بهترین قیمت همراه با تضمین کیفیت',
+		'icon_html' => $lk_cat_icon( 'circle-dollar-sign.svg' ),
+	),
+	array(
+		'key'       => 'shipping',
+		'title'     => 'ارسال سریع و مطمئن',
+		'text'      => 'ارسال به سراسر کشور در کوتاه‌ترین زمان',
+		'icon_html' => $lk_cat_icon( 'truck.svg' ),
+	),
+);
+
+$fact_icon_map = array(
+	'cas'         => 'hash.svg',
+	'appearance'  => 'eye.svg',
+	'synonym'     => 'quote.svg',
+	'formula'     => 'flask-conical.svg',
+	'weight'      => 'weight.svg',
+	'melt'        => 'thermometer.svg',
+	'boil'        => 'thermometer.svg',
+	'flash'       => 'flame.svg',
+	'density'     => 'layers.svg',
+	'viscosity'   => 'droplets.svg',
+	'vapor'       => 'cloud.svg',
+	'water'       => 'droplet.svg',
+	'solubility'  => 'beaker.svg',
+);
+
 $spec_defs = array(
 	array( 'key' => 'cas_no-cat', 'label' => 'CAS Number', 'icon' => 'cas' ),
 	array( 'key' => 'شکل_ظاهری_دسته', 'label' => 'شکل ظاهری', 'icon' => 'appearance' ),
@@ -100,27 +213,44 @@ $spec_defs = array(
 	array( 'key' => 'فشار_بخار', 'label' => 'فشار بخار', 'icon' => 'vapor' ),
 );
 
-$specs      = array();
-$wide_items = array();
+$specs        = array();
+$hero_pills   = array();
+$hero_facts   = array();
+$hero_synonym = null;
+$wide_facts   = array();
+
 foreach ( $spec_defs as $def ) {
 	$value = $lk_field( $acf_id, $def['key'] );
 	if ( '' === $value || 0 === strcasecmp( $value, 'N/A' ) ) {
 		continue;
 	}
-	$item = array(
-		'label' => $def['label'],
-		'value' => $value,
-		'icon'  => $def['icon'],
-		'wide'  => in_array( $def['label'], array( 'مترادف', 'حلالیت' ), true ),
+	$icon_file = $fact_icon_map[ $def['icon'] ] ?? '';
+	$item      = array(
+		'label'     => $def['label'],
+		'value'     => $value,
+		'icon'      => $def['icon'],
+		'icon_html' => $icon_file ? $lk_cat_icon( $icon_file ) : '',
+		'wide'      => in_array( $def['label'], array( 'مترادف', 'حلالیت' ), true ),
 	);
-	if ( $item['wide'] ) {
-		$wide_items[] = $item;
+
+	$specs[] = $item;
+
+	if ( 'cas' === $def['icon'] || 'formula' === $def['icon'] ) {
+		$hero_pills[] = $item;
 		continue;
 	}
-	$specs[] = $item;
+	if ( 'synonym' === $def['icon'] ) {
+		$hero_synonym = $item;
+		continue;
+	}
+	if ( ! empty( $item['wide'] ) ) {
+		$wide_facts[] = $item;
+		continue;
+	}
+	$hero_facts[] = $item;
 }
-foreach ( $wide_items as $wide_item ) {
-	$specs[] = $wide_item;
+foreach ( $wide_facts as $wide_item ) {
+	$hero_facts[] = $wide_item;
 }
 
 $msds_url  = '';
@@ -194,10 +324,17 @@ $context['category_data'] = array(
 	'id'              => $term_id,
 	'name'            => $term->name,
 	'english_name'    => $english_name,
+	'is_mother'       => $is_mother,
+	'mother_blurb'    => $mother_blurb,
+	'mother_trusts'   => $mother_trusts,
+	'mother_stats'    => $mother_stats,
 	'msds_url'        => $msds_url,
 	'excerpt'         => (string) ( $parsed['excerpt'] ?? '' ),
 	'images'          => $images,
 	'specs'           => $specs,
+	'hero_pills'      => $hero_pills,
+	'hero_facts'      => $hero_facts,
+	'hero_synonym'    => $hero_synonym,
 	'h1_label'        => (string) ( $parsed['h1_label'] ?? '' ),
 	'full_html'       => (string) ( $parsed['full_html'] ?? '' ),
 	'sections'        => is_array( $parsed['sections'] ?? null ) ? $parsed['sections'] : array(),

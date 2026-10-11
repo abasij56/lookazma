@@ -796,6 +796,9 @@ final class Hello_Elementor_Child_Custom_Single_Post {
 			'related'         => self::get_related_posts( $post_id, 5 ),
 			'more_label'      => __( 'ادامه مطلب', 'hello-elementor-child' ),
 			'related_title'   => __( 'مطالب مرتبط', 'hello-elementor-child' ),
+			'date_icon_html'  => class_exists( 'Hello_Elementor_Child_Light_Article_Template' )
+				? Hello_Elementor_Child_Light_Article_Template::icon_html( 'calendar.svg', 'lk-article-card__date-icon', 14 )
+				: '',
 			'cta_text'        => __( '“لوک آزما، مرجع تخصصی فروش مواد شیمایی، با ارائه محصولات با کیفیت و خدمات حرفه ای، همراه مطمئن شما در مسیر پیشرفت علمی و صنعتی است. جهت مشاوره و ارتباط با ما تماس بگیرید”', 'hello-elementor-child' ),
 			'cta_phone'       => '09122114322',
 			'cta_phone_href'  => 'tel:+989122114322',

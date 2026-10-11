@@ -1,0 +1,63 @@
+{% extends 'woo/base-light-product.twig' %}
+
+{% block content %}
+<div class="lk-login">
+	<div class="lk-login__wrap">
+		<div class="lk-login__split">
+			<section class="lk-login__story" style="background-image: url('{{ login.story_image|e('html_attr') }}')">
+				<div class="lk-login__story-inner">
+					<h1>به لوک آزما خوش آمدید</h1>
+					<p class="lk-login__lead">ورود سریع و امن به حساب کاربری</p>
+					<ul class="lk-login__features">
+						{% for item in login.features %}
+							<li>
+								<span class="lk-login__feature-mark">{{ item.icon|raw }}</span>
+								<span>
+									<strong>{{ item.title }}</strong>
+									<em>{{ item.text }}</em>
+								</span>
+							</li>
+						{% endfor %}
+					</ul>
+					<div class="lk-login__privacy">
+						{{ login.shield_icon|raw }}
+						<span>
+							<strong>اطلاعات شما کاملاً محرمانه است</strong>
+							<em>کد تایید فقط برای ورود استفاده می‌شود</em>
+						</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="lk-login__card">
+				<header class="lk-login__card-head">
+					<span class="lk-login__card-badge">{{ login.phone_icon|raw }}</span>
+					<div>
+						<h2>ورود با شماره موبایل</h2>
+						<p>سریع‌ترین و امن‌ترین روش برای ورود به حساب کاربری</p>
+					</div>
+				</header>
+				<div class="lk-login__form digits_ui digits-auto-theme"{% if 'digits_protected' not in login.form_html %} id="digits_protected"{% endif %}>
+					{% if login.form_html %}
+						{{ login.form_html|raw }}
+					{% endif %}
+				</div>
+			</section>
+		</div>
+
+		<ul class="lk-login__trust">
+			{% for item in login.trust %}
+				<li>
+					{{ item.icon|raw }}
+					<span>{{ item.title }}</span>
+				</li>
+			{% endfor %}
+		</ul>
+
+		<p class="lk-login__join">
+			<strong>هنوز عضو نیستید؟</strong>
+			نیازی به ثبت‌نام جداگانه نیست. فقط شماره موبایل خود را وارد کنید. اولین ورود = ایجاد حساب کاربری
+		</p>
+	</div>
+</div>
+{% endblock %}
